@@ -93,7 +93,7 @@ def main():
                 # If extra columns, assume entity contains commas; merge extras into Entity
                 extra = len(row) - len(COLUMNS)
                 entity_parts = row[1 : 2 + extra]
-                entity_joined = ",".join(entity_parts)
+                entity_joined = ",".join(entity_parts).strip().rstrip(",")
                 row = [row[0], entity_joined] + row[2 + extra :]
             if len(row) < len(COLUMNS):
                 row += [""] * (len(COLUMNS) - len(row))
