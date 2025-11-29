@@ -1,0 +1,339 @@
+1A0KM,SOVEREIGN MILITARY ORDER OF MALTA, ,X, , ,X, , , , ,X,X,X,X,X, , ,X
+3A,MONACO, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+3B7,AGALEGA & SAINT BRANDON ISLANDS, ,X, , ,X, , , , ,X,X,X,X,X,X, , 
+3B8,MAURITIUS ISLAND, ,X, ,X,X, , , , ,X,X,X,X,X,X, ,X
+3B9,RODRIGUEZ ISLAND, ,X, , ,X, , , , ,X,X,X,X,X,X, , 
+3C,EQUATORIAL GUINEA, ,X, , ,X, , , ,X, ,X,X,X,X,X, , 
+3C0,ANNOBON, , , , , , , , , , , , , , , , , 
+3D2,CONWAY REEF, ,X, , ,X, , , , , ,X,X, ,X, , , 
+3D2,FIJI ISLANDS, ,X, , ,X, , , , ,X,X,X,X,X,X, ,X
+3D2,ROTUMA, ,X, , ,X, , , , , , , , ,X,X, , 
+3DA,KINGDOM OF ESWATINI, ,X, , ,X, , , , , , ,X, ,X,X, ,X
+3V,TUNISIA, ,X,X,X, , , , , , ,X, ,X, ,X, , 
+3W XV,VIET NAM, ,X, , ,X, , , ,X,X,X, , , , , ,X
+3XA,GUINEA, ,X, , ,X, , , , , ,X, ,X,X,X, , 
+3Y,BOUVET ISLAND, , , , , , , , , , , , , , , , , 
+3Y,PETER 1 ISLAND, , , , , , , , , , , , , , , , , 
+4J,AZERBAIJAN, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+4L,GEORGIA, ,X, ,X,X, , ,X,X,X,X,X,X,X,X, ,X
+4O,MONTENEGRO, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+4S,SRI LANKA, ,X, , ,X, , , , ,X,X,X,X,X,X, , 
+4U1ITU,ITU HQ, ,X, ,X,X, , ,X, ,X,X,X,X, , ,X,X
+4U1UN,UNITED NATIONS HQ, ,X, , ,X, , , ,X, ,X,X,X,X,X, , 
+4W,TIMOR - LESTE, ,X, , ,X, , , , ,X,X,X,X,X,X, ,X
+4X,ISRAEL, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+5A,LIBYA, ,X, , ,X, , ,X,X,X, , , ,X, , , 
+5B,CYPRUS, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+5H,TANZANIA, ,X, , ,X, , , , , ,X,X,X,X,X, ,X
+5N,NIGERIA, ,X, , ,X, , , , , , , , , , , ,X
+5R,MADAGASCAR, ,X, , ,X, , , ,X,X,X, ,X, ,X, ,X
+5T,MAURITANIA, ,X, ,X,X, , , ,X,X,X,X, ,X,X, , 
+5U,NIGER, ,X, , ,X, , , , ,X, ,X,X, , , , 
+5V7,TOGO, ,X, , ,X, , , , , , ,X, , ,X, ,X
+5W,SAMOA, ,X, , ,X, , , ,X, ,X,X,X,X,X, , 
+5X,UGANDA, ,X, ,X,X, , , ,X,X,X,X,X,X,X, , 
+5Z,KENYA, ,X, , ,X, , ,X,X,X,X,X,X,X,X, ,X
+6W,SENEGAL, ,X, , ,X, , , , , ,X, ,X, ,X, ,X
+6Y,JAMAICA, ,X, , ,X, , , , ,X,X,X,X,X,X, , 
+7O,YEMEN, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+7P,LESOTHO, ,X, , ,X, , , ,X, , ,X,X, ,X, ,X
+7Q,MALAWI, ,X, , ,X, , , , ,X,X,X,X,X,X, ,X
+7X,ALGERIA, ,X, ,X,X, , , ,X, ,X,X,X,X,X, ,X
+8P,BARBADOS, ,X,X, ,X, , , , ,X,X,X,X,X,X, , 
+8Q,MALDIVES, ,X, , ,X, , , ,X,X,X,X, , , , , 
+8R,GUYANA, ,X, , ,X, , , ,X, ,X,X, , , , , 
+9A,CROATIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+9G,GHANA, ,X, , ,X, , , , , ,X,X,X,X,X, ,X
+9H,MALTA, ,X, ,X,X, , , ,X,X,X,X,X,X,X,X,X
+9J,ZAMBIA, ,X, , ,X, , , ,X,X,X, , ,X,X,X, 
+9K,KUWAIT, ,X,X, ,X, , ,X,X,X,X,X,X,X,X,X,X
+9L,SIERRA LEONE, ,X, , ,X, , , , , , , ,X, ,X, , 
+9M2,WEST MALAYSIA, ,X, , ,X, , , , ,X,X, ,X, , , , 
+9M6,EAST MALAYSIA, ,X, , ,X, , , , , ,X,X,X, ,X, , 
+9N,NEPAL, ,X, , ,X, , , ,X,X,X,X,X,X,X, ,X
+9Q,DEMOCRATIC REPUBLIC OF THE CONGO, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+9U,BURUNDI, ,X, , ,X, , , ,X,X,X,X,X, ,X, , 
+9V,SINGAPORE, ,X, ,X,X, , , , ,X,X,X,X, , , , 
+9X,RWANDA, ,X, , ,X, , ,X, ,X,X,X,X,X,X, ,X
+9Y,TRINIDAD & TOBAGO, ,X, ,X,X, , , ,X,X,X,X,X,X,X,X,X
+A2,BOTSWANA, ,X,X, ,X, , , , , ,X, , , ,X, ,X
+A3,TONGA, ,X, , ,X, , , ,X,X, , , , , , , 
+A4,OMAN, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+A5,BHUTAN, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+A6,UNITED ARAB EMIRATES, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+A7,QATAR, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X, 
+A9,BAHRAIN, ,X, ,X,X, , , ,X,X,X,X,X,X,X,X, 
+AP,PAKISTAN, ,X, ,X,X, , , ,X,X,X,X,X,X,X, , 
+BS7H,SCARBOROUGH REEF, , , , , , , , , , , , , , , , , 
+BV,TAIWAN, ,X, ,X,X, , , , ,X,X,X,X,X,X, ,X
+BV9P,PRATAS ISLAND, , , , , , , , , , , , , , , , , 
+BY,CHINA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X, ,X
+C21,NAURU, ,X, , ,X, , , , ,X, , , ,X, , ,X
+C31,ANDORRA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+C5,THE GAMBIA, ,X, , ,X, , , , ,X,X,X,X, ,X, ,X
+C6A,BAHAMAS, ,X, , ,X, , , , ,X,X, , ,X, , ,X
+C9,MOZAMBIQUE, ,X, , ,X, , , , , , , , ,X, , ,X
+CE,CHILE, ,X, , ,X, , ,X,X,X,X,X,X,X,X, ,X
+CE0X,SAN FELIX ISLAND, , , , , , , , , , , , , , , , , 
+CE0Y,EASTER ISLAND, ,X, , ,X, , , ,X,X,X,X,X,X, , ,X
+CE0Z,JUAN FERNANDEZ ISLAND, ,X, , ,X, , , , , ,X, , ,X, , , 
+CE9 KC4,ANTARCTICA, ,X, ,X,X, , , , ,X,X, , , ,X, , 
+CN,MOROCCO, ,X,X,X,X, , , ,X,X,X,X,X,X,X, ,X
+CO,CUBA, ,X,X, ,X, , , ,X,X,X,X,X,X,X, , 
+CP,BOLIVIA, ,X, , ,X, , , , ,X,X,X,X,X,X, , 
+CT,PORTUGAL, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+CT3,MADEIRA ISLANDS, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+CU,AZORES, ,X,X, ,X, , ,X,X,X,X,X,X,X,X,X,X
+CX,URUGUAY, ,X,X,X,X, , , ,X,X,X,X,X,X,X, ,X
+CY0,SABLE ISLAND, ,X, , ,X, , , , ,X,X,X,X, , , ,X
+CY9,SAINT PAUL ISLAND, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+D2,ANGOLA, ,X, ,X,X, , , , , ,X, ,X, , , ,X
+D4,CAPE VERDE, ,X,X,X,X, , , , ,X,X,X,X,X,X, ,X
+D6,COMOROS, ,X, , ,X, , , ,X, , ,X,X,X,X, , 
+DL,FEDERAL REPUBLIC OF GERMANY, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+DU,PHILIPPINES, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+E3,ERITREA, ,X, , ,X, , , , ,X, , , , , , , 
+E4,PALESTINE, ,X, ,X,X, , , , , ,X, , , , , ,X
+E5,NORTH COOK ISLANDS, ,X, , ,X, , , , , , , ,X, , , , 
+E5,SOUTH COOK ISLANDS, ,X, , ,X, , , , , ,X, ,X, , , ,X
+E6,NIUE, ,X, , ,X, , , , ,X,X,X,X, ,X, , 
+E7,BOSNIA-HERZEGOVINA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+EA,SPAIN, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+EA6,BALEARIC ISLANDS, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+EA8,CANARY ISLANDS, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+EA9,CEUTA & MELILLA, ,X,X,X,X, , , ,X,X,X,X,X,X,X, ,X
+EI,IRELAND, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+EK,ARMENIA, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X, 
+EL,LIBERIA, ,X, , ,X, , , ,X,X,X,X,X,X, , , 
+EP,IRAN, ,X, ,X,X, , , ,X,X, , , ,X,X, , 
+ER,MOLDOVA, ,X, , ,X, , ,X,X,X,X,X,X,X,X,X,X
+ES,ESTONIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+ET,ETHIOPIA, ,X, , ,X, , , , , ,X,X,X,X,X, , 
+EU,BELARUS, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+EX,KYRGYZSTAN, ,X, ,X,X, ,X, ,X,X,X, ,X,X,X,X, 
+EY,TAJIKISTAN, ,X, , ,X, , , ,X, ,X,X,X, ,X, , 
+EZ,TURKMENISTAN, , , , , , , , , , , , , , , , , 
+F,FRANCE, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+FG,GUADELOUPE, ,X, , ,X, , , ,X,X,X,X,X,X,X,X,X
+FH,MAYOTTE ISLAND, ,X, , ,X, , , , ,X,X,X, , ,X, ,X
+FJ,SAINT BARTHELEMY, ,X, , ,X, , , , ,X,X, , , , , , 
+FK,NEW CALEDONIA, ,X, , ,X, , , , ,X,X,X,X,X,X, ,X
+FK/C,CHESTERFIELD ISLANDS, , , , , , , , , , , , , , , , , 
+FM,MARTINIQUE, ,X,X,X,X, , , ,X, ,X,X,X,X, , ,X
+FO,AUSTRAL ISLANDS, ,X, ,X,X, , , , ,X,X,X,X, , , , 
+FO,FRENCH POLYNESIA, ,X, , ,X, , , , , ,X,X,X, , , , 
+FO,MARQUESAS ISLANDS, , , , , , , , , , , , , , , , , 
+FO0,CLIPPERTON ISLAND, ,X, , ,X, , , ,X,X,X, , , , , , 
+FP,SAINT PIERRE & MIQUELON, ,X, , ,X, , , , , ,X,X, ,X, , ,X
+FR,REUNION ISLAND, ,X, , ,X, , , , , ,X,X,X,X,X, ,X
+FR/G,GLORIOSO ISLAND, ,X, , ,X, , , , , ,X, , , ,X, , 
+FR/J,JUAN DE NOVA EUROPA, , , , , , , , , , , , , , , , , 
+FR/T,TROMELIN ISLAND, , , , , , , , , , , , , , , , , 
+FS,SAINT MARTIN, ,X, , ,X, , , ,X,X,X,X,X,X,X, ,X
+FT5W,CROZET ISLAND, ,X, , ,X, , , , ,X, ,X, , , , , 
+FT5X,KERGUELEN ISLAND, , , , , , , , , , , , , , , , , 
+FT5Z,AMSTERDAM & SAINT PAUL ISLANDS, , , , , , , , , , , , , , , , , 
+FW,WALLIS & FUTUNA ISLANDS, ,X, , ,X, , , , , , ,X,X, , , ,X
+FY,FRENCH GUIANA, ,X, ,X,X, , , , , ,X,X, ,X, , , 
+G M,ENGLAND, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+GD,ISLE OF MAN, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+GI MI,NORTHERN IRELAND, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+GJ,JERSEY, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+GM MM,SCOTLAND, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+GU,GUERNSEY, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+GW MW,WALES, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+H4,SOLOMON ISLANDS, ,X, , ,X, , , , , ,X,X, , , , ,X
+H40,TEMOTU PROVINCE, ,X, , ,X, , , , , , , , , , , ,X
+HA,HUNGARY, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+HB,SWITZERLAND, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+HB0,LIECHTENSTEIN, ,X,X, ,X, , ,X,X,X,X,X,X,X,X,X,X
+HC,ECUADOR, ,X, , ,X, , ,X,X,X,X,X,X,X,X, , 
+HC8,GALAPAGOS ISLANDS, ,X, , ,X, , , , ,X,X, ,X, , , , 
+HH,HAITI, ,X, , ,X, , , , ,X,X,X,X,X,X, , 
+HI,DOMINICAN REPUBLIC, ,X, , ,X, , ,X,X,X,X,X,X,X,X, ,X
+HK,COLOMBIA, ,X,X, ,X, , , ,X,X,X,X,X,X,X, , 
+HK0,MALPELO ISLAND, , , , , , , , , , , , , , , , , 
+HK0,SAN ANDRES ISLAND, ,X, , ,X, , , , ,X, , , , , , , 
+HL DS,REPUBLIC OF KOREA, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+HP,PANAMA, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+HR,HONDURAS, ,X, , ,X, , , , ,X, ,X,X,X,X, , 
+HS,THAILAND, ,X, ,X,X, , ,X,X,X,X,X,X,X,X, ,X
+HV,VATICAN CITY, ,X, , ,X, , , , , ,X, , , ,X, ,X
+HZ,SAUDI ARABIA, ,X,X,X,X, , ,X,X, ,X,X,X,X,X,X, 
+I,ITALY, ,X,X, ,X, ,X,X,X,X,X,X,X,X,X,X,X
+IS0 IMO,SARDINIA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+J2,DJIBOUTI, ,X, ,X,X, , , ,X, ,X,X,X, ,X, ,X
+J3,GRENADA, ,X, , ,X, , , ,X,X,X, , , ,X,X, 
+J5,GUINEA-BISSAU, ,X, , ,X, , , ,X,X,X, ,X,X,X, , 
+J6,SAINT LUCIA, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+J7,DOMINICA, ,X, ,X,X, , ,X, ,X,X,X,X,X, , , 
+J8,SAINT VINCENT, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+JA,JAPAN, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+JD1,MINAMI TORISHIMA, , , , , , , , , , , , , , , , , 
+JD1,OGASAWARA, ,X, , ,X, , , , , , ,X,X, , , ,X
+JT,MONGOLIA, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+JW,SVALBARD, ,X,X,X,X, , ,X,X,X,X,X,X, , ,X,X
+JX,JAN MAYEN, ,X, , ,X, , , , , ,X, , , , , , 
+JY,JORDAN, ,X,X,X,X, , , ,X,X,X,X,X,X,X, , 
+K W,UNITED STATES OF AMERICA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+KG4,GUANTANAMO BAY, ,X, , ,X, , , ,X, , , , , , , , 
+KH0,MARIANA ISLANDS, ,X, , ,X, , , ,X, ,X, ,X, , , ,X
+KH1,BAKER & HOWLAND ISLANDS, , , , , , , , , , , , , , , , , 
+KH2,GUAM, ,X, ,X,X, , , , , ,X,X,X,X, , , 
+KH3,JOHNSTON ISLAND, , , , , , , , , , , , , , , , , 
+KH4,MIDWAY ISLAND, , , , , , , , , , , , , , , , , 
+KH5,PALMYRA & JARVIS ISLANDS, ,X, , ,X, , , , , ,X,X, , , , , 
+KH6 KH7,HAWAII, ,X,X,X,X, , , , , ,X,X,X,X, , ,X
+KH7K,KURE ISLAND, , , , , , , , , , , , , , , , , 
+KH8,AMERICAN SAMOA, ,X, , ,X, , , , , ,X,X,X, ,X, ,X
+KH8,SWAINS ISLAND, ,X, , ,X, , , ,X,X,X,X, , , , , 
+KH9,WAKE ISLAND, , , , , , , , , , , , , , , , , 
+KL7,ALASKA, ,X,X, ,X, , , ,X,X,X,X,X,X,X, ,X
+KP1,NAVASSA ISLAND, , , , , , , , , , , , , , , , , 
+KP2,US VIRGIN ISLANDS, ,X,X,X,X, , ,X,X,X,X,X,X,X,X, ,X
+KP3 KP4,PUERTO RICO, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+KP5,DESECHEO ISLAND, , , , , , , , , , , , , , , , , 
+LA,NORWAY, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+LU,ARGENTINA, ,X,X, ,X, , ,X,X,X,X,X,X,X,X, ,X
+LX,LUXEMBOURG, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+LY,LITHUANIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+LZ,BULGARIA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+OA,PERU, ,X, , ,X, , , ,X,X,X, ,X, ,X, ,X
+OD,LEBANON, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X, 
+OE,AUSTRIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+OH,FINLAND, ,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X
+OH0,ALAND ISLANDS, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+OH0M,MARKET REEF, ,X, ,X,X, , ,X,X,X,X,X, , , ,X,X
+OK OL,CZECH REPUBLIC, ,X, ,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+OM,SLOVAK REPUBLIC, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+ON,BELGIUM, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+OX,GREENLAND, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+OY,FAROE ISLANDS, ,X, ,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+OZ,DENMARK, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+P2,PAPUA NEW GUINEA, ,X, , ,X, , , , , ,X, , , , , , 
+P4,ARUBA, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+P5 HM,DPRK (NORTH KOREA), , , , , , , , , , , , , , , , , 
+PA,NETHERLANDS, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+PJ2,CURACAO, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+PJ4,BONAIRE, ,X,X,X,X, , , ,X,X,X,X,X,X,X, ,X
+PJ5 PJ6,SABA & SAINT EUSTATIUS, ,X, , ,X, , , ,X,X,X,X,X,X,X, ,X
+PJ7,SINT MAARTEN, ,X, , ,X, , , , , , ,X,X, ,X, ,X
+PY,BRAZIL, ,X,X,X,X, , ,X,X,X,X,X,X,X,X, ,X
+PY0F,FERNANDO DE NORONHA, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+PY0S,SAINT PETER AND PAUL ROCKS, , , , , , , , , , , , , , , , , 
+PY0T,TRINDADE & MARTIM VAZ ISLANDS, ,X, , ,X, , , , , , , , ,X, , , 
+PZ,SURINAME, ,X, ,X,X, , , ,X,X,X,X,X, ,X, , 
+R1F,FRANZ JOSEF LAND, ,X, ,X, , , , , , ,X, , , , , , 
+S0,WESTERN SAHARA, ,X, , ,X, , , ,X,X,X,X,X,X,X,X, 
+S2,BANGLADESH, ,X, , ,X, , ,X,X, ,X, ,X, , , , 
+S5,SLOVENIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+S7,SEYCHELLES ISLANDS, ,X, , ,X, , , , ,X, ,X, , , , ,X
+S9,SAO TOME & PRINCIPE, ,X, ,X,X, , , , ,X,X,X,X,X,X, ,X
+SM,SWEDEN, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+SP,POLAND, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+ST,SUDAN, , , , , , , , , , , , , , , , , 
+SU,EGYPT, ,X,X,X, , , , , , ,X, , , ,X, , 
+SV,GREECE, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+SV/A,MOUNT ATHOS, ,X, , ,X, , , ,X, ,X, , , , , , 
+SV5,DODECANESE, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+SV9,CRETE, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+T2,TUVALU, ,X, , ,X, , , , , , ,X, , ,X, , 
+T30,WESTERN KIRIBATI, ,X, , ,X, , , , , ,X, ,X, , , , 
+T31,CENTRAL KIRIBATI, ,X, , ,X, , , , , , ,X,X, , , , 
+T32,EASTERN KIRIBATI, ,X, , ,X, , , , , ,X, , , , , , 
+T33,BANABA ISLAND, , , , , , , , , , , , , , , , , 
+T5,SOMALIA, , , , , , , , , , , , , , , , , 
+T7,SAN MARINO, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+T8,PALAU, ,X, , ,X, , , , , ,X,X,X, ,X, ,X
+TA,TURKEY, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+TF,ICELAND, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+TG,GUATEMALA, ,X, , ,X, , , , ,X, , ,X, , , ,X
+TI,COSTA RICA, ,X, , ,X, , , ,X,X,X,X, , ,X, ,X
+TI9,COCOS ISLAND, , , , , , , , , , , , , , , , , 
+TJ,CAMEROON, ,X,X, ,X, , , ,X,X,X, , ,X, , ,X
+TK,CORSICA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+TL,CENTRAL AFRICAN REPUBLIC, ,X, , ,X, , , , ,X,X, ,X, ,X, , 
+TN,REPUBLIC OF THE CONGO, ,X, , ,X, , ,X,X,X,X,X,X, ,X, , 
+TR,GABON, ,X, , ,X, , ,X, ,X,X,X,X,X,X, ,X
+TT,CHAD, ,X, , ,X, , , , ,X,X, , ,X,X, , 
+TU,COTE D'IVOIRE, ,X, , ,X, , ,X, , , , , , ,X, , 
+TY,BENIN, ,X, , ,X, , , , , ,X,X,X, ,X, , 
+TZ,MALI, ,X, ,X,X, , , , ,X,X, , ,X, , , 
+UA,EUROPEAN RUSSIA, ,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X,X
+UA2,KALININGRAD, ,X, ,X,X, ,X,X,X,X,X,X,X,X,X, , 
+UA9 UA0,ASIATIC RUSSIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+UJ,UZBEKISTAN, ,X,X,X,X, , ,X,X,X,X,X,X,X,X, ,X
+UN,KAZAKHSTAN, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+UT,UKRAINE, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+V2,ANTIGUA & BARBUDA, ,X, ,X,X, , , , ,X,X,X,X,X,X, , 
+V3,BELIZE, ,X, , ,X, , ,X,X,X,X,X,X,X,X, ,X
+V4,SAINT KITTS & NEVIS, ,X, ,X,X, , , , ,X,X,X,X,X,X, , 
+V5,NAMIBIA, ,X, ,X,X, , , , , ,X, ,X,X,X, ,X
+V6,MICRONESIA, ,X, , ,X, , , , , , ,X, , , , ,X
+V7,MARSHALL ISLANDS, ,X, , ,X, , , ,X,X,X,X,X, , , , 
+V8,BRUNEI, , , , , , , , , , , , , , , , , 
+VE,CANADA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+VK,AUSTRALIA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+VK0,HEARD ISLAND, , , , , , , , , , , , , , , , , 
+VK0,MACQUARIE ISLAND, ,X, , ,X, , , , , ,X, , , , , , 
+VK9C,COCOS (KEELING) ISLANDS, ,X, ,X,X, , , , , , ,X,X, ,X, , 
+VK9L,LORD HOWE ISLAND, , , , , , , , , , , , , , , , , 
+VK9M,MELLISH REEF, , , , , , , , , , , , , , , , , 
+VK9N,NORFOLK ISLAND, ,X, , ,X, , , , , , , , , , , ,X
+VK9W,WILLIS ISLAND, , , , , , , , , , , , , , , , , 
+VK9X,CHRISTMAS ISLAND, ,X, , ,X, , ,X, ,X,X, ,X, ,X, , 
+VP2E,ANGUILLA, ,X,X, ,X, , ,X,X,X,X,X,X,X,X, ,X
+VP2M,MONTSERRAT, ,X, , ,X, , , , ,X,X, ,X, ,X, , 
+VP2V,BRITISH VIRGIN ISLANDS, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+VP5,TURKS & CAICOS ISLANDS, ,X, , ,X, , , ,X,X,X,X, ,X, , , 
+VP6,DUCIE ISLAND, ,X, , ,X, , , , , ,X,X, , , , , 
+VP6,PITCAIRN ISLAND, ,X, , ,X, , , , ,X,X,X, , , , , 
+VP8,FALKLAND ISLANDS, ,X, , ,X, , , , ,X,X,X,X,X,X, ,X
+VP8,SOUTH GEORGIA ISLAND, , , , , , , , , , , , , , , , , 
+VP8,SOUTH ORKNEY ISLANDS, , , , , , , , , , , , , , , , , 
+VP8,SOUTH SANDWICH ISLANDS, , , , , , , , , , , , , , , , , 
+VP8,SOUTH SHETLAND ISLANDS, ,X, , ,X, , , , , ,X, , , , , , 
+VP9,BERMUDA, ,X, , ,X, , , , ,X,X,X,X, ,X, , 
+VQ9,CHAGOS ISLANDS, , , , , , , , , , , , , , , , , 
+VR,HONG KONG, ,X, , ,X, , ,X,X,X,X,X,X,X,X, , 
+VU,INDIA, ,X,X, ,X, , , ,X,X,X,X,X,X,X, , 
+VU4,ANDAMAN & NICOBAR ISLANDS, ,X, , ,X, , , ,X,X, , , , , , , 
+VU7,LAKSHADWEEP ISLANDS, ,X, , ,X, , , ,X,X,X,X,X, , , , 
+XE,MEXICO, ,X, , ,X, , , , ,X,X,X,X,X,X, ,X
+XF4,REVILLAGIGEDO, , , , , , , , , , , , , , , , , 
+XT,BURKINA FASO, ,X, ,X,X, , , , ,X,X,X,X, ,X, , 
+XU,CAMBODIA, ,X, ,X,X, , , ,X,X,X,X,X,X,X, , 
+XW,LAOS, ,X, ,X,X, , , , , ,X,X,X,X,X, , 
+XX9,MACAO, , , , , , , , , , , , , , , , , 
+XZ,MYANMAR, , , , , , , , , , , , , , , , , 
+YA,AFGHANISTAN, ,X,X, ,X, , , , ,X,X, ,X, , , , 
+YB,INDONESIA, ,X, , ,X, , ,X,X,X,X,X,X,X,X, ,X
+YI,IRAQ, ,X, , ,X, , , , , ,X, , ,X, , , 
+YJ,VANUATU, ,X, , ,X, , , ,X,X,X, , , ,X, , 
+YK,SYRIA, , , , , , , , , , , , , , , , , 
+YL,LATVIA, ,X, ,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+YN,NICARAGUA, ,X, ,X, , , , , , , , ,X, , , , 
+YO,ROMANIA, ,X,X,X,X, ,X,X,X,X,X,X,X,X,X,X,X
+YS,EL SALVADOR, ,X, , ,X, , , , ,X,X,X, , , , , 
+YU,SERBIA, ,X,X,X,X, , ,X,X,X,X,X,X,X,X,X,X
+YV,VENEZUELA, ,X, ,X,X, , , ,X,X,X,X,X,X,X, , 
+YV0,AVES ISLAND, , , , , , , , , , , , , , , , , 
+Z2,ZIMBABWE, ,X, , ,X, , , , , , ,X,X,X,X, ,X
+Z3,NORTH MACEDONIA, ,X, ,X,X, , ,X,X,X,X,X,X,X,X,X,X
+Z6,REPUBLIC OF KOSOVO, ,X,X, ,X, , , ,X,X,X,X,X,X, ,X,X
+Z8,REPUBLIC OF SOUTH SUDAN, , , , , , , , , , , , , , , , , 
+ZA,ALBANIA, ,X, ,X,X, , ,X,X,X,X,X,X,X,X, ,X
+ZB2,GIBRALTAR, ,X, , ,X, , , , , ,X,X,X,X,X, ,X
+ZC4,U K BASES ON CYPRUS, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+ZD7,SAINT HELENA, ,X, , ,X, , ,X, ,X, ,X,X,X,X, , 
+ZD8,ASCENSION ISLAND, ,X, , ,X, , , , , , ,X, , , , , 
+ZD9,TRISTAN DA CUNHA & GOUGH ISLANDS, ,X, , ,X, , , ,X,X,X,X,X,X,X, , 
+ZF,CAYMAN ISLANDS, ,X, ,X,X, , , , ,X,X, ,X,X,X, ,X
+ZK3,TOKELAU ISLANDS, , , , , , , , , , , , , , , , , 
+ZL,NEW ZEALAND, ,X, ,X,X, , , ,X,X,X,X,X,X,X, ,X
+ZL7,CHATHAM ISLAND, ,X, , ,X, , , , ,X,X,X, ,X,X, , 
+ZL8,KERMADEC ISLAND, , , , , , , , , , , , , , , , , 
+ZL9,NEW ZEALAND SUBANTARCTIC ISLANDS, , , , , , , , , , , , , , , , , 
+ZP,PARAGUAY, ,X, , ,X, , , ,X,X,X,X, ,X,X, , 
+ZS,REPUBLIC OF SOUTH AFRICA, ,X, ,X,X, , , , ,X,X,X,X,X,X, ,X
+ZS8,PRINCE EDWARD & MARION ISLANDS, ,X, , ,X, , , , ,X, , , , , , , 

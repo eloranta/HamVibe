@@ -23,7 +23,6 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     QSqlQuery q(db);
-    q.exec("DROP TABLE IF EXISTS items;");
     q.exec(
         "CREATE TABLE IF NOT EXISTS items ("
         "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -42,16 +41,10 @@ MainWindow::MainWindow(QWidget *parent)
         "  [17] TEXT,"
         "  [15] TEXT,"
         "  [12] TEXT,"
-        "  [10] TEXT"
+        "  [10] TEXT,"
+        "  [6] TEXT,"
+        "  [2] TEXT"
         ");");
-
-    q.exec(
-        "INSERT INTO items (Prefix, Entity, Mix, Ph, CW, RT, SAT, [160], [80], [40], [30], [20], [17], [15], [12], [10]) "
-        "VALUES "
-        "('OH', 'Finland', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '3', '2', '1', '0'),"
-        "('K', 'USA', '10', '8', '7', '5', '2', '4', '6', '8', '9', '10', '9', '8', '6', '4'),"
-        "('G', 'England', '6', '5', '4', '3', '2', '1', '1', '3', '4', '5', '6', '4', '3', '2')"
-        ";");
 
     auto *model = new QSqlTableModel(this, db);
     model->setTable("items");
@@ -74,11 +67,14 @@ MainWindow::MainWindow(QWidget *parent)
     model->setHeaderData(14, Qt::Horizontal, "15");
     model->setHeaderData(15, Qt::Horizontal, "12");
     model->setHeaderData(16, Qt::Horizontal, "10");
+    model->setHeaderData(17, Qt::Horizontal, "6");
+    model->setHeaderData(18, Qt::Horizontal, "2");
 
     ui->tableView->setModel(model);
     ui->tableView->setSortingEnabled(true);
     ui->tableView->hideColumn(0);
     ui->tableView->resizeColumnsToContents();
+    ui->tableView->sortByColumn(1, Qt::AscendingOrder);
 }
 
 MainWindow::~MainWindow()
