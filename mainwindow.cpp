@@ -103,6 +103,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->spotView->setModel(spotsModel);
     ui->spotView->hideColumn(0);
     ui->spotView->resizeColumnsToContents();
+    ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2);
+    ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2);
+    ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
 
     setupSpotsSocket();
 }
