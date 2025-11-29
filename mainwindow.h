@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QSqlDatabase>
+#include <QTcpSocket>
+#include <QSqlTableModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -21,5 +23,13 @@ public:
 private:
     Ui::MainWindow *ui;
     QSqlDatabase db;
+    QSqlTableModel *spotsModel = nullptr;
+    QTcpSocket *spotSocket = nullptr;
+
+    void setupSpotsSocket();
+
+private slots:
+    void onSpotsConnected();
+    void onSpotsReadyRead();
 };
 #endif // MAINWINDOW_H

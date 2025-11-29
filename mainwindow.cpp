@@ -7,6 +7,8 @@
 #include <QMessageBox>
 #include <QCoreApplication>
 #include <QHeaderView>
+#include <QDebug>
+#include <QRegularExpression>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,16 +48,17 @@ MainWindow::MainWindow(QWidget *parent)
         "  [2] TEXT"
         ");");
 
+    q.exec("DROP TABLE IF EXISTS spots;");
     q.exec(
-        "CREATE TABLE IF NOT EXISTS spots ("
+        "CREATE TABLE spots ("
         "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "  spot TEXT"
+        "  time TEXT,"
+        "  call TEXT,"
+        "  freq TEXT,"
+        "  spotter TEXT,"
+        "  message TEXT"
         ");");
-    // seed test data if empty
-    q.exec("SELECT COUNT(*) FROM spots;");
-    if (q.next() && q.value(0).toInt() == 0) {
-        q.exec("INSERT INTO spots (spot) VALUES ('CQ DX DE TEST'), ('S9YY 14045 CW'), ('OH1AA 7020 SSB');");
-    }
+    q.exec("DELETE FROM spots;");
 
     auto *model = new QSqlTableModel(this, db);
     model->setTable("items");
@@ -87,18 +90,106 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableView->resizeColumnsToContents();
     ui->tableView->sortByColumn(1, Qt::AscendingOrder);
 
-    auto *spotsModel = new QSqlTableModel(this, db);
+    spotsModel = new QSqlTableModel(this, db);
     spotsModel->setTable("spots");
     spotsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
     spotsModel->select();
-    spotsModel->setHeaderData(1, Qt::Horizontal, "Spot");
+    spotsModel->setHeaderData(1, Qt::Horizontal, "Time");
+    spotsModel->setHeaderData(2, Qt::Horizontal, "Call");
+    spotsModel->setHeaderData(3, Qt::Horizontal, "Freq");
+    spotsModel->setHeaderData(4, Qt::Horizontal, "Spotter");
+    spotsModel->setHeaderData(5, Qt::Horizontal, "Message");
 
     ui->spotView->setModel(spotsModel);
     ui->spotView->hideColumn(0);
     ui->spotView->resizeColumnsToContents();
+
+    setupSpotsSocket();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::setupSpotsSocket()
+{
+    spotSocket = new QTcpSocket(this);
+    connect(spotSocket, &QTcpSocket::connected, this, &MainWindow::onSpotsConnected);
+    connect(spotSocket, &QTcpSocket::readyRead, this, &MainWindow::onSpotsReadyRead);
+    spotSocket->connectToHost("ham.connect.fi", 7300);
+}
+
+void MainWindow::onSpotsConnected()
+{
+    spotSocket->write("oh2lhe\n");
+}
+
+void MainWindow::onSpotsReadyRead()
+{
+    if (!spotsModel)
+        return;
+
+    const QByteArray data = spotSocket->readAll();
+    qDebug() << "Spots data received:" << data;
+    const QList<QByteArray> lines = data.split('\n');
+
+    QSqlQuery insert(db);
+    insert.prepare(
+        "INSERT INTO spots ([time], [call], [freq], [spotter], [message]) "
+        "VALUES (:time, :call, :freq, :spotter, :message)");
+
+    bool inserted = false;
+    for (const QByteArray &lineRaw : lines)
+    {
+        const QString line = QString::fromUtf8(lineRaw).trimmed();
+        if (line.isEmpty())
+            continue;
+        if (!line.startsWith("DX de "))
+            continue;
+
+        // Parse fields by fixed columns:
+        // spotter: cols 7-? until ':'
+        // freq: next, ends by col 24
+        // call: starts col 29, ends col 38
+        // message: cols 30-69
+        // time: col 71 onwards (4 digits)
+        QString spotter;
+        QString freq;
+        QString call;
+        QString message;
+        QString time;
+
+        // Use regex to capture components with spaces preserved as in the example
+        QRegularExpression re(
+            R"(DX de\s+(\S+):\s+(\S+)\s+(\S+)\s+(.{0,39}?)\s+(\d{4})Z?)");
+        QRegularExpressionMatch m = re.match(line);
+        if (m.hasMatch()) {
+            spotter = m.captured(1);
+            freq = m.captured(2);
+            call = m.captured(3);
+            message = m.captured(4).trimmed();
+            time = m.captured(5);
+            qDebug() << "Parsed:" << spotter << freq << call << message << time;
+        } else {
+            qDebug() << "Parse failed for line:" << line;
+            continue;
+        }
+
+        insert.bindValue(":time", time);
+        insert.bindValue(":call", call);
+        insert.bindValue(":freq", freq);
+        insert.bindValue(":spotter", spotter);
+        insert.bindValue(":message", message);
+        if (insert.exec())
+            inserted = true;
+        else
+            qDebug() << "Insert failed:" << insert.lastError().text();
+    }
+
+    if (inserted)
+    {
+        spotsModel->select();
+        ui->spotView->scrollToBottom();
+    }
 }
