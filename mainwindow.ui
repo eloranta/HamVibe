@@ -22,17 +22,27 @@
       </property>
       <widget class="QWidget" name="Spots">
        <attribute name="title">
-        <string>Tab 1</string>
+        <string>Spots</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_2">
         <item row="0" column="0">
-         <widget class="QTableView" name="spotView"/>
+         <widget class="QTableView" name="spotView">
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderVisible">
+           <bool>false</bool>
+          </attribute>
+          <attribute name="verticalHeaderHighlightSections">
+           <bool>false</bool>
+          </attribute>
+         </widget>
         </item>
        </layout>
       </widget>
       <widget class="QWidget" name="Log">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>Log</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">

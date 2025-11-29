@@ -46,6 +46,17 @@ MainWindow::MainWindow(QWidget *parent)
         "  [2] TEXT"
         ");");
 
+    q.exec(
+        "CREATE TABLE IF NOT EXISTS spots ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  spot TEXT"
+        ");");
+    // seed test data if empty
+    q.exec("SELECT COUNT(*) FROM spots;");
+    if (q.next() && q.value(0).toInt() == 0) {
+        q.exec("INSERT INTO spots (spot) VALUES ('CQ DX DE TEST'), ('S9YY 14045 CW'), ('OH1AA 7020 SSB');");
+    }
+
     auto *model = new QSqlTableModel(this, db);
     model->setTable("items");
     model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -75,6 +86,16 @@ MainWindow::MainWindow(QWidget *parent)
     ui->tableView->hideColumn(0);
     ui->tableView->resizeColumnsToContents();
     ui->tableView->sortByColumn(1, Qt::AscendingOrder);
+
+    auto *spotsModel = new QSqlTableModel(this, db);
+    spotsModel->setTable("spots");
+    spotsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    spotsModel->select();
+    spotsModel->setHeaderData(1, Qt::Horizontal, "Spot");
+
+    ui->spotView->setModel(spotsModel);
+    ui->spotView->hideColumn(0);
+    ui->spotView->resizeColumnsToContents();
 }
 
 MainWindow::~MainWindow()
