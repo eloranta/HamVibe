@@ -5,6 +5,8 @@
 #include <QSqlQuery>
 #include <QSqlTableModel>
 #include <QMessageBox>
+#include <QCoreApplication>
+#include <QHeaderView>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
 
     db = QSqlDatabase::addDatabase("QSQLITE");
-    db.setDatabaseName(":memory:");
+    db.setDatabaseName(QCoreApplication::applicationDirPath() + "/hamvibe.db");
     if (!db.open())
     {
         QMessageBox::critical(this, "DB error", db.lastError().text());
@@ -21,14 +23,61 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     QSqlQuery q(db);
-    q.exec("CREATE TABLE items (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, value INTEGER);");
-    q.exec("INSERT INTO items (name, value) VALUES ('Alpha', 1), ('Bravo', 2), ('Charlie', 3);");
+    q.exec("DROP TABLE IF EXISTS items;");
+    q.exec(
+        "CREATE TABLE IF NOT EXISTS items ("
+        "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "  Prefix TEXT,"
+        "  Entity TEXT,"
+        "  Mix TEXT,"
+        "  Ph TEXT,"
+        "  CW TEXT,"
+        "  RT TEXT,"
+        "  SAT TEXT,"
+        "  [160] TEXT,"
+        "  [80] TEXT,"
+        "  [40] TEXT,"
+        "  [30] TEXT,"
+        "  [20] TEXT,"
+        "  [17] TEXT,"
+        "  [15] TEXT,"
+        "  [12] TEXT,"
+        "  [10] TEXT"
+        ");");
+
+    q.exec(
+        "INSERT INTO items (Prefix, Entity, Mix, Ph, CW, RT, SAT, [160], [80], [40], [30], [20], [17], [15], [12], [10]) "
+        "VALUES "
+        "('OH', 'Finland', '5', '4', '3', '2', '1', '1', '2', '3', '4', '5', '3', '2', '1', '0'),"
+        "('K', 'USA', '10', '8', '7', '5', '2', '4', '6', '8', '9', '10', '9', '8', '6', '4'),"
+        "('G', 'England', '6', '5', '4', '3', '2', '1', '1', '3', '4', '5', '6', '4', '3', '2')"
+        ";");
 
     auto *model = new QSqlTableModel(this, db);
     model->setTable("items");
+    model->setEditStrategy(QSqlTableModel::OnFieldChange);
     model->select();
+
+    model->setHeaderData(1, Qt::Horizontal, "Prefix");
+    model->setHeaderData(2, Qt::Horizontal, "Entity");
+    model->setHeaderData(3, Qt::Horizontal, "Mix");
+    model->setHeaderData(4, Qt::Horizontal, "Ph");
+    model->setHeaderData(5, Qt::Horizontal, "CW");
+    model->setHeaderData(6, Qt::Horizontal, "RT");
+    model->setHeaderData(7, Qt::Horizontal, "SAT");
+    model->setHeaderData(8, Qt::Horizontal, "160");
+    model->setHeaderData(9, Qt::Horizontal, "80");
+    model->setHeaderData(10, Qt::Horizontal, "40");
+    model->setHeaderData(11, Qt::Horizontal, "30");
+    model->setHeaderData(12, Qt::Horizontal, "20");
+    model->setHeaderData(13, Qt::Horizontal, "17");
+    model->setHeaderData(14, Qt::Horizontal, "15");
+    model->setHeaderData(15, Qt::Horizontal, "12");
+    model->setHeaderData(16, Qt::Horizontal, "10");
+
     ui->tableView->setModel(model);
     ui->tableView->setSortingEnabled(true);
+    ui->tableView->hideColumn(0);
     ui->tableView->resizeColumnsToContents();
 }
 
