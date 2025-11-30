@@ -243,17 +243,23 @@ void MainWindow::parseCtyFile()
         QString offset = parts.at(6).trimmed();
 
         // Do not include the main prefix (parts[7]); gather any list starting after it.
-        QString prefix;
+        QStringList prefixes;
+        auto addTokens = [&prefixes](const QString &segment) {
+            const QString cleaned = segment.endsWith(';') ? segment.left(segment.size() - 1) : segment;
+            for (const QString &rawToken : cleaned.split(',', Qt::SkipEmptyParts))
+            {
+                const QString token = rawToken.trimmed();
+                if (token.isEmpty())
+                    continue;
+                if (token.at(0).isLetterOrNumber())
+                    prefixes << token;
+            }
+        };
+
         if (parts.size() > 8)
         {
-            QStringList listParts;
             for (int idx = 8; idx < parts.size(); ++idx)
-            {
-                const QString token = parts.at(idx).trimmed();
-                if (!token.isEmpty())
-                    listParts << token;
-            }
-            prefix = listParts.join(' ');
+                addTokens(parts.at(idx));
         }
 
         // Pull in continuation lines (comma-separated prefixes ending with ';').
@@ -269,19 +275,16 @@ void MainWindow::parseCtyFile()
             if (!cont.isEmpty() && !cont.at(0).isSpace())
                 break;
 
-            prefix += ' ' + contTrimmed;
+            addTokens(contTrimmed);
             ++i;
 
             if (contTrimmed.endsWith(';'))
                 break;
         }
 
-        if (prefix.endsWith(';'))
-            prefix.chop(1);
-
         QDebug dbg = qDebug().noquote();
         dbg << "CTY:" << country << cqZone << ituZone << continent << latitude << longitude << offset;
-        if (!prefix.isEmpty())
-            dbg << prefix;
+        if (!prefixes.isEmpty())
+            dbg << prefixes.join(',');
     }
 }
