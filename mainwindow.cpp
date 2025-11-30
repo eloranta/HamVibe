@@ -213,6 +213,7 @@ void MainWindow::parseCtyFile()
         return;
     }
 
+    prefixToCountry.clear();
     QTextStream in(&file);
     QStringList lines;
     while (!in.atEnd())
@@ -290,9 +291,16 @@ void MainWindow::parseCtyFile()
                 break;
         }
 
-        QDebug dbg = qDebug().noquote();
-        dbg << "CTY:" << country << cqZone << ituZone << continent << latitude << longitude << offset;
-        if (!prefixes.isEmpty())
-            dbg << prefixes.join(',');
+        for (const QString &p : prefixes)
+            prefixToCountry.insert(p, country);
+
+        //QDebug dbg = qDebug().noquote();
+        //dbg << "CTY:" << country << cqZone << ituZone << continent << latitude << longitude << offset;
+        //if (!prefixes.isEmpty())
+        //    dbg << prefixes.join(',');
     }
+
+    qDebug().noquote() << "Prefix map entries:" << prefixToCountry.size();
+    for (auto it = prefixToCountry.constBegin(); it != prefixToCountry.constEnd(); ++it)
+        qDebug().noquote() << "MAP" << it.key() << ":" << it.value();
 }

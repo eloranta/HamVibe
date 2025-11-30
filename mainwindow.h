@@ -7,6 +7,7 @@
 #include <QSqlTableModel>
 #include <QFile>
 #include <QTextStream>
+#include <QHash>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,6 +28,7 @@ private:
     QSqlDatabase db;
     QSqlTableModel *spotsModel = nullptr;
     QTcpSocket *spotSocket = nullptr;
+    QHash<QString, QString> prefixToCountry;
 
     void setupSpotsSocket();
     void parseCtyFile();
