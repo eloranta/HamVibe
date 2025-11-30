@@ -11,6 +11,7 @@
 #include <QRegularExpression>
 #include <QFile>
 #include <QTextStream>
+#include <cmath>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
         "  time TEXT,"
         "  call TEXT,"
         "  country TEXT,"
+        "  band TEXT,"
         "  freq TEXT,"
         "  spotter TEXT,"
         "  message TEXT"
@@ -102,9 +104,10 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setHeaderData(1, Qt::Horizontal, "Time");
     spotsModel->setHeaderData(2, Qt::Horizontal, "Call");
     spotsModel->setHeaderData(3, Qt::Horizontal, "Country");
-    spotsModel->setHeaderData(4, Qt::Horizontal, "Freq");
-    spotsModel->setHeaderData(5, Qt::Horizontal, "Spotter");
-    spotsModel->setHeaderData(6, Qt::Horizontal, "Message");
+    spotsModel->setHeaderData(4, Qt::Horizontal, "Band");
+    spotsModel->setHeaderData(5, Qt::Horizontal, "Freq");
+    spotsModel->setHeaderData(6, Qt::Horizontal, "Spotter");
+    spotsModel->setHeaderData(7, Qt::Horizontal, "Message");
 
     ui->spotView->setModel(spotsModel);
     ui->spotView->resizeColumnsToContents();
@@ -112,6 +115,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
     ui->spotView->setColumnWidth(5, ui->spotView->columnWidth(5) * 2);
     ui->spotView->setColumnWidth(6, ui->spotView->columnWidth(6) * 2);
+    ui->spotView->setColumnWidth(7, ui->spotView->columnWidth(7) * 2);
 
     setupSpotsSocket();
     parseCtyFile();
@@ -146,8 +150,8 @@ void MainWindow::onSpotsReadyRead()
 
     QSqlQuery insert(db);
     insert.prepare(
-        "INSERT INTO spots ([time], [call], [country], [freq], [spotter], [message]) "
-        "VALUES (:time, :call, :country, :freq, :spotter, :message)");
+        "INSERT INTO spots ([time], [call], [country], [band], [freq], [spotter], [message]) "
+        "VALUES (:time, :call, :country, :band, :freq, :spotter, :message)");
 
     bool inserted = false;
     for (const QByteArray &lineRaw : lines)
@@ -187,11 +191,52 @@ void MainWindow::onSpotsReadyRead()
         }
 
         const QString country = findCountryForCall(call);
+        bool okFreq = false;
+        const double freqVal = freq.toDouble(&okFreq);
+        QString band = "0";
+        QString freqDisplay = freq;
+        if (okFreq && freqVal > 0)
+        {
+            double freqMHzRaw = freqVal;
+            if (freqMHzRaw > 1000.0)
+                freqMHzRaw /= 1000.0; // assume kHz input
+            const double freqMHzTrunc = std::floor(freqMHzRaw * 100.0) / 100.0;
+
+            struct BandMap { double mhz; int meters; };
+            static const QVector<BandMap> bandMap = {
+                {144.0, 2},
+                {50.0, 6},
+                {28.0, 10},
+                {24.0, 12},
+                {21.0, 15},
+                {18.0, 17},
+                {14.0, 20},
+                {10.0, 30},
+                {7.0, 40},
+                {3.5, 80},
+                {1.6, 160},
+            };
+            int meters = 0;
+            for (const BandMap &entry : bandMap)
+            {
+                if (freqMHzTrunc >= entry.mhz)
+                {
+                    meters = entry.meters;
+                    break;
+                }
+            }
+
+            if (meters > 0)
+                band = QString("%1m").arg(meters);
+            else
+                band.clear();
+        }
 
         insert.bindValue(":time", time);
         insert.bindValue(":call", call);
         insert.bindValue(":country", country);
-        insert.bindValue(":freq", freq);
+        insert.bindValue(":band", band);
+        insert.bindValue(":freq", freqDisplay);
         insert.bindValue(":spotter", spotter);
         insert.bindValue(":message", message);
         if (insert.exec())
