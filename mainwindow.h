@@ -5,6 +5,8 @@
 #include <QSqlDatabase>
 #include <QTcpSocket>
 #include <QSqlTableModel>
+#include <QFile>
+#include <QTextStream>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -27,6 +29,7 @@ private:
     QTcpSocket *spotSocket = nullptr;
 
     void setupSpotsSocket();
+    void parseCtyFile();
 
 private slots:
     void onSpotsConnected();

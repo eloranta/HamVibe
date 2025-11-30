@@ -9,6 +9,8 @@
 #include <QHeaderView>
 #include <QDebug>
 #include <QRegularExpression>
+#include <QFile>
+#include <QTextStream>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -108,7 +110,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2);
     ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
 
-    setupSpotsSocket();
+    //setupSpotsSocket();
+    parseCtyFile();
 }
 
 MainWindow::~MainWindow()
@@ -197,5 +200,88 @@ void MainWindow::onSpotsReadyRead()
         while (spotsModel->canFetchMore())
             spotsModel->fetchMore();
         ui->spotView->scrollToBottom();
+    }
+}
+
+void MainWindow::parseCtyFile()
+{
+    const QString path = QCoreApplication::applicationDirPath() + "/cty.dat";
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        qDebug() << "cty.dat open failed:" << path;
+        return;
+    }
+
+    QTextStream in(&file);
+    QStringList lines;
+    while (!in.atEnd())
+        lines << in.readLine();
+
+    int i = 0;
+    while (i < lines.size())
+    {
+        QString line = lines.at(i++);
+        const QString trimmed = line.trimmed();
+        if (trimmed.isEmpty() || trimmed.startsWith('#'))
+            continue;
+
+        // Records start at column 1; following indented lines extend the prefix list.
+        if (line.at(0).isSpace())
+            continue;
+
+        QStringList parts = line.split(':', Qt::KeepEmptyParts);
+        if (parts.size() < 8)
+            continue;
+
+        QString country = parts.at(0).trimmed();
+        QString cqZone = parts.at(1).trimmed();
+        QString ituZone = parts.at(2).trimmed();
+        QString continent = parts.at(3).trimmed();
+        QString latitude = parts.at(4).trimmed();
+        QString longitude = parts.at(5).trimmed();
+        QString offset = parts.at(6).trimmed();
+
+        // Do not include the main prefix (parts[7]); gather any list starting after it.
+        QString prefix;
+        if (parts.size() > 8)
+        {
+            QStringList listParts;
+            for (int idx = 8; idx < parts.size(); ++idx)
+            {
+                const QString token = parts.at(idx).trimmed();
+                if (!token.isEmpty())
+                    listParts << token;
+            }
+            prefix = listParts.join(' ');
+        }
+
+        // Pull in continuation lines (comma-separated prefixes ending with ';').
+        while (i < lines.size())
+        {
+            const QString cont = lines.at(i);
+            const QString contTrimmed = cont.trimmed();
+            if (contTrimmed.isEmpty() || contTrimmed.startsWith('#'))
+            {
+                ++i;
+                continue;
+            }
+            if (!cont.isEmpty() && !cont.at(0).isSpace())
+                break;
+
+            prefix += ' ' + contTrimmed;
+            ++i;
+
+            if (contTrimmed.endsWith(';'))
+                break;
+        }
+
+        if (prefix.endsWith(';'))
+            prefix.chop(1);
+
+        QDebug dbg = qDebug().noquote();
+        dbg << "CTY:" << country << cqZone << ituZone << continent << latitude << longitude << offset;
+        if (!prefix.isEmpty())
+            dbg << prefix;
     }
 }
