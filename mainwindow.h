@@ -32,6 +32,7 @@ private:
 
     void setupSpotsSocket();
     void parseCtyFile();
+    QString findCountryForCall(const QString &call) const;
 
 private slots:
     void onSpotsConnected();

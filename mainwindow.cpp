@@ -56,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent)
         "  id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "  time TEXT,"
         "  call TEXT,"
+        "  country TEXT,"
         "  freq TEXT,"
         "  spotter TEXT,"
         "  message TEXT"
@@ -100,17 +101,19 @@ MainWindow::MainWindow(QWidget *parent)
         spotsModel->fetchMore();
     spotsModel->setHeaderData(1, Qt::Horizontal, "Time");
     spotsModel->setHeaderData(2, Qt::Horizontal, "Call");
-    spotsModel->setHeaderData(3, Qt::Horizontal, "Freq");
-    spotsModel->setHeaderData(4, Qt::Horizontal, "Spotter");
-    spotsModel->setHeaderData(5, Qt::Horizontal, "Message");
+    spotsModel->setHeaderData(3, Qt::Horizontal, "Country");
+    spotsModel->setHeaderData(4, Qt::Horizontal, "Freq");
+    spotsModel->setHeaderData(5, Qt::Horizontal, "Spotter");
+    spotsModel->setHeaderData(6, Qt::Horizontal, "Message");
 
     ui->spotView->setModel(spotsModel);
     ui->spotView->resizeColumnsToContents();
     ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2);
-    ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2);
     ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
+    ui->spotView->setColumnWidth(5, ui->spotView->columnWidth(5) * 2);
+    ui->spotView->setColumnWidth(6, ui->spotView->columnWidth(6) * 2);
 
-    //setupSpotsSocket();
+    setupSpotsSocket();
     parseCtyFile();
 }
 
@@ -143,8 +146,8 @@ void MainWindow::onSpotsReadyRead()
 
     QSqlQuery insert(db);
     insert.prepare(
-        "INSERT INTO spots ([time], [call], [freq], [spotter], [message]) "
-        "VALUES (:time, :call, :freq, :spotter, :message)");
+        "INSERT INTO spots ([time], [call], [country], [freq], [spotter], [message]) "
+        "VALUES (:time, :call, :country, :freq, :spotter, :message)");
 
     bool inserted = false;
     for (const QByteArray &lineRaw : lines)
@@ -183,8 +186,11 @@ void MainWindow::onSpotsReadyRead()
             continue;
         }
 
+        const QString country = findCountryForCall(call);
+
         insert.bindValue(":time", time);
         insert.bindValue(":call", call);
+        insert.bindValue(":country", country);
         insert.bindValue(":freq", freq);
         insert.bindValue(":spotter", spotter);
         insert.bindValue(":message", message);
@@ -292,7 +298,7 @@ void MainWindow::parseCtyFile()
         }
 
         for (const QString &p : prefixes)
-            prefixToCountry.insert(p, country);
+            prefixToCountry.insert(p.toUpper(), country);
 
         //QDebug dbg = qDebug().noquote();
         //dbg << "CTY:" << country << cqZone << ituZone << continent << latitude << longitude << offset;
@@ -303,4 +309,52 @@ void MainWindow::parseCtyFile()
     qDebug().noquote() << "Prefix map entries:" << prefixToCountry.size();
     for (auto it = prefixToCountry.constBegin(); it != prefixToCountry.constEnd(); ++it)
         qDebug().noquote() << "MAP" << it.key() << ":" << it.value();
+}
+
+QString MainWindow::findCountryForCall(const QString &call) const
+{
+    if (call.isEmpty() || prefixToCountry.isEmpty())
+        return {};
+
+    const QStringList parts = call.toUpper().split('/', Qt::SkipEmptyParts);
+    QString primaryToken;
+    for (const QString &p : parts)
+    {
+        if (p.contains(QRegularExpression("\\d")))
+        {
+            if (p.size() > primaryToken.size())
+                primaryToken = p;
+        }
+    }
+
+    QStringList candidates;
+    if (!primaryToken.isEmpty())
+        candidates << primaryToken;
+    for (const QString &p : parts)
+    {
+        if (p != primaryToken)
+            candidates << p;
+    }
+    if (candidates.isEmpty())
+        candidates << call.toUpper();
+
+    QString bestCountry;
+    int bestLen = 0;
+    for (const QString &candidate : candidates)
+    {
+        for (auto it = prefixToCountry.constBegin(); it != prefixToCountry.constEnd(); ++it)
+        {
+            const QString &prefix = it.key();
+            if (candidate.startsWith(prefix, Qt::CaseInsensitive) && prefix.size() > bestLen)
+            {
+                bestLen = prefix.size();
+                bestCountry = it.value();
+            }
+        }
+
+        if (bestLen > 0)
+            break;
+    }
+
+    return bestCountry;
 }
