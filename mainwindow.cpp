@@ -248,9 +248,17 @@ void MainWindow::parseCtyFile()
             const QString cleaned = segment.endsWith(';') ? segment.left(segment.size() - 1) : segment;
             for (const QString &rawToken : cleaned.split(',', Qt::SkipEmptyParts))
             {
-                const QString token = rawToken.trimmed();
+                QString token = rawToken.trimmed();
                 if (token.isEmpty())
                     continue;
+
+                // Drop any bracketed numeric suffixes like [31] or (31), including repeats
+                static const QRegularExpression suffixRe(R"(\s*(\[\d+\]|\(\d+\))\s*)");
+                token.remove(suffixRe);
+                token = token.trimmed();
+                if (token.isEmpty())
+                    continue;
+
                 if (token.at(0).isLetterOrNumber())
                     prefixes << token;
             }
