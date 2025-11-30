@@ -94,6 +94,8 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setTable("spots");
     spotsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
     spotsModel->select();
+    while (spotsModel->canFetchMore())
+        spotsModel->fetchMore();
     spotsModel->setHeaderData(1, Qt::Horizontal, "Time");
     spotsModel->setHeaderData(2, Qt::Horizontal, "Call");
     spotsModel->setHeaderData(3, Qt::Horizontal, "Freq");
@@ -101,7 +103,6 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setHeaderData(5, Qt::Horizontal, "Message");
 
     ui->spotView->setModel(spotsModel);
-    ui->spotView->hideColumn(0);
     ui->spotView->resizeColumnsToContents();
     ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2);
     ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2);
@@ -193,6 +194,8 @@ void MainWindow::onSpotsReadyRead()
     if (inserted)
     {
         spotsModel->select();
+        while (spotsModel->canFetchMore())
+            spotsModel->fetchMore();
         ui->spotView->scrollToBottom();
     }
 }
