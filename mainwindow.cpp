@@ -300,6 +300,11 @@ void MainWindow::parseCtyFile()
         QString longitude = parts.at(5).trimmed();
         QString offset = parts.at(6).trimmed();
 
+        // Skip entities whose principal prefix is marked with '*' (deleted/invalid in cty.dat).
+        const QString mainPrefix = parts.at(7).trimmed();
+        if (mainPrefix.startsWith('*'))
+            continue;
+
         // Do not include the main prefix (parts[7]); gather any list starting after it.
         QStringList prefixes;
         auto addTokens = [&prefixes](const QString &segment) {
