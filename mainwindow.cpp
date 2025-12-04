@@ -111,7 +111,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->spotView->setModel(spotsModel);
     ui->spotView->resizeColumnsToContents();
-    ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2);
+    ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2); // Call
+    ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2); // Country
     ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
     ui->spotView->setColumnWidth(5, ui->spotView->columnWidth(5) * 2);
     ui->spotView->setColumnWidth(6, ui->spotView->columnWidth(6) * 2);
@@ -145,7 +146,7 @@ void MainWindow::onSpotsReadyRead()
         return;
 
     const QByteArray data = spotSocket->readAll();
-    qDebug() << "Spots data received:" << data;
+    // qDebug() << "Spots data received:" << data;
     const QList<QByteArray> lines = data.split('\n');
 
     QSqlQuery insert(db);
@@ -190,10 +191,13 @@ void MainWindow::onSpotsReadyRead()
             continue;
         }
 
-        const QString country = findCountryForCall(call);
+        QString country = findCountryForCall(call);
+        if (country.isEmpty())
+            country = "Unknown Country";
         bool okFreq = false;
         const double freqVal = freq.toDouble(&okFreq);
         QString band = "0";
+        int meters = 0;
         QString freqDisplay = freq;
         if (okFreq && freqVal > 0)
         {
@@ -216,7 +220,6 @@ void MainWindow::onSpotsReadyRead()
                 {3.5, 80},
                 {1.6, 160},
             };
-            int meters = 0;
             for (const BandMap &entry : bandMap)
             {
                 if (freqMHzTrunc >= entry.mhz)
@@ -231,6 +234,9 @@ void MainWindow::onSpotsReadyRead()
             else
                 band.clear();
         }
+
+        if (meters > 0 && !country.isEmpty() && !isLogSlotEmpty(country, meters))
+            continue;
 
         insert.bindValue(":time", time);
         insert.bindValue(":call", call);
@@ -401,5 +407,46 @@ QString MainWindow::findCountryForCall(const QString &call) const
             break;
     }
 
-    return bestCountry;
+    return bestCountry.toUpper();
+}
+
+bool MainWindow::isLogSlotEmpty(const QString &country, int meters) const
+{
+    static const QSet<int> allowedBands = {160, 80, 40, 30, 20, 17, 15, 12, 10, 6, 2};
+    if (!allowedBands.contains(meters))
+        return true;
+
+    const QString column = QString("[%1]").arg(meters);
+    QSqlQuery q(db);
+    q.prepare(QString("SELECT %1 FROM items WHERE UPPER(Entity) = UPPER(:country) LIMIT 1").arg(column));
+    q.bindValue(":country", country);
+    if (q.exec() && q.next())
+    {
+        const QString val = q.value(0).toString().trimmed();
+        return val.isEmpty();
+    }
+
+    // Try a fallback: match by prefix mapped to the same country
+    QString altPrefix;
+    for (auto it = prefixToCountry.constBegin(); it != prefixToCountry.constEnd(); ++it)
+    {
+        if (it.value().compare(country, Qt::CaseInsensitive) == 0)
+        {
+            altPrefix = it.key();
+            break;
+        }
+    }
+    if (!altPrefix.isEmpty())
+    {
+        QSqlQuery q2(db);
+        q2.prepare(QString("SELECT %1 FROM items WHERE UPPER(Prefix) = UPPER(:prefix) LIMIT 1").arg(column));
+        q2.bindValue(":prefix", altPrefix);
+        if (q2.exec() && q2.next())
+        {
+            const QString val = q2.value(0).toString().trimmed();
+            return val.isEmpty();
+        }
+    }
+
+    return true;
 }

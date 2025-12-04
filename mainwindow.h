@@ -7,6 +7,7 @@
 #include <QSqlTableModel>
 #include <QFile>
 #include <QTextStream>
+#include <QSet>
 #include <QHash>
 
 QT_BEGIN_NAMESPACE
@@ -33,6 +34,7 @@ private:
     void setupSpotsSocket();
     void parseCtyFile();
     QString findCountryForCall(const QString &call) const;
+    bool isLogSlotEmpty(const QString &country, int meters) const;
 
 private slots:
     void onSpotsConnected();
