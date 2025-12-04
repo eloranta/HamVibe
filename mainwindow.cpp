@@ -229,6 +229,10 @@ void MainWindow::onSpotsReadyRead()
                 }
             }
 
+            // Skip spots in the 5 MHz range (60m not supported).
+            if (freqMHzTrunc >= 5.0 && freqMHzTrunc < 6.0)
+                meters = 0;
+
             if (meters > 0)
                 band = QString("%1m").arg(meters);
             else
