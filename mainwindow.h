@@ -9,6 +9,7 @@
 #include <QTextStream>
 #include <QSet>
 #include <QHash>
+#include <QSortFilterProxyModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -28,6 +29,7 @@ private:
     Ui::MainWindow *ui;
     QSqlDatabase db;
     QSqlTableModel *spotsModel = nullptr;
+    QSortFilterProxyModel *spotsProxy = nullptr;
     QTcpSocket *spotSocket = nullptr;
     QHash<QString, QString> prefixToCountry;
 
@@ -35,6 +37,7 @@ private:
     void parseCtyFile();
     QString findCountryForCall(const QString &call) const;
     bool isLogSlotEmpty(const QString &country, int meters) const;
+    void updateBandFilter();
 
 private slots:
     void onSpotsConnected();

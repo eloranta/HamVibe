@@ -11,6 +11,7 @@
 #include <QRegularExpression>
 #include <QFile>
 #include <QTextStream>
+#include <QCheckBox>
 #include <cmath>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -109,7 +110,11 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setHeaderData(6, Qt::Horizontal, "Spotter");
     spotsModel->setHeaderData(7, Qt::Horizontal, "Message");
 
-    ui->spotView->setModel(spotsModel);
+    spotsProxy = new QSortFilterProxyModel(this);
+    spotsProxy->setSourceModel(spotsModel);
+    spotsProxy->setFilterKeyColumn(4); // Band column (0-based)
+    spotsProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    ui->spotView->setModel(spotsProxy);
     ui->spotView->resizeColumnsToContents();
     ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2); // Call
     ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2); // Country
@@ -117,6 +122,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->spotView->setColumnWidth(5, ui->spotView->columnWidth(5) * 2);
     ui->spotView->setColumnWidth(6, ui->spotView->columnWidth(6) * 2);
     ui->spotView->setColumnWidth(7, ui->spotView->columnWidth(7) * 2);
+
+    const QList<QCheckBox *> bandChecks = {
+        ui->checkBox160, ui->checkBox80, ui->checkBox40, ui->checkBox30, ui->checkBox20,
+        ui->checkBox17, ui->checkBox15, ui->checkBox12, ui->checkBox10, ui->checkBox6, ui->checkBox2
+    };
+    for (QCheckBox *cb : bandChecks)
+        connect(cb, &QCheckBox::toggled, this, &MainWindow::updateBandFilter);
+    updateBandFilter();
 
     setupSpotsSocket();
     parseCtyFile();
@@ -262,6 +275,46 @@ void MainWindow::onSpotsReadyRead()
             spotsModel->fetchMore();
         ui->spotView->scrollToBottom();
     }
+}
+
+void MainWindow::updateBandFilter()
+{
+    if (!spotsProxy)
+        return;
+
+    QStringList selected;
+    auto addIfChecked = [&selected](QCheckBox *cb) {
+        if (cb && cb->isChecked())
+            selected << (cb->text() + "m");
+    };
+
+    addIfChecked(ui->checkBox160);
+    addIfChecked(ui->checkBox80);
+    addIfChecked(ui->checkBox40);
+    addIfChecked(ui->checkBox30);
+    addIfChecked(ui->checkBox20);
+    addIfChecked(ui->checkBox17);
+    addIfChecked(ui->checkBox15);
+    addIfChecked(ui->checkBox12);
+    addIfChecked(ui->checkBox10);
+    addIfChecked(ui->checkBox6);
+    addIfChecked(ui->checkBox2);
+
+    QRegularExpression re;
+    if (selected.isEmpty())
+    {
+        re = QRegularExpression(".*"); // show all when nothing selected (debug-friendly)
+    }
+    else
+    {
+        QStringList escaped;
+        for (const QString &b : selected)
+            escaped << QRegularExpression::escape(b);
+        re = QRegularExpression(QString("^(%1)$").arg(escaped.join('|')),
+                                QRegularExpression::CaseInsensitiveOption);
+    }
+
+    spotsProxy->setFilterRegularExpression(re);
 }
 
 void MainWindow::parseCtyFile()
