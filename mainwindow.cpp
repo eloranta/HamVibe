@@ -62,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
         "  band TEXT,"
         "  freq TEXT,"
         "  spotter TEXT,"
+        "  continent TEXT,"
         "  message TEXT"
         ");");
     q.exec("DELETE FROM spots;");
@@ -108,20 +109,24 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setHeaderData(4, Qt::Horizontal, "Band");
     spotsModel->setHeaderData(5, Qt::Horizontal, "Freq");
     spotsModel->setHeaderData(6, Qt::Horizontal, "Spotter");
-    spotsModel->setHeaderData(7, Qt::Horizontal, "Message");
+    spotsModel->setHeaderData(7, Qt::Horizontal, "Continent");
+    spotsModel->setHeaderData(8, Qt::Horizontal, "Message");
 
     spotsProxy = new QSortFilterProxyModel(this);
     spotsProxy->setSourceModel(spotsModel);
     spotsProxy->setFilterKeyColumn(4); // Band column (0-based)
     spotsProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     ui->spotView->setModel(spotsProxy);
+    ui->spotView->hideColumn(0); // hide id
     ui->spotView->resizeColumnsToContents();
+    ui->spotView->hideColumn(7); // hide continent
     ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2); // Call
     ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2); // Country
     ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
     ui->spotView->setColumnWidth(5, ui->spotView->columnWidth(5) * 2);
     ui->spotView->setColumnWidth(6, ui->spotView->columnWidth(6) * 2);
     ui->spotView->setColumnWidth(7, ui->spotView->columnWidth(7) * 2);
+    ui->spotView->setColumnWidth(8, ui->spotView->columnWidth(8) * 2);
 
     const QList<QCheckBox *> bandChecks = {
         ui->checkBox160, ui->checkBox80, ui->checkBox40, ui->checkBox30, ui->checkBox20,
@@ -164,8 +169,8 @@ void MainWindow::onSpotsReadyRead()
 
     QSqlQuery insert(db);
     insert.prepare(
-        "INSERT INTO spots ([time], [call], [country], [band], [freq], [spotter], [message]) "
-        "VALUES (:time, :call, :country, :band, :freq, :spotter, :message)");
+        "INSERT INTO spots ([time], [call], [country], [band], [freq], [spotter], [continent], [message]) "
+        "VALUES (:time, :call, :country, :band, :freq, :spotter, :continent, :message)");
 
     bool inserted = false;
     for (const QByteArray &lineRaw : lines)
@@ -187,6 +192,7 @@ void MainWindow::onSpotsReadyRead()
         QString call;
         QString message;
         QString time;
+        QString continent;
 
         // Use regex to capture components with spaces preserved as in the example
         QRegularExpression re(
@@ -207,6 +213,9 @@ void MainWindow::onSpotsReadyRead()
         QString country = findCountryForCall(call);
         if (country.isEmpty())
             country = "Unknown Country";
+        const QString spotterCountry = findCountryForCall(spotter);
+        if (!spotterCountry.isEmpty())
+            continent = continentForCountry(spotterCountry);
         bool okFreq = false;
         const double freqVal = freq.toDouble(&okFreq);
         QString band = "0";
@@ -261,6 +270,7 @@ void MainWindow::onSpotsReadyRead()
         insert.bindValue(":band", band);
         insert.bindValue(":freq", freqDisplay);
         insert.bindValue(":spotter", spotter);
+        insert.bindValue(":continent", continent);
         insert.bindValue(":message", message);
         if (insert.exec())
             inserted = true;
@@ -328,6 +338,7 @@ void MainWindow::parseCtyFile()
     }
 
     prefixToCountry.clear();
+    countryToContinent.clear();
     QTextStream in(&file);
     QStringList lines;
     while (!in.atEnd())
@@ -412,6 +423,8 @@ void MainWindow::parseCtyFile()
 
         for (const QString &p : prefixes)
             prefixToCountry.insert(p.toUpper(), country);
+        if (!continent.isEmpty())
+            countryToContinent.insert(country.toUpper(), continent.toUpper());
 
         //QDebug dbg = qDebug().noquote();
         //dbg << "CTY:" << country << cqZone << ituZone << continent << latitude << longitude << offset;
@@ -420,8 +433,6 @@ void MainWindow::parseCtyFile()
     }
 
     qDebug().noquote() << "Prefix map entries:" << prefixToCountry.size();
-    for (auto it = prefixToCountry.constBegin(); it != prefixToCountry.constEnd(); ++it)
-        qDebug().noquote() << "MAP" << it.key() << ":" << it.value();
 }
 
 QString MainWindow::findCountryForCall(const QString &call) const
@@ -470,6 +481,13 @@ QString MainWindow::findCountryForCall(const QString &call) const
     }
 
     return bestCountry.toUpper();
+}
+
+QString MainWindow::continentForCountry(const QString &country) const
+{
+    if (country.isEmpty())
+        return {};
+    return countryToContinent.value(country.toUpper());
 }
 
 bool MainWindow::isLogSlotEmpty(const QString &country, int meters) const

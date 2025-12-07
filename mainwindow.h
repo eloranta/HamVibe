@@ -32,10 +32,12 @@ private:
     QSortFilterProxyModel *spotsProxy = nullptr;
     QTcpSocket *spotSocket = nullptr;
     QHash<QString, QString> prefixToCountry;
+    QHash<QString, QString> countryToContinent;
 
     void setupSpotsSocket();
     void parseCtyFile();
     QString findCountryForCall(const QString &call) const;
+    QString continentForCountry(const QString &country) const;
     bool isLogSlotEmpty(const QString &country, int meters) const;
     void updateBandFilter();
 
