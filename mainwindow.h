@@ -17,6 +17,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class SpotsFilterProxy;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -29,7 +31,7 @@ private:
     Ui::MainWindow *ui;
     QSqlDatabase db;
     QSqlTableModel *spotsModel = nullptr;
-    QSortFilterProxyModel *spotsProxy = nullptr;
+    SpotsFilterProxy *spotsProxy = nullptr;
     QTcpSocket *spotSocket = nullptr;
     QHash<QString, QString> prefixToCountry;
     QHash<QString, QString> countryToContinent;

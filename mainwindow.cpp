@@ -14,6 +14,50 @@
 #include <QCheckBox>
 #include <cmath>
 
+class SpotsFilterProxy : public QSortFilterProxyModel
+{
+public:
+    explicit SpotsFilterProxy(QObject *parent = nullptr)
+        : QSortFilterProxyModel(parent)
+    {}
+
+    void setBands(const QSet<QString> &bands)
+    {
+        allowedBands = bands;
+        invalidateFilter();
+    }
+
+    void setContinents(const QSet<QString> &continents)
+    {
+        allowedContinents = continents;
+        invalidateFilter();
+    }
+
+protected:
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
+    {
+        const QModelIndex bandIdx = sourceModel()->index(source_row, 4, source_parent); // band
+        const QModelIndex continentIdx = sourceModel()->index(source_row, 7, source_parent); // continent
+
+        const QString bandVal = sourceModel()->data(bandIdx).toString().toUpper();
+        const QString contVal = sourceModel()->data(continentIdx).toString().toUpper();
+
+        // Band filter: if none selected, allow all; otherwise require match.
+        if (!allowedBands.isEmpty() && !allowedBands.contains(bandVal))
+            return false;
+
+        // Continent filter: if none selected, allow all; otherwise require match.
+        if (!allowedContinents.isEmpty() && !allowedContinents.contains(contVal))
+            return false;
+
+        return true;
+    }
+
+private:
+    QSet<QString> allowedBands;
+    QSet<QString> allowedContinents;
+};
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -112,10 +156,8 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setHeaderData(7, Qt::Horizontal, "Continent");
     spotsModel->setHeaderData(8, Qt::Horizontal, "Message");
 
-    spotsProxy = new QSortFilterProxyModel(this);
+    spotsProxy = new SpotsFilterProxy(this);
     spotsProxy->setSourceModel(spotsModel);
-    spotsProxy->setFilterKeyColumn(4); // Band column (0-based)
-    spotsProxy->setFilterCaseSensitivity(Qt::CaseInsensitive);
     ui->spotView->setModel(spotsProxy);
     ui->spotView->hideColumn(0); // hide id
     ui->spotView->resizeColumnsToContents();
@@ -134,6 +176,13 @@ MainWindow::MainWindow(QWidget *parent)
     };
     for (QCheckBox *cb : bandChecks)
         connect(cb, &QCheckBox::toggled, this, &MainWindow::updateBandFilter);
+
+    const QList<QCheckBox *> continentChecks = {
+        ui->checkBoxEU, ui->checkBoxAF, ui->checkBoxAS, ui->checkBoxOC, ui->checkBoxNA, ui->checkBoxSA
+    };
+    for (QCheckBox *cb : continentChecks)
+        connect(cb, &QCheckBox::toggled, this, &MainWindow::updateBandFilter);
+
     updateBandFilter();
 
     setupSpotsSocket();
@@ -292,39 +341,39 @@ void MainWindow::updateBandFilter()
     if (!spotsProxy)
         return;
 
-    QStringList selected;
-    auto addIfChecked = [&selected](QCheckBox *cb) {
+    QSet<QString> bands;
+    auto addBandIfChecked = [&bands](QCheckBox *cb) {
         if (cb && cb->isChecked())
-            selected << (cb->text() + "m");
+            bands.insert((cb->text() + "m").toUpper());
     };
 
-    addIfChecked(ui->checkBox160);
-    addIfChecked(ui->checkBox80);
-    addIfChecked(ui->checkBox40);
-    addIfChecked(ui->checkBox30);
-    addIfChecked(ui->checkBox20);
-    addIfChecked(ui->checkBox17);
-    addIfChecked(ui->checkBox15);
-    addIfChecked(ui->checkBox12);
-    addIfChecked(ui->checkBox10);
-    addIfChecked(ui->checkBox6);
-    addIfChecked(ui->checkBox2);
+    addBandIfChecked(ui->checkBox160);
+    addBandIfChecked(ui->checkBox80);
+    addBandIfChecked(ui->checkBox40);
+    addBandIfChecked(ui->checkBox30);
+    addBandIfChecked(ui->checkBox20);
+    addBandIfChecked(ui->checkBox17);
+    addBandIfChecked(ui->checkBox15);
+    addBandIfChecked(ui->checkBox12);
+    addBandIfChecked(ui->checkBox10);
+    addBandIfChecked(ui->checkBox6);
+    addBandIfChecked(ui->checkBox2);
 
-    QRegularExpression re;
-    if (selected.isEmpty())
-    {
-        re = QRegularExpression(".*"); // show all when nothing selected (debug-friendly)
-    }
-    else
-    {
-        QStringList escaped;
-        for (const QString &b : selected)
-            escaped << QRegularExpression::escape(b);
-        re = QRegularExpression(QString("^(%1)$").arg(escaped.join('|')),
-                                QRegularExpression::CaseInsensitiveOption);
-    }
+    QSet<QString> continents;
+    auto addContIfChecked = [&continents](QCheckBox *cb) {
+        if (cb && cb->isChecked())
+            continents.insert(cb->text().toUpper());
+    };
 
-    spotsProxy->setFilterRegularExpression(re);
+    addContIfChecked(ui->checkBoxEU);
+    addContIfChecked(ui->checkBoxAF);
+    addContIfChecked(ui->checkBoxAS);
+    addContIfChecked(ui->checkBoxOC);
+    addContIfChecked(ui->checkBoxNA);
+    addContIfChecked(ui->checkBoxSA);
+
+    spotsProxy->setBands(bands);
+    spotsProxy->setContinents(continents);
 }
 
 void MainWindow::parseCtyFile()
