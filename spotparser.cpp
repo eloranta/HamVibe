@@ -5,8 +5,7 @@
 
 std::optional<ParsedSpot> ParseInputString(const QString &line)
 {
-    QRegularExpression re(
-        R"(DX de\s+(\S+):\s+(\S+)\s+(\S+)\s+(.{0,39}?)\s+(\d{4})Z?)");
+    static QRegularExpression re(R"(DX de\s+(\S+):\s+(\S+)\s+(\S+)\s+(.{0,39}?)\s+(\d{4})Z?)");
     QRegularExpressionMatch match = re.match(line);
     if (!match.hasMatch())
     {
