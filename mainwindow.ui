@@ -44,27 +44,36 @@
            <string>Mode</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout_2">
-           <item>
-            <widget class="QCheckBox" name="checkBoxCW">
-             <property name="text">
-              <string>CW</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBoxPhone">
-             <property name="text">
-              <string>Phone</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QCheckBox" name="checkBoxDigi">
-             <property name="text">
-              <string>Data</string>
-             </property>
-            </widget>
-           </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxCW">
+          <property name="text">
+           <string>CW</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxPhone">
+          <property name="text">
+           <string>Phone</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="checkBoxDigi">
+          <property name="text">
+           <string>Data</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
           </layout>
          </widget>
         </item>

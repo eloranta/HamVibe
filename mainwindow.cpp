@@ -37,7 +37,7 @@ protected:
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override
     {
         const QModelIndex bandIdx = sourceModel()->index(source_row, 4, source_parent); // band
-        const QModelIndex continentIdx = sourceModel()->index(source_row, 7, source_parent); // continent
+        const QModelIndex continentIdx = sourceModel()->index(source_row, 8, source_parent); // continent
 
         const QString bandVal = sourceModel()->data(bandIdx).toString().toUpper();
         const QString contVal = sourceModel()->data(continentIdx).toString().toUpper();
@@ -46,9 +46,15 @@ protected:
         if (!allowedBands.isEmpty() && !allowedBands.contains(bandVal))
             return false;
 
-        // Continent filter: if none selected, allow all; otherwise require match.
-        if (!allowedContinents.isEmpty() && !allowedContinents.contains(contVal))
-            return false;
+        // Continent filter: if none selected, allow all; if continent unknown, allow; otherwise require match.
+        if (!allowedContinents.isEmpty())
+        {
+            if (!contVal.isEmpty())
+            {
+                if (!allowedContinents.contains(contVal))
+                    return false;
+            }
+        }
 
         return true;
     }
@@ -105,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent)
         "  country TEXT,"
         "  band TEXT,"
         "  freq TEXT,"
+        "  mode TEXT,"
         "  spotter TEXT,"
         "  continent TEXT,"
         "  message TEXT"
@@ -152,16 +159,17 @@ MainWindow::MainWindow(QWidget *parent)
     spotsModel->setHeaderData(3, Qt::Horizontal, "Country");
     spotsModel->setHeaderData(4, Qt::Horizontal, "Band");
     spotsModel->setHeaderData(5, Qt::Horizontal, "Freq");
-    spotsModel->setHeaderData(6, Qt::Horizontal, "Spotter");
-    spotsModel->setHeaderData(7, Qt::Horizontal, "Continent");
-    spotsModel->setHeaderData(8, Qt::Horizontal, "Message");
+    spotsModel->setHeaderData(6, Qt::Horizontal, "Mode");
+    spotsModel->setHeaderData(7, Qt::Horizontal, "Spotter");
+    spotsModel->setHeaderData(8, Qt::Horizontal, "Continent");
+    spotsModel->setHeaderData(9, Qt::Horizontal, "Message");
 
     spotsProxy = new SpotsFilterProxy(this);
     spotsProxy->setSourceModel(spotsModel);
     ui->spotView->setModel(spotsProxy);
     ui->spotView->hideColumn(0); // hide id
     ui->spotView->resizeColumnsToContents();
-    ui->spotView->hideColumn(7); // hide continent
+    ui->spotView->hideColumn(8); // hide continent
     ui->spotView->setColumnWidth(2, ui->spotView->columnWidth(2) * 2); // Call
     ui->spotView->setColumnWidth(3, ui->spotView->columnWidth(3) * 2); // Country
     ui->spotView->setColumnWidth(4, ui->spotView->columnWidth(4) * 2);
@@ -169,6 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->spotView->setColumnWidth(6, ui->spotView->columnWidth(6) * 2);
     ui->spotView->setColumnWidth(7, ui->spotView->columnWidth(7) * 2);
     ui->spotView->setColumnWidth(8, ui->spotView->columnWidth(8) * 2);
+    ui->spotView->setColumnWidth(9, ui->spotView->columnWidth(9) * 2);
 
     const QList<QCheckBox *> bandChecks = {
         ui->checkBox160, ui->checkBox80, ui->checkBox40, ui->checkBox30, ui->checkBox20,
@@ -218,18 +227,19 @@ void MainWindow::onSpotsReadyRead()
 
     QSqlQuery insert(db);
     insert.prepare(
-        "INSERT INTO spots ([time], [call], [country], [band], [freq], [spotter], [continent], [message]) "
-        "VALUES (:time, :call, :country, :band, :freq, :spotter, :continent, :message)");
+        "INSERT INTO spots ([time], [call], [country], [band], [freq], [mode], [spotter], [continent], [message]) "
+        "VALUES (:time, :call, :country, :band, :freq, :mode, :spotter, :continent, :message)");
 
     bool inserted = false;
     for (const QByteArray &lineRaw : lines)
     {
-        const QString line = QString::fromUtf8(lineRaw).trimmed();
+        const QString rawLine = QString::fromUtf8(lineRaw);
+        QString line = rawLine.trimmed();
         if (line.isEmpty())
             continue;
         if (!line.startsWith("DX de "))
             continue;
-
+        qDebug().noquote() << line;
         // Parse fields by fixed columns:
         // spotter: cols 7-? until ':'
         // freq: next, ends by col 24
@@ -242,6 +252,7 @@ void MainWindow::onSpotsReadyRead()
         QString message;
         QString time;
         QString continent;
+        QString mode;
 
         // Use regex to capture components with spaces preserved as in the example
         QRegularExpression re(
@@ -253,7 +264,6 @@ void MainWindow::onSpotsReadyRead()
             call = m.captured(3);
             message = m.captured(4).trimmed();
             time = m.captured(5);
-            qDebug() << "Parsed:" << spotter << freq << call << message << time;
         } else {
             qDebug() << "Parse failed for line:" << line;
             continue;
@@ -265,17 +275,21 @@ void MainWindow::onSpotsReadyRead()
         const QString spotterCountry = findCountryForCall(spotter);
         if (!spotterCountry.isEmpty())
             continent = continentForCountry(spotterCountry);
+        mode = detectMode(message);
         bool okFreq = false;
         const double freqVal = freq.toDouble(&okFreq);
         QString band = "0";
         int meters = 0;
+        double freqMHzTrunc = 0.0;
+        bool freqTruncValid = false;
         QString freqDisplay = freq;
         if (okFreq && freqVal > 0)
         {
             double freqMHzRaw = freqVal;
             if (freqMHzRaw > 1000.0)
                 freqMHzRaw /= 1000.0; // assume kHz input
-            const double freqMHzTrunc = std::floor(freqMHzRaw * 100.0) / 100.0;
+            freqMHzTrunc = std::floor(freqMHzRaw * 100.0) / 100.0;
+            freqTruncValid = true;
 
             struct BandMap { double mhz; int meters; };
             static const QVector<BandMap> bandMap = {
@@ -310,6 +324,62 @@ void MainWindow::onSpotsReadyRead()
                 band.clear();
         }
 
+        // Override mode to Data for known digital sub-bands.
+        if (meters > 0 && okFreq && freqTruncValid)
+        {
+            struct DataRange { int meters; double minMhz; double maxMhz; };
+            static const QVector<DataRange> dataRanges = {
+                {160, 1.840, 1.840},
+                {80, 3.573, 3.575},
+                {40, 7.0475, 7.074},
+                {30, 10.136, 10.140},
+                {20, 14.074, 14.080},
+                {17, 18.100, 18.104},
+                {15, 21.074, 21.140},
+                {12, 24.915, 24.919},
+                {10, 28.074, 28.180},
+                {6, 50.313, 50.318},
+                {2, 144.170, 144.174},
+            };
+            for (const DataRange &dr : dataRanges)
+            {
+                if (dr.meters == meters && freqMHzTrunc >= dr.minMhz && freqMHzTrunc <= dr.maxMhz)
+                {
+                    mode = "Data";
+                    break;
+                }
+            }
+
+            if (mode.isEmpty())
+            {
+                struct PhoneRange { int meters; double minMhz; double maxMhz; };
+                static const QVector<PhoneRange> phoneRanges = {
+                    {160, 1.800, 2.000},
+                    {80, 3.500, 4.000},
+                    {40, 7.000, 7.300},
+                    {30, 10.136, 10.140}, // narrow allowed phone ranges vary; keep minimal overlap
+                    {20, 14.000, 14.350},
+                    {17, 18.068, 18.168},
+                    {15, 21.000, 21.450},
+                    {12, 24.890, 24.990},
+                    {10, 28.000, 29.700},
+                    {6, 50.100, 50.300},
+                    {2, 144.000, 148.000},
+                };
+                for (const PhoneRange &pr : phoneRanges)
+                {
+                    if (pr.meters == meters && freqMHzTrunc >= pr.minMhz && freqMHzTrunc <= pr.maxMhz)
+                    {
+                        mode = "Phone";
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (mode.isEmpty())
+            mode = "CW";
+
         if (meters > 0 && !country.isEmpty() && !isLogSlotEmpty(country, meters))
             continue;
 
@@ -318,6 +388,7 @@ void MainWindow::onSpotsReadyRead()
         insert.bindValue(":country", country);
         insert.bindValue(":band", band);
         insert.bindValue(":freq", freqDisplay);
+        insert.bindValue(":mode", mode);
         insert.bindValue(":spotter", spotter);
         insert.bindValue(":continent", continent);
         insert.bindValue(":message", message);
@@ -537,6 +608,33 @@ QString MainWindow::continentForCountry(const QString &country) const
     if (country.isEmpty())
         return {};
     return countryToContinent.value(country.toUpper());
+}
+
+QString MainWindow::detectMode(const QString &message) const
+{
+    const QString text = message.toUpper();
+
+    static const QStringList digiKeywords = {
+        "FT8", "FT4", "RTTY", "PSK", "JT65", "JT9", "FSK", "OLIVIA", "PACTOR",
+        "PACKET", "PKT", "SSTV", "ROS", "MSK144", "JS8", "DIGI", "DATA"
+    };
+    for (const QString &k : digiKeywords)
+    {
+        if (text.contains(k))
+            return "Data";
+    }
+
+    if (text.contains("CW"))
+        return "CW";
+
+    static const QStringList phoneKeywords = {"SSB", "USB", "LSB", "AM", "FM", "PHONE", "PH", "VOICE"};
+    for (const QString &k : phoneKeywords)
+    {
+        if (text.contains(k))
+            return "Phone";
+    }
+
+    return {};
 }
 
 bool MainWindow::isLogSlotEmpty(const QString &country, int meters) const

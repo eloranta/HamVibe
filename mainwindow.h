@@ -40,6 +40,7 @@ private:
     void parseCtyFile();
     QString findCountryForCall(const QString &call) const;
     QString continentForCountry(const QString &country) const;
+    QString detectMode(const QString &message) const;
     bool isLogSlotEmpty(const QString &country, int meters) const;
     void updateBandFilter();
 
