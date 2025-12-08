@@ -14,6 +14,8 @@
 #include <QCheckBox>
 #include <cmath>
 
+#include "spotparser.h"
+
 class SpotsFilterProxy : public QSortFilterProxyModel
 {
 public:
@@ -246,28 +248,21 @@ void MainWindow::onSpotsReadyRead()
         // call: starts col 29, ends col 38
         // message: cols 30-69
         // time: col 71 onwards (4 digits)
-        QString spotter;
-        QString freq;
-        QString call;
-        QString message;
-        QString time;
         QString continent;
         QString mode;
 
-        // Use regex to capture components with spaces preserved as in the example
-        QRegularExpression re(
-            R"(DX de\s+(\S+):\s+(\S+)\s+(\S+)\s+(.{0,39}?)\s+(\d{4})Z?)");
-        QRegularExpressionMatch m = re.match(line);
-        if (m.hasMatch()) {
-            spotter = m.captured(1);
-            freq = m.captured(2);
-            call = m.captured(3);
-            message = m.captured(4).trimmed();
-            time = m.captured(5);
-        } else {
-            qDebug() << "Parse failed for line:" << line;
+        const std::optional<ParsedSpot> parsed = ParseInputString(line);
+        if (!parsed)
             continue;
-        }
+
+        const QString spotter = parsed->spotter;
+        const QString freq = parsed->freq;
+        const QString call = parsed->call;
+        const QString message = parsed->message;
+        const QString time = parsed->time;
+
+        // qDebug().noquote() << QString("spotter=%1 freq=%2 call=%3 message=%4 time=%5")
+        //                               .arg(spotter, freq, call, message, time);
 
         QString country = findCountryForCall(call);
         if (country.isEmpty())
