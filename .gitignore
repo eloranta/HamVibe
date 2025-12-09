@@ -35,6 +35,7 @@ Thumbs.db
 /.qmake.cache
 /.qmake.stash
 tests/spotparser/build/
+tests/calllookup/build/
 
 # qtcreator generated files
 *.pro.user*
