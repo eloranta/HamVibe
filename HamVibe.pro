@@ -11,11 +11,13 @@ CONFIG += c++17
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    spotparser.cpp
+    spotparser.cpp \
+    calllookup.cpp
 
 HEADERS += \
     mainwindow.h \
-    spotparser.h
+    spotparser.h \
+    calllookup.h
 
 FORMS += \
     mainwindow.ui
