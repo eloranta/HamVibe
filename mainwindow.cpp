@@ -23,6 +23,8 @@ MainWindow::MainWindow(QWidget *parent)
     qlonglong rxFreq = 0;
     if (rig.readFrequency(activeVfo, &rxFreq)) {
         qDebug() << rxFreq;
+        ui->leftFrequency->setPrefix('A');
+        ui->leftFrequency->setValue(rxFreq);
     } else {
         qDebug() << "Hamlib rig_get_freq (RX) failed:" << rig.lastError();
     }
