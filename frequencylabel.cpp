@@ -1,5 +1,6 @@
 #include "frequencylabel.h"
 
+#include <QFontMetrics>
 #include <QMouseEvent>
 
 FrequencyLabel::FrequencyLabel(QWidget *parent)
@@ -26,12 +27,34 @@ void FrequencyLabel::setPrefix(const QChar &prefix)
 
 void FrequencyLabel::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton) {
-        setValue(value - 1);
-        emit valueChanged(value, prefix);
-    } else if (event->button() == Qt::RightButton) {
-        setValue(value + 1);
-        emit valueChanged(value, prefix);
+    if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
+        const QRect textRect = contentsRect();
+        const QFontMetrics metrics(font());
+        const int textWidth = metrics.horizontalAdvance(stringValue);
+        int xStart = textRect.x();
+        const Qt::Alignment align = alignment();
+        if (align & Qt::AlignHCenter) {
+            xStart = textRect.x() + (textRect.width() - textWidth) / 2;
+        } else if (align & Qt::AlignRight) {
+            xStart = textRect.x() + textRect.width() - textWidth;
+        }
+
+        const int xRel = event->pos().x() - xStart;
+        if (xRel >= 0 && xRel < textWidth) {
+            int charIndex = -1;
+            int width = 0;
+            for (int i = 0; i < stringValue.size(); ++i) {
+                width += metrics.horizontalAdvance(stringValue.at(i));
+                if (xRel < width) {
+                    charIndex = i;
+                    break;
+                }
+            }
+            if (charIndex >= 2 && charIndex <= 9) {
+                const int digitIndex = charIndex - 2;
+                emit valueChanged(digitIndex, prefix);
+            }
+        }
     }
     QLabel::mousePressEvent(event);
 }
