@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->leftFrequency->setPrefix('A');
-    ui->leftFrequency->setValue(14000000);
+    ui->leftFrequency->setValue(10109000);
 
     qDebug() << "hamlib version:" << hamlib_version;
 

@@ -52,16 +52,51 @@ void FrequencyLabel::mousePressEvent(QMouseEvent *event)
             }
             if (charIndex >= 2 && charIndex <= 9 && stringValue.at(charIndex).isDigit()) {
                 const int digitIndex = charIndex - 2;
-                int step = 1;
-                for (int i = 0; i < 7 - digitIndex; ++i) {
-                    step *= 10;
+                const int minValue = 30000;
+                const int maxValue = 59990000;
+                const int currentValue = value;
+                QString digits = QString::number(currentValue).rightJustified(8, '0');
+                int firstNonZero = 0;
+                while (firstNonZero < digits.size() && digits.at(firstNonZero) == '0') {
+                    ++firstNonZero;
                 }
+                if (digitIndex < firstNonZero) {
+                    return;
+                }
+
+                int i = digitIndex;
                 if (event->button() == Qt::LeftButton) {
-                    setValue(value - step);
+                    for (; i >= 0; --i) {
+                        if (digits.at(i) > '0') {
+                            digits[i] = QChar(digits.at(i).unicode() - 1);
+                            break;
+                        }
+                        digits[i] = '9';
+                    }
+                    if (i < 0) {
+                        return;
+                    }
+                    for (int j = digitIndex + 1; j < digits.size(); ++j) {
+                        digits[j] = '9';
+                    }
                 } else {
-                    setValue(value + step);
+                    for (; i >= 0; --i) {
+                        if (digits.at(i) < '9') {
+                            digits[i] = QChar(digits.at(i).unicode() + 1);
+                            break;
+                        }
+                        digits[i] = '0';
+                    }
+                    if (i < 0) {
+                        return;
+                    }
                 }
-                emit valueChanged(value, prefix);
+
+                const int newValue = digits.toInt();
+                if (newValue >= minValue && newValue <= maxValue && newValue != currentValue) {
+                    setValue(newValue);
+                    emit valueChanged(value, prefix);
+                }
             }
         }
     }
