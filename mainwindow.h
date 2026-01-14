@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "Rig.h"
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
@@ -19,5 +20,6 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    Rig rig;
 };
 #endif // MAINWINDOW_H

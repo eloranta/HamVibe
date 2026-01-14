@@ -14,11 +14,13 @@ LIBS += "C:/Program Files/hamlib-w64-4.6.5/lib/gcc/libhamlib.dll.a"
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    frequencylabel.cpp
+    frequencylabel.cpp \
+    rig.cpp
 
 HEADERS += \
     mainwindow.h \
-    frequencylabel.h
+    frequencylabel.h \
+    rig.h
 
 FORMS += \
     mainwindow.ui
