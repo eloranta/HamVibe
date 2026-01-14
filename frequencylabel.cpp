@@ -50,9 +50,18 @@ void FrequencyLabel::mousePressEvent(QMouseEvent *event)
                     break;
                 }
             }
-            if (charIndex >= 2 && charIndex <= 9) {
+            if (charIndex >= 2 && charIndex <= 9 && stringValue.at(charIndex).isDigit()) {
                 const int digitIndex = charIndex - 2;
-                emit valueChanged(digitIndex, prefix);
+                int step = 1;
+                for (int i = 0; i < 7 - digitIndex; ++i) {
+                    step *= 10;
+                }
+                if (event->button() == Qt::LeftButton) {
+                    setValue(value - step);
+                } else {
+                    setValue(value + step);
+                }
+                emit valueChanged(value, prefix);
             }
         }
     }
