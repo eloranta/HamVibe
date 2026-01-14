@@ -17,7 +17,7 @@ public:
     void setPrefix(const QChar &prefix);
 
 signals:
-    void valueChanged(int value);
+    void valueChanged(int value, QChar prefix);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;

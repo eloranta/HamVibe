@@ -11,8 +11,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->leftFrequency->setPrefix('A');
     ui->leftFrequency->setValue(14000000);
 
-    connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [](int value) {
-        qDebug() << "Frequency value changed:" << value;
+    connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [](int value, QChar prefix) {
+        qDebug() << "Frequency value changed:" << prefix << value;
     });
 }
 

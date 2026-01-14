@@ -26,8 +26,12 @@ void FrequencyLabel::setPrefix(const QChar &prefix)
 
 void FrequencyLabel::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton || event->button() == Qt::RightButton) {
-        emit valueChanged(value);
+    if (event->button() == Qt::LeftButton) {
+        setValue(value - 1);
+        emit valueChanged(value, prefix);
+    } else if (event->button() == Qt::RightButton) {
+        setValue(value + 1);
+        emit valueChanged(value, prefix);
     }
     QLabel::mousePressEvent(event);
 }
