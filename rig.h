@@ -13,8 +13,8 @@ public:
     bool open();
     void close();
     bool isOpen() const;
-    bool readFrequency(qlonglong *freqOut);
-    bool readFrequency(vfo_t vfo, qlonglong *freqOut);
+    bool readFrequency(int &frequency);
+    bool readFrequency(vfo_t vfo, int &frequency);
     bool setFrequency(qlonglong freq);
     bool setFrequency(vfo_t vfo, qlonglong freq);
     bool setSplit(bool enabled);

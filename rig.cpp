@@ -67,12 +67,12 @@ bool Rig::isOpen() const
     return rig != nullptr;
 }
 
-bool Rig::readFrequency(qlonglong *freqOut)
+bool Rig::readFrequency(int &frequency)
 {
-    return readFrequency(RIG_VFO_CURR, freqOut);
+    return readFrequency(RIG_VFO_CURR, frequency);
 }
 
-bool Rig::readFrequency(vfo_t vfo, qlonglong *freqOut)
+bool Rig::readFrequency(vfo_t vfo, int &frequency)
 {
     if (!rig) {
         setError("rig not open");
@@ -86,9 +86,7 @@ bool Rig::readFrequency(vfo_t vfo, qlonglong *freqOut)
         return false;
     }
 
-    if (freqOut) {
-        *freqOut = static_cast<qlonglong>(freq);
-    }
+    frequency = static_cast<int>(freq);
 
     return true;
 }
