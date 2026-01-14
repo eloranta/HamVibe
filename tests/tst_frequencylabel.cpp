@@ -6,12 +6,10 @@ class FrequencyLabelTest : public QObject
     Q_OBJECT
 
 public:
-    void initLabel(FrequencyLabel &label);
-
+    void rightClickTest(bool right, int freq, int index, int spyCount,int result = 0);
 private slots:
-    void leftClickDecrementsDigit();
     void rightClickIncrementsDigit();
-    void clickOutsideDigitsDoesNothing();
+    void leftClickIncrementsDigit();
 };
 
 static QPoint clickPointForChar(const FrequencyLabel &label, int charIndex)
@@ -38,57 +36,55 @@ static QPoint clickPointForChar(const FrequencyLabel &label, int charIndex)
     return QPoint(x, y);
 }
 
-void FrequencyLabelTest::initLabel(FrequencyLabel &label)
+void FrequencyLabelTest::rightClickTest(bool right, int freq, int index, int spyCount, int result)
 {
+    FrequencyLabel label;
     label.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     label.setPrefix('A');
-    label.setValue(10109000);
+    label.setValue(freq);
     label.resize(300, 40);
     label.show();
     QVERIFY(QTest::qWaitForWindowExposed(&label));
-}
-
-void FrequencyLabelTest::leftClickDecrementsDigit()
-{
-    FrequencyLabel label;
-    initLabel(label);
-
     QSignalSpy spy(&label, &FrequencyLabel::valueChanged);
 
-    const QPoint p = clickPointForChar(label, 2);
-    QTest::mouseClick(&label, Qt::LeftButton, Qt::NoModifier, p);
+    const QPoint p = clickPointForChar(label, index);
+    QTest::mouseClick(&label, right ? Qt::RightButton : Qt::LeftButton, Qt::NoModifier, p);
 
-    QCOMPARE(spy.count(), 1);
-    const QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.at(0).toInt(), 10099000);
+    QCOMPARE(spy.count(), spyCount);
+    if (spy.count() > 0)
+    {
+        const QList<QVariant> args = spy.takeFirst();
+        QCOMPARE(args.at(0).toInt(), result);
+    }
 }
 
 void FrequencyLabelTest::rightClickIncrementsDigit()
 {
-    FrequencyLabel label;
-    initLabel(label);
-
-    QSignalSpy spy(&label, &FrequencyLabel::valueChanged);
-
-    const QPoint p = clickPointForChar(label, 2);
-    QTest::mouseClick(&label, Qt::RightButton, Qt::NoModifier, p);
-
-    QCOMPARE(spy.count(), 1);
-    const QList<QVariant> args = spy.takeFirst();
-    QCOMPARE(args.at(0).toInt(), 20109000);
+    rightClickTest(true, 14000000, 9, 1, 14000001);
+    rightClickTest(true, 14000000, 8, 1, 14000010);
+    rightClickTest(true, 14000000, 7, 1, 14000100);
+    rightClickTest(true, 14000000, 6, 1, 14001000);
+    rightClickTest(true, 14000000, 5, 1, 14010000);
+    rightClickTest(true, 14000000, 4, 1, 14100000);
+    rightClickTest(true, 14000000, 3, 1, 15000000);
+    rightClickTest(true, 14000000, 2, 1, 24000000);
+    rightClickTest(true, 59990000, 9, 0);
+    rightClickTest(true, 14000000, 1, 0);
+    rightClickTest(true, 14000000, 0, 0);
 }
-
-void FrequencyLabelTest::clickOutsideDigitsDoesNothing()
+void FrequencyLabelTest::leftClickIncrementsDigit()
 {
-    FrequencyLabel label;
-    initLabel(label);
-
-    QSignalSpy spy(&label, &FrequencyLabel::valueChanged);
-
-    const QPoint p = clickPointForChar(label, 0);
-    QTest::mouseClick(&label, Qt::LeftButton, Qt::NoModifier, p);
-
-    QCOMPARE(spy.count(), 0);
+    rightClickTest(false, 14000000, 9, 1, 13999999);
+    rightClickTest(false, 14000000, 8, 1, 13999990);
+    rightClickTest(false, 14000000, 7, 1, 13999900);
+    rightClickTest(false, 14000000, 6, 1, 13999000);
+    rightClickTest(false, 14000000, 5, 1, 13990000);
+    rightClickTest(false, 14000000, 4, 1, 13900000);
+    rightClickTest(false, 14000000, 3, 1, 13000000);
+    rightClickTest(false, 14000000, 2, 1, 4000000);
+    rightClickTest(false, 30000,    9, 0);
+    rightClickTest(false, 14000000, 1, 0);
+    rightClickTest(false, 14000000, 0, 0);
 }
 
 QTEST_MAIN(FrequencyLabelTest)

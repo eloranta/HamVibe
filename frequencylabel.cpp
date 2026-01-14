@@ -42,9 +42,8 @@ void FrequencyLabel::mousePressEvent(QMouseEvent *event)
         const int xRel = event->pos().x() - xStart;
         if (xRel >= 0 && xRel < textWidth) {
             int charIndex = -1;
-            int width = 0;
             for (int i = 0; i < stringValue.size(); ++i) {
-                width += metrics.horizontalAdvance(stringValue.at(i));
+                const int width = metrics.horizontalAdvance(stringValue.left(i + 1));
                 if (xRel < width) {
                     charIndex = i;
                     break;
@@ -76,9 +75,6 @@ void FrequencyLabel::mousePressEvent(QMouseEvent *event)
                     if (i < 0) {
                         return;
                     }
-                    for (int j = digitIndex + 1; j < digits.size(); ++j) {
-                        digits[j] = '9';
-                    }
                 } else {
                     for (; i >= 0; --i) {
                         if (digits.at(i) < '9') {
@@ -109,3 +105,5 @@ void FrequencyLabel::updateStringValue()
     stringValue = QString(prefixChar) + ' ' + QString::number(value).rightJustified(8, ' ');
     setText(stringValue);
 }
+
+
