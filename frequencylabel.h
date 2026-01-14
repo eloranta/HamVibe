@@ -23,6 +23,8 @@ protected:
     void mousePressEvent(QMouseEvent *event) override;
 
 private:
+    int hitTestCharIndex(int x) const;
+    static bool adjustDigits(QString &digits, int digitIndex, bool increment);
     void updateStringValue();
     int value = 0;
     QChar prefix;

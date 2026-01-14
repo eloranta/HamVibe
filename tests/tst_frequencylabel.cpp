@@ -6,7 +6,7 @@ class FrequencyLabelTest : public QObject
     Q_OBJECT
 
 public:
-    void rightClickTest(bool right, int freq, int index, int spyCount,int result = 0);
+    void clickTest(bool right, int freq, int index, int spyCount,int result = 0);
 private slots:
     void rightClickIncrementsDigit();
     void leftClickIncrementsDigit();
@@ -36,7 +36,7 @@ static QPoint clickPointForChar(const FrequencyLabel &label, int charIndex)
     return QPoint(x, y);
 }
 
-void FrequencyLabelTest::rightClickTest(bool right, int freq, int index, int spyCount, int result)
+void FrequencyLabelTest::clickTest(bool right, int freq, int index, int spyCount, int result)
 {
     FrequencyLabel label;
     label.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
@@ -60,31 +60,31 @@ void FrequencyLabelTest::rightClickTest(bool right, int freq, int index, int spy
 
 void FrequencyLabelTest::rightClickIncrementsDigit()
 {
-    rightClickTest(true, 14000000, 9, 1, 14000001);
-    rightClickTest(true, 14000000, 8, 1, 14000010);
-    rightClickTest(true, 14000000, 7, 1, 14000100);
-    rightClickTest(true, 14000000, 6, 1, 14001000);
-    rightClickTest(true, 14000000, 5, 1, 14010000);
-    rightClickTest(true, 14000000, 4, 1, 14100000);
-    rightClickTest(true, 14000000, 3, 1, 15000000);
-    rightClickTest(true, 14000000, 2, 1, 24000000);
-    rightClickTest(true, 59990000, 9, 0);
-    rightClickTest(true, 14000000, 1, 0);
-    rightClickTest(true, 14000000, 0, 0);
+    clickTest(true, 14000000, 9, 1, 14000001);
+    clickTest(true, 14000000, 8, 1, 14000010);
+    clickTest(true, 14000000, 7, 1, 14000100);
+    clickTest(true, 14000000, 6, 1, 14001000);
+    clickTest(true, 14000000, 5, 1, 14010000);
+    clickTest(true, 14000000, 4, 1, 14100000);
+    clickTest(true, 14000000, 3, 1, 15000000);
+    clickTest(true, 14000000, 2, 1, 24000000);
+    clickTest(true, 59990000, 9, 0);
+    clickTest(true, 14000000, 1, 0);
+    clickTest(true, 14000000, 0, 0);
 }
 void FrequencyLabelTest::leftClickIncrementsDigit()
 {
-    rightClickTest(false, 14000000, 9, 1, 13999999);
-    rightClickTest(false, 14000000, 8, 1, 13999990);
-    rightClickTest(false, 14000000, 7, 1, 13999900);
-    rightClickTest(false, 14000000, 6, 1, 13999000);
-    rightClickTest(false, 14000000, 5, 1, 13990000);
-    rightClickTest(false, 14000000, 4, 1, 13900000);
-    rightClickTest(false, 14000000, 3, 1, 13000000);
-    rightClickTest(false, 14000000, 2, 1, 4000000);
-    rightClickTest(false, 30000,    9, 0);
-    rightClickTest(false, 14000000, 1, 0);
-    rightClickTest(false, 14000000, 0, 0);
+    clickTest(false, 14000000, 9, 1, 13999999);
+    clickTest(false, 14000000, 8, 1, 13999990);
+    clickTest(false, 14000000, 7, 1, 13999900);
+    clickTest(false, 14000000, 6, 1, 13999000);
+    clickTest(false, 14000000, 5, 1, 13990000);
+    clickTest(false, 14000000, 4, 1, 13900000);
+    clickTest(false, 14000000, 3, 1, 13000000);
+    clickTest(false, 14000000, 2, 1, 4000000);
+    clickTest(false, 30000,    9, 0);
+    clickTest(false, 14000000, 1, 0);
+    clickTest(false, 14000000, 0, 0);
 }
 
 QTEST_MAIN(FrequencyLabelTest)
