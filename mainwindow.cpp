@@ -23,7 +23,14 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib getActiveVfo failed:" << rig.lastError();
         return;
     }
-    qDebug() << activeVfo;
+
+    bool split;
+    vfo_t vfo2 = RIG_VFO_NONE;
+    if (!rig.getSplit(activeVfo, &split, &vfo2)) {
+        qDebug() << "Hamlib get split failed:" << rig.lastError();
+        return;
+    }
+    qDebug() << split;
 
     int rxFreq = 0;
     if (rig.readFrequency(activeVfo, rxFreq)) {
