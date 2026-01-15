@@ -112,6 +112,27 @@ bool Rig::setFrequency(vfo_t vfo, qlonglong freq)
     return true;
 }
 
+bool Rig::setMode(rmode_t mode, pbwidth_t width)
+{
+    return setMode(RIG_VFO_CURR, mode, width);
+}
+
+bool Rig::setMode(vfo_t vfo, rmode_t mode, pbwidth_t width)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int setStatus = rig_set_mode(rig, vfo, mode, width);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_set_mode failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::setSplit(bool enabled)
 {
     return setSplit(RIG_VFO_A, RIG_VFO_B, enabled);

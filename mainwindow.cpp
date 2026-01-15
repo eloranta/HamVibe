@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QDebug>
+#include <QSettings>
 #include <QSignalBlocker>
 #include <hamlib/rig.h>
 
@@ -11,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     , rig(RIG_MODEL_TS590S, "COM7")
 {
     ui->setupUi(this);
+    loadBand14Settings();
 
     qDebug() << "hamlib version:" << hamlib_version;
 
@@ -60,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
+    connect(ui->pushButton14, &QPushButton::clicked, this, &MainWindow::onBand14Clicked);
 }
 
 MainWindow::~MainWindow()
@@ -71,6 +74,10 @@ void MainWindow::onLeftFrequencyChanged(int value, QChar prefix)
 {
     qDebug() << "Frequency value changed:" << prefix << value;
     rig.setFrequency(value);
+    if (band14Level >= 0 && band14Level < 4) {
+        band14SavedFreqs[band14Level] = value;
+        saveBand14Frequency(band14Level, value);
+    }
 }
 
 void MainWindow::onRightFrequencyChanged(int value, QChar prefix)
@@ -172,4 +179,57 @@ void MainWindow::onCopyButtonClicked()
     }
 
     ui->rightFrequency->setValue(freq);
+}
+
+void MainWindow::onBand14Clicked()
+{
+    struct BandStep {
+        int freq;
+        rmode_t mode;
+    };
+
+    static const BandStep steps[4] = {
+        {14074000, RIG_MODE_USB},
+        {14080000, RIG_MODE_USB},
+        {14000001, RIG_MODE_CW},
+        {14200000, RIG_MODE_USB}
+    };
+
+    if (band14Level < 0 || band14Level >= 3) {
+        band14Level = 0;
+    } else {
+        band14Level = (band14Level + 1) % 4;
+    }
+
+    int nextFreq = steps[band14Level].freq;
+    if (band14SavedFreqs[band14Level] > 0) {
+        nextFreq = band14SavedFreqs[band14Level];
+    }
+
+    if (!rig.setFrequency(rxVfo, nextFreq)) {
+        qDebug() << "Hamlib rig_set_freq (RX) failed:" << rig.lastError();
+        return;
+    }
+    if (!rig.setMode(rxVfo, steps[band14Level].mode)) {
+        qDebug() << "Hamlib rig_set_mode (RX) failed:" << rig.lastError();
+        return;
+    }
+
+    ui->leftFrequency->setValue(nextFreq);
+}
+
+void MainWindow::loadBand14Settings()
+{
+    QSettings settings("HamVibe", "HamVibe");
+    for (int i = 0; i < 4; ++i) {
+        const QString key = QString("band14/level%1").arg(i + 1);
+        band14SavedFreqs[i] = settings.value(key, 0).toInt();
+    }
+}
+
+void MainWindow::saveBand14Frequency(int level, int frequency)
+{
+    QSettings settings("HamVibe", "HamVibe");
+    const QString key = QString("band14/level%1").arg(level + 1);
+    settings.setValue(key, frequency);
 }

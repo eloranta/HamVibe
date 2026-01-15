@@ -24,12 +24,18 @@ private slots:
     void onSplitToggled(bool enabled);
     void onSwapButtonClicked();
     void onCopyButtonClicked();
+    void onBand14Clicked();
 
 private:
+    void loadBand14Settings();
+    void saveBand14Frequency(int level, int frequency);
+
     Ui::MainWindow *ui;
     Rig rig;
     bool split = false;
     vfo_t rxVfo = RIG_VFO_NONE;
     vfo_t txVfo = RIG_VFO_NONE;
+    int band14Level = -1;
+    int band14SavedFreqs[4] = {0, 0, 0, 0};
 };
 #endif // MAINWINDOW_H

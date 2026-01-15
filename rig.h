@@ -17,6 +17,8 @@ public:
     bool readFrequency(vfo_t vfo, int &frequency);
     bool setFrequency(qlonglong freq);
     bool setFrequency(vfo_t vfo, qlonglong freq);
+    bool setMode(rmode_t mode, pbwidth_t width = RIG_PASSBAND_NORMAL);
+    bool setMode(vfo_t vfo, rmode_t mode, pbwidth_t width = RIG_PASSBAND_NORMAL);
     bool setSplit(bool enabled);
     bool setSplit(vfo_t rxVfo, vfo_t txVfo, bool enabled);
     bool getSplit(vfo_t rxVfo, bool *enabled, vfo_t *txVfo);
