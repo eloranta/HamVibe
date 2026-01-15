@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
+    connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -143,5 +144,32 @@ void MainWindow::onSwapButtonClicked()
         return;
     }
     ui->rightFrequency->setPrefix(rightPrefix);
+    ui->rightFrequency->setValue(freq);
+}
+
+void MainWindow::onCopyButtonClicked()
+{
+    vfo_t mainVfo = RIG_VFO_NONE;
+    if (!rig.getActiveVfo(&mainVfo)) {
+        qDebug() << "Hamlib rig_get_active_vfo failed:" << rig.lastError();
+        return;
+    }
+
+    vfo_t subVfo = RIG_VFO_NONE;
+    if (mainVfo == RIG_VFO_A)
+        subVfo = RIG_VFO_B;
+    else
+        subVfo = RIG_VFO_A;
+
+    int freq = 0;
+    if (!rig.readFrequency(mainVfo, freq)) {
+        qDebug() << "Hamlib rig_get_freq (RX) failed:" << rig.lastError();
+        return;
+    }
+    if (!rig.setFrequency(subVfo, freq)) {
+        qDebug() << "Hamlib rig_set_freq (TX) failed:" << rig.lastError();
+        return;
+    }
+
     ui->rightFrequency->setValue(freq);
 }

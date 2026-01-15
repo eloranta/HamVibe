@@ -23,6 +23,7 @@ private slots:
     void onRightFrequencyChanged(int value, QChar prefix);
     void onSplitToggled(bool enabled);
     void onSwapButtonClicked();
+    void onCopyButtonClicked();
 
 private:
     Ui::MainWindow *ui;
