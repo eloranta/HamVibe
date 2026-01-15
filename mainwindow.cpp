@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QSettings>
 #include <QSignalBlocker>
+#include <QPushButton>
 #include <hamlib/rig.h>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -216,6 +217,7 @@ void MainWindow::onBand14Clicked()
     }
 
     ui->leftFrequency->setValue(nextFreq);
+    setSelectedBandButton(ui->pushButton14);
 }
 
 void MainWindow::loadBand14Settings()
@@ -232,4 +234,20 @@ void MainWindow::saveBand14Frequency(int level, int frequency)
     QSettings settings("HamVibe", "HamVibe");
     const QString key = QString("band14/level%1").arg(level + 1);
     settings.setValue(key, frequency);
+}
+
+void MainWindow::setSelectedBandButton(QPushButton *button)
+{
+    if (selectedBandButton == button) {
+        return;
+    }
+
+    if (selectedBandButton) {
+        selectedBandButton->setStyleSheet(QString());
+    }
+
+    selectedBandButton = button;
+    if (selectedBandButton) {
+        selectedBandButton->setStyleSheet("QPushButton { border: 2px solid #1e88e5; }");
+    }
 }

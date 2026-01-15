@@ -10,6 +10,8 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class QPushButton;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -29,6 +31,7 @@ private slots:
 private:
     void loadBand14Settings();
     void saveBand14Frequency(int level, int frequency);
+    void setSelectedBandButton(QPushButton *button);
 
     Ui::MainWindow *ui;
     Rig rig;
@@ -37,5 +40,6 @@ private:
     vfo_t txVfo = RIG_VFO_NONE;
     int band14Level = -1;
     int band14SavedFreqs[4] = {0, 0, 0, 0};
+    QPushButton *selectedBandButton = nullptr;
 };
 #endif // MAINWINDOW_H
