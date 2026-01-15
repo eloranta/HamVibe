@@ -13,7 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
     , rig(RIG_MODEL_TS590S, "COM7")
 {
     ui->setupUi(this);
-    loadBand14Settings();
+    initBandConfigs();
+    loadBandSettings();
 
     qDebug() << "hamlib version:" << hamlib_version;
 
@@ -63,7 +64,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
-    connect(ui->pushButton14, &QPushButton::clicked, this, &MainWindow::onBand14Clicked);
+    for (const auto &band : bandConfigs) {
+        connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
+    }
 }
 
 MainWindow::~MainWindow()
@@ -75,9 +78,12 @@ void MainWindow::onLeftFrequencyChanged(int value, QChar prefix)
 {
     qDebug() << "Frequency value changed:" << prefix << value;
     rig.setFrequency(value);
-    if (band14Level >= 0 && band14Level < 4) {
-        band14SavedFreqs[band14Level] = value;
-        saveBand14Frequency(band14Level, value);
+    if (currentBandIndex >= 0 && currentBandIndex < bandConfigs.size()) {
+        const int level = bandLevels[currentBandIndex];
+        if (level >= 0 && level < 4) {
+            bandSavedFreqs[currentBandIndex][level] = value;
+            saveBandFrequency(currentBandIndex, level, value);
+        }
     }
 }
 
@@ -182,57 +188,104 @@ void MainWindow::onCopyButtonClicked()
     ui->rightFrequency->setValue(freq);
 }
 
-void MainWindow::onBand14Clicked()
+void MainWindow::onBandButtonClicked()
 {
-    struct BandStep {
-        int freq;
-        rmode_t mode;
-    };
-
-    static const BandStep steps[4] = {
-        {14074000, RIG_MODE_USB},
-        {14080000, RIG_MODE_USB},
-        {14000001, RIG_MODE_CW},
-        {14200000, RIG_MODE_USB}
-    };
-
-    if (band14Level < 0 || band14Level >= 3) {
-        band14Level = 0;
-    } else {
-        band14Level = (band14Level + 1) % 4;
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (!button) {
+        return;
     }
 
-    int nextFreq = steps[band14Level].freq;
-    if (band14SavedFreqs[band14Level] > 0) {
-        nextFreq = band14SavedFreqs[band14Level];
+    int bandIndex = -1;
+    for (int i = 0; i < bandConfigs.size(); ++i) {
+        if (bandConfigs[i].button == button) {
+            bandIndex = i;
+            break;
+        }
+    }
+    if (bandIndex < 0) {
+        return;
+    }
+
+    currentBandIndex = bandIndex;
+    setSelectedBandButton(button);
+
+    int &level = bandLevels[bandIndex];
+    if (level < 0 || level >= 3) {
+        level = 0;
+    } else {
+        level = (level + 1) % 4;
+    }
+
+    int nextFreq = bandConfigs[bandIndex].steps[level].freq;
+    if (bandSavedFreqs[bandIndex][level] > 0) {
+        nextFreq = bandSavedFreqs[bandIndex][level];
     }
 
     if (!rig.setFrequency(rxVfo, nextFreq)) {
         qDebug() << "Hamlib rig_set_freq (RX) failed:" << rig.lastError();
         return;
     }
-    if (!rig.setMode(rxVfo, steps[band14Level].mode)) {
+    if (!rig.setMode(rxVfo, bandConfigs[bandIndex].steps[level].mode)) {
         qDebug() << "Hamlib rig_set_mode (RX) failed:" << rig.lastError();
         return;
     }
 
     ui->leftFrequency->setValue(nextFreq);
-    setSelectedBandButton(ui->pushButton14);
 }
 
-void MainWindow::loadBand14Settings()
+void MainWindow::initBandConfigs()
+{
+    bandConfigs.clear();
+    bandConfigs.reserve(10);
+
+    auto addBand = [this](const char *key, QPushButton *button, int baseHz, bool isFourteen) {
+        BandConfig config{};
+        config.key = key;
+        config.button = button;
+        if (isFourteen) {
+            config.steps[0] = {14074000, RIG_MODE_USB};
+            config.steps[1] = {14080000, RIG_MODE_USB};
+            config.steps[2] = {14000001, RIG_MODE_CW};
+            config.steps[3] = {14200000, RIG_MODE_USB};
+        } else {
+            config.steps[0] = {baseHz + 10000, RIG_MODE_USB};
+            config.steps[1] = {baseHz + 20000, RIG_MODE_USB};
+            config.steps[2] = {baseHz + 30000, RIG_MODE_CW};
+            config.steps[3] = {baseHz + 40000, RIG_MODE_USB};
+        }
+        bandConfigs.push_back(config);
+    };
+
+    addBand("1.8", ui->band1_8, 1800000, false);
+    addBand("3.5", ui->pushButton3_5, 3500000, false);
+    addBand("7", ui->pushButton7, 7000000, false);
+    addBand("10", ui->pushButton10, 10000000, false);
+    addBand("14", ui->pushButton14, 14000000, true);
+    addBand("18", ui->pushButton18, 18000000, false);
+    addBand("21", ui->pushButton21, 21000000, false);
+    addBand("24", ui->pushButton24, 24000000, false);
+    addBand("28", ui->pushButton28, 28000000, false);
+    addBand("50", ui->pushButton50, 50000000, false);
+}
+
+void MainWindow::loadBandSettings()
 {
     QSettings settings("HamVibe", "HamVibe");
-    for (int i = 0; i < 4; ++i) {
-        const QString key = QString("band14/level%1").arg(i + 1);
-        band14SavedFreqs[i] = settings.value(key, 0).toInt();
+    for (int i = 0; i < bandConfigs.size(); ++i) {
+        for (int level = 0; level < 4; ++level) {
+            const QString key = QString("band/%1/level%2").arg(bandConfigs[i].key).arg(level + 1);
+            bandSavedFreqs[i][level] = settings.value(key, 0).toInt();
+        }
     }
 }
 
-void MainWindow::saveBand14Frequency(int level, int frequency)
+void MainWindow::saveBandFrequency(int bandIndex, int level, int frequency)
 {
     QSettings settings("HamVibe", "HamVibe");
-    const QString key = QString("band14/level%1").arg(level + 1);
+    if (bandIndex < 0 || bandIndex >= bandConfigs.size()) {
+        return;
+    }
+    const QString key = QString("band/%1/level%2").arg(bandConfigs[bandIndex].key).arg(level + 1);
     settings.setValue(key, frequency);
 }
 

@@ -3,6 +3,7 @@
 
 #include "Rig.h"
 #include <QMainWindow>
+#include <QVector>
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -26,11 +27,22 @@ private slots:
     void onSplitToggled(bool enabled);
     void onSwapButtonClicked();
     void onCopyButtonClicked();
-    void onBand14Clicked();
+    void onBandButtonClicked();
 
 private:
-    void loadBand14Settings();
-    void saveBand14Frequency(int level, int frequency);
+    struct BandStep {
+        int freq;
+        rmode_t mode;
+    };
+    struct BandConfig {
+        const char *key;
+        QPushButton *button;
+        BandStep steps[4];
+    };
+
+    void initBandConfigs();
+    void loadBandSettings();
+    void saveBandFrequency(int bandIndex, int level, int frequency);
     void setSelectedBandButton(QPushButton *button);
 
     Ui::MainWindow *ui;
@@ -38,8 +50,10 @@ private:
     bool split = false;
     vfo_t rxVfo = RIG_VFO_NONE;
     vfo_t txVfo = RIG_VFO_NONE;
-    int band14Level = -1;
-    int band14SavedFreqs[4] = {0, 0, 0, 0};
+    QVector<BandConfig> bandConfigs;
+    int bandLevels[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+    int bandSavedFreqs[10][4] = {};
+    int currentBandIndex = -1;
     QPushButton *selectedBandButton = nullptr;
 };
 #endif // MAINWINDOW_H
