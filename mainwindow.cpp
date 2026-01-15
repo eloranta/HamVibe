@@ -238,34 +238,87 @@ void MainWindow::initBandConfigs()
     bandConfigs.clear();
     bandConfigs.reserve(10);
 
-    auto addBand = [this](const char *key, QPushButton *button, int baseHz, bool isFourteen) {
+    auto addBand = [this](const char *key, QPushButton *button, const BandStep (&steps)[4]) {
         BandConfig config{};
         config.key = key;
         config.button = button;
-        if (isFourteen) {
-            config.steps[0] = {14074000, RIG_MODE_USB};
-            config.steps[1] = {14080000, RIG_MODE_USB};
-            config.steps[2] = {14000001, RIG_MODE_CW};
-            config.steps[3] = {14200000, RIG_MODE_USB};
-        } else {
-            config.steps[0] = {baseHz + 10000, RIG_MODE_USB};
-            config.steps[1] = {baseHz + 20000, RIG_MODE_USB};
-            config.steps[2] = {baseHz + 30000, RIG_MODE_CW};
-            config.steps[3] = {baseHz + 40000, RIG_MODE_USB};
+        for (int i = 0; i < 4; ++i) {
+            config.steps[i] = steps[i];
         }
         bandConfigs.push_back(config);
     };
 
-    addBand("1.8", ui->band1_8, 1800000, false);
-    addBand("3.5", ui->pushButton3_5, 3500000, false);
-    addBand("7", ui->pushButton7, 7000000, false);
-    addBand("10", ui->pushButton10, 10000000, false);
-    addBand("14", ui->pushButton14, 14000000, true);
-    addBand("18", ui->pushButton18, 18000000, false);
-    addBand("21", ui->pushButton21, 21000000, false);
-    addBand("24", ui->pushButton24, 24000000, false);
-    addBand("28", ui->pushButton28, 28000000, false);
-    addBand("50", ui->pushButton50, 50000000, false);
+    static const BandStep steps1_8[4] = {
+        {1840000, RIG_MODE_USB},
+        {1840000, RIG_MODE_USB}, // TODO:
+        {1800000, RIG_MODE_CW},
+        {1800000, RIG_MODE_LSB}
+    };
+    static const BandStep steps3_5[4] = {
+        {3573000, RIG_MODE_USB},
+        {3595000, RIG_MODE_USB},
+        {3501000, RIG_MODE_CW},
+        {3600000, RIG_MODE_LSB}
+    };
+    static const BandStep steps7[4] = {
+        {7074000, RIG_MODE_USB},
+        {7047500, RIG_MODE_USB},
+        {7001000, RIG_MODE_CW},
+        {7100000, RIG_MODE_LSB}
+    };
+    static const BandStep steps10[4] = {
+        {10136000, RIG_MODE_USB},
+        {10140000, RIG_MODE_USB},
+        {10000000, RIG_MODE_CW}, // TODO:
+        {10000000, RIG_MODE_USB} // TODO:
+    };
+    static const BandStep steps14[4] = {
+        {14074000, RIG_MODE_USB},
+        {14080000, RIG_MODE_USB},
+        {14001000, RIG_MODE_CW},
+        {14200000, RIG_MODE_USB}
+    };
+    static const BandStep steps18[4] = {
+        {18100000, RIG_MODE_USB},
+        {18104000, RIG_MODE_USB},
+        {18000000, RIG_MODE_CW}, // TODO:
+        {18000000, RIG_MODE_USB}
+    };
+    static const BandStep steps21[4] = {
+        {21074000, RIG_MODE_USB},
+        {21140000, RIG_MODE_USB},
+        {21001000, RIG_MODE_CW},
+        {21200000, RIG_MODE_USB}
+    };
+    static const BandStep steps24[4] = {
+        {24915000, RIG_MODE_USB},
+        {24919000, RIG_MODE_USB},
+        {24000000, RIG_MODE_CW},
+        {24000000, RIG_MODE_USB}
+    };
+    static const BandStep steps28[4] = {
+        {28074000, RIG_MODE_USB},
+        {28180000, RIG_MODE_USB},
+        {28000000, RIG_MODE_CW},
+        {28000000, RIG_MODE_USB}
+    };
+    static const BandStep steps50[4] = {
+        {50313000, RIG_MODE_USB},
+        {50318000, RIG_MODE_USB},
+        {50100000, RIG_MODE_CW},
+        {50300000, RIG_MODE_USB}
+    };
+
+    addBand("1.8", ui->band1_8, steps1_8);
+    addBand("3.5", ui->pushButton3_5, steps3_5);
+    addBand("7", ui->pushButton7, steps7);
+    addBand("10", ui->pushButton10, steps10);
+    addBand("14", ui->pushButton14, steps14);
+    addBand("18", ui->pushButton18, steps18);
+    addBand("21", ui->pushButton21, steps21);
+    addBand("24", ui->pushButton24, steps24);
+    addBand("28", ui->pushButton28, steps28);
+    addBand("50", ui->pushButton50, steps50);
 }
 
 void MainWindow::loadBandSettings()
