@@ -30,7 +30,6 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib get split failed:" << rig.lastError();
         return;
     }
-    qDebug() << split;
 
     int rxFreq = 0;
     if (rig.readFrequency(activeVfo, rxFreq)) {
@@ -40,11 +39,28 @@ MainWindow::MainWindow(QWidget *parent)
     } else {
         qDebug() << "Hamlib rig_get_freq (RX) failed:" << rig.lastError();
     }
+    int txFreq = 0;
+    if (rig.readFrequency(activeVfo == RIG_VFO_A ? RIG_VFO_B : RIG_VFO_A, txFreq)) {
+        ui->rightFrequency->setPrefix(activeVfo == RIG_VFO_A ? 'B' : 'A');
+        ui->rightFrequency->setValue(txFreq);
+    } else {
+        qDebug() << "Hamlib rig_get_freq (TX) failed:" << rig.lastError();
+    }
 
-    connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar prefix) {
-        qDebug() << "Frequency value changed:" << prefix << value;
-        rig.setFrequency(value);
-    });
+    if (split) {
+        ui->rightFrequency->show();
+     } else {
+        ui->rightFrequency->hide();
+    }
+
+     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar prefix) {
+         qDebug() << "Frequency value changed:" << prefix << value;
+         rig.setFrequency(value);
+     });
+    connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar prefix) {
+         qDebug() << "Frequency value changed:" << prefix << value;
+         rig.setFrequency(prefix == QChar('A') ? RIG_VFO_A : RIG_VFO_B, value);
+     });
 }
 
 MainWindow::~MainWindow()
