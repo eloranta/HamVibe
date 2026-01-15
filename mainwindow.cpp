@@ -58,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
+    connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -100,4 +101,47 @@ void MainWindow::onSplitToggled(bool enabled)
     } else {
         ui->rightFrequency->hide();
     }
+}
+
+void MainWindow::onSwapButtonClicked()
+{
+    vfo_t activeVfo = RIG_VFO_NONE;
+    if (!rig.getActiveVfo(&activeVfo)) {
+        qDebug() << "Hamlib rig_get_active_vfo failed:" << rig.lastError();
+        return;
+    }
+    QChar leftPrefix;
+    QChar rightPrefix;
+    if (activeVfo == RIG_VFO_A)
+    {
+        activeVfo = RIG_VFO_B;
+        leftPrefix = 'B';
+        rightPrefix = 'A';
+    }
+    else
+    {
+        activeVfo = RIG_VFO_A;
+        leftPrefix = 'A';
+        rightPrefix = 'B';
+    }
+    if (!rig.setActiveVfo(activeVfo)) {
+        qDebug() << "Hamlib rig_get_active_vfo failed:" << rig.lastError();
+        return;
+    }
+
+    int freq = 0;
+
+     if (!rig.readFrequency(activeVfo, freq)) {
+        qDebug() << "Hamlib rig_get_freq failed:" << rig.lastError();
+        return;
+    }
+    ui->leftFrequency->setPrefix(leftPrefix);
+    ui->leftFrequency->setValue(freq);
+
+    if (!rig.readFrequency(activeVfo == RIG_VFO_A ? RIG_VFO_B : RIG_VFO_A, freq)) {
+        qDebug() << "Hamlib rig_get_freq (B) failed:" << rig.lastError();
+        return;
+    }
+    ui->rightFrequency->setPrefix(rightPrefix);
+    ui->rightFrequency->setValue(freq);
 }
