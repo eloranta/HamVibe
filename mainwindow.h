@@ -18,8 +18,16 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+private slots:
+    void onLeftFrequencyChanged(int value, QChar prefix);
+    void onRightFrequencyChanged(int value, QChar prefix);
+    void onSplitToggled(bool enabled);
+
 private:
     Ui::MainWindow *ui;
     Rig rig;
+    bool split = false;
+    vfo_t rxVfo = RIG_VFO_NONE;
+    vfo_t txVfo = RIG_VFO_NONE;
 };
 #endif // MAINWINDOW_H
