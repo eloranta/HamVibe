@@ -58,6 +58,10 @@ MainWindow::MainWindow(QWidget *parent)
      } else {
         ui->rightFrequency->hide();
     }
+    rmode_t initialMode = RIG_MODE_NONE;
+    if (rig.getMode(rxVfo, &initialMode, nullptr)) {
+        updateModeLabel(initialMode);
+    }
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -67,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent)
     for (const auto &band : bandConfigs) {
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
     }
+    connect(&rig, &Rig::modeChanged, this, &MainWindow::updateModeLabel);
 }
 
 MainWindow::~MainWindow()
@@ -340,6 +345,25 @@ void MainWindow::saveBandFrequency(int bandIndex, int level, int frequency)
     }
     const QString key = QString("band/%1/level%2").arg(bandConfigs[bandIndex].key).arg(level + 1);
     settings.setValue(key, frequency);
+}
+
+void MainWindow::updateModeLabel(rmode_t mode)
+{
+    const char *label = "USB";
+    switch (mode) {
+    case RIG_MODE_LSB:
+        label = "LSB";
+        break;
+    case RIG_MODE_CW:
+        label = "CW";
+        break;
+    case RIG_MODE_USB:
+    default:
+        label = "USB";
+        break;
+    }
+
+    ui->modeLabel->setText(QString::fromLatin1(label));
 }
 
 void MainWindow::setSelectedBandButton(QPushButton *button)

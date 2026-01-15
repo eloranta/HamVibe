@@ -43,6 +43,7 @@ private:
     void initBandConfigs();
     void loadBandSettings();
     void saveBandFrequency(int bandIndex, int level, int frequency);
+    void updateModeLabel(rmode_t mode);
     void setSelectedBandButton(QPushButton *button);
 
     Ui::MainWindow *ui;

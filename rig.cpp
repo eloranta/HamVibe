@@ -2,8 +2,9 @@
 
 #include <QByteArray>
 
-Rig::Rig(rig_model_t model, const QString &portName)
-    : model(model)
+Rig::Rig(rig_model_t model, const QString &portName, QObject *parent)
+    : QObject(parent)
+    , model(model)
     , portName(portName)
 {
 }
@@ -112,6 +113,36 @@ bool Rig::setFrequency(vfo_t vfo, qlonglong freq)
     return true;
 }
 
+bool Rig::getMode(rmode_t *mode, pbwidth_t *width)
+{
+    return getMode(RIG_VFO_CURR, mode, width);
+}
+
+bool Rig::getMode(vfo_t vfo, rmode_t *mode, pbwidth_t *width)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    rmode_t currentMode = RIG_MODE_NONE;
+    pbwidth_t currentWidth = RIG_PASSBAND_NORMAL;
+    const int getStatus = rig_get_mode(rig, vfo, &currentMode, &currentWidth);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_mode failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (mode) {
+        *mode = currentMode;
+    }
+    if (width) {
+        *width = currentWidth;
+    }
+
+    return true;
+}
+
 bool Rig::setMode(rmode_t mode, pbwidth_t width)
 {
     return setMode(RIG_VFO_CURR, mode, width);
@@ -124,12 +155,20 @@ bool Rig::setMode(vfo_t vfo, rmode_t mode, pbwidth_t width)
         return false;
     }
 
+    rmode_t currentMode = RIG_MODE_NONE;
+    pbwidth_t currentWidth = RIG_PASSBAND_NORMAL;
+    const int getStatus = rig_get_mode(rig, vfo, &currentMode, &currentWidth);
+    if (getStatus == RIG_OK && currentMode == mode) {
+        return true;
+    }
+
     const int setStatus = rig_set_mode(rig, vfo, mode, width);
     if (setStatus != RIG_OK) {
         setError(QString("rig_set_mode failed: %1").arg(rigerror(setStatus)));
         return false;
     }
 
+    emit modeChanged(mode);
     return true;
 }
 
