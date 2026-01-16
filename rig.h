@@ -23,6 +23,12 @@ public:
     bool getMode(vfo_t vfo, rmode_t *mode, pbwidth_t *width = nullptr);
     bool setMode(rmode_t mode, pbwidth_t width = RIG_PASSBAND_NORMAL);
     bool setMode(vfo_t vfo, rmode_t mode, pbwidth_t width = RIG_PASSBAND_NORMAL);
+    bool setPtt(bool enabled);
+    bool setPtt(vfo_t vfo, bool enabled);
+    bool setMorseSpeed(int wpm);
+    bool setMorseSpeed(vfo_t vfo, int wpm);
+    bool sendMorse(const QString &text);
+    bool sendMorse(vfo_t vfo, const QString &text);
     bool setSplit(bool enabled);
     bool setSplit(vfo_t rxVfo, vfo_t txVfo, bool enabled);
     bool getSplit(vfo_t rxVfo, bool *enabled, vfo_t *txVfo);

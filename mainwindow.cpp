@@ -62,6 +62,9 @@ MainWindow::MainWindow(QWidget *parent)
     if (rig.getMode(rxVfo, &initialMode, nullptr)) {
         updateModeLabel(initialMode);
     }
+    if (!rig.setMorseSpeed(rxVfo, 30)) {
+        qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
+    }
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -72,6 +75,10 @@ MainWindow::MainWindow(QWidget *parent)
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
     }
     connect(&rig, &Rig::modeChanged, this, &MainWindow::updateModeLabel);
+    connect(ui->og3zButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    connect(ui->fiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    connect(ui->rFiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    connect(ui->og3zTwiceButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
 }
 
 MainWindow::~MainWindow()
@@ -236,6 +243,31 @@ void MainWindow::onBandButtonClicked()
     }
 
     ui->leftFrequency->setValue(nextFreq);
+}
+
+void MainWindow::onSendTextButtonClicked()
+{
+    QPushButton *button = qobject_cast<QPushButton *>(sender());
+    if (!button) {
+        return;
+    }
+    const QString text = button->text().trimmed();
+    if (text.isEmpty()) {
+        return;
+    }
+
+    if (!rig.setPtt(rxVfo, true)) {
+        qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
+        return;
+    }
+
+    if (!rig.sendMorse(rxVfo, text)) {
+        qDebug() << "Hamlib rig_send_morse failed:" << rig.lastError();
+    }
+
+    if (!rig.setPtt(rxVfo, false)) {
+        qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+    }
 }
 
 void MainWindow::initBandConfigs()

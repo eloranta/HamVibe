@@ -172,6 +172,73 @@ bool Rig::setMode(vfo_t vfo, rmode_t mode, pbwidth_t width)
     return true;
 }
 
+bool Rig::setPtt(bool enabled)
+{
+    return setPtt(RIG_VFO_CURR, enabled);
+}
+
+bool Rig::setPtt(vfo_t vfo, bool enabled)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const ptt_t ptt = enabled ? RIG_PTT_ON : RIG_PTT_OFF;
+    const int setStatus = rig_set_ptt(rig, vfo, ptt);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_set_ptt failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
+bool Rig::setMorseSpeed(int wpm)
+{
+    return setMorseSpeed(RIG_VFO_CURR, wpm);
+}
+
+bool Rig::setMorseSpeed(vfo_t vfo, int wpm)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    level.i = wpm;
+    const int setStatus = rig_set_level(rig, vfo, RIG_LEVEL_KEYSPD, level);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_set_level(KEYSPD) failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
+bool Rig::sendMorse(const QString &text)
+{
+    return sendMorse(RIG_VFO_CURR, text);
+}
+
+bool Rig::sendMorse(vfo_t vfo, const QString &text)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const QByteArray bytes = text.toLocal8Bit();
+    const int sendStatus = rig_send_morse(rig, vfo, bytes.constData());
+    if (sendStatus != RIG_OK) {
+        setError(QString("rig_send_morse failed: %1").arg(rigerror(sendStatus)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::setSplit(bool enabled)
 {
     return setSplit(RIG_VFO_A, RIG_VFO_B, enabled);

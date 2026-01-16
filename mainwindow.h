@@ -28,6 +28,7 @@ private slots:
     void onSwapButtonClicked();
     void onCopyButtonClicked();
     void onBandButtonClicked();
+    void onSendTextButtonClicked();
 
 private:
     struct BandStep {

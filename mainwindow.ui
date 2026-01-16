@@ -217,6 +217,51 @@
          </item>
         </layout>
        </item>
+       <item row="3" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QPushButton" name="og3zButton">
+           <property name="text">
+            <string>OG3Z</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="fiveNnTuButton">
+           <property name="text">
+            <string>5NN TU</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="rFiveNnTuButton">
+           <property name="text">
+            <string>R 5NN TU</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="og3zTwiceButton">
+           <property name="text">
+            <string>OG3Z OG3Z</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_4">
+           <property name="orientation">
+            <enum>Qt::Orientation::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </item>
       </layout>
      </widget>
     </item>
