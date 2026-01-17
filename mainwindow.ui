@@ -138,14 +138,28 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="copyButton">
-           <property name="text">
-            <string>A=B</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <spacer name="horizontalSpacer_2">
+         <widget class="QPushButton" name="copyButton">
+          <property name="text">
+           <string>A=B</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="swrButton">
+          <property name="text">
+           <string>SWR</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="swrLabel">
+          <property name="text">
+           <string>SWR: --</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer_2">
            <property name="orientation">
             <enum>Qt::Orientation::Horizontal</enum>
            </property>

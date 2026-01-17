@@ -286,6 +286,32 @@ bool Rig::getSplit(vfo_t rxVfo, bool *enabled, vfo_t *txVfo)
     return true;
 }
 
+bool Rig::getSWR(float *swr)
+{
+    return getSWR(RIG_VFO_CURR, swr);
+}
+
+bool Rig::getSWR(vfo_t vfo, float *swr)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int getStatus = rig_get_level(rig, vfo, RIG_LEVEL_SWR, &level);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_level(SWR) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (swr) {
+        *swr = level.f;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

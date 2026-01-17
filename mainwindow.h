@@ -28,6 +28,7 @@ private slots:
     void onSplitToggled(bool enabled);
     void onSwapButtonClicked();
     void onCopyButtonClicked();
+    void onSWRButtonClicked();
     void onBandButtonClicked();
     void onSendTextButtonClicked();
 

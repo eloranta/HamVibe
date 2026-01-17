@@ -34,6 +34,8 @@ public:
     bool getSplit(vfo_t rxVfo, bool *enabled, vfo_t *txVfo);
     bool getActiveVfo(vfo_t *vfo);
     bool setActiveVfo(vfo_t vfo);
+    bool getSWR(float *swr);
+    bool getSWR(vfo_t vfo, float *swr);
     QString lastError() const;
 
     static QString versionString();

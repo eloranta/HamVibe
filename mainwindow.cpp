@@ -129,6 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
+    connect(ui->swrButton, &QPushButton::clicked, this, &MainWindow::onSWRButtonClicked);
     for (const auto &band : bandConfigs) {
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
     }
@@ -256,6 +257,22 @@ void MainWindow::onCopyButtonClicked()
     }
 
     ui->rightFrequency->setValue(freq);
+}
+
+void MainWindow::onSWRButtonClicked()
+{
+    float swr = 0.0f;
+    if (!rig.getSWR(rxVfo, &swr)) {
+        qDebug() << "Hamlib rig_get_level (SWR) failed:" << rig.lastError();
+        if (ui->swrLabel) {
+            ui->swrLabel->setText("SWR: N/A");
+        }
+        return;
+    }
+
+    if (ui->swrLabel) {
+        ui->swrLabel->setText(QString("SWR: %1").arg(QString::number(swr, 'f', 2)));
+    }
 }
 
 void MainWindow::onBandButtonClicked()
