@@ -36,6 +36,8 @@ public:
     bool setActiveVfo(vfo_t vfo);
     bool getSWR(float *swr);
     bool getSWR(vfo_t vfo, float *swr);
+    bool getStrength(float *strength);
+    bool getStrength(vfo_t vfo, float *strength);
     QString lastError() const;
 
     static QString versionString();

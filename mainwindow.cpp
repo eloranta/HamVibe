@@ -7,6 +7,8 @@
 #include <QSignalBlocker>
 #include <QPushButton>
 #include <QTimer>
+#include <cmath>
+#include <limits>
 #include <hamlib/rig.h>
 
 static int estimateMorseDurationMs(const QString &text, int wpm)
@@ -55,13 +57,28 @@ static int estimateMorseDurationMs(const QString &text, int wpm)
     return units * ditMs + 200;
 }
 
+static QString formatSMeter(float strength)
+{
+    static const int steps[] = {1, 3, 5, 7, 9, 20, 40, 60};
+    const int count = static_cast<int>(sizeof(steps) / sizeof(steps[0]));
+    float bestDiff = std::numeric_limits<float>::max();
+    int best = steps[0];
+    for (int i = 0; i < count; ++i) {
+        const float diff = std::abs(strength - steps[i]);
+        if (diff < bestDiff) {
+            bestDiff = diff;
+            best = steps[i];
+        }
+    }
+    return QString::number(best);
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , rig(RIG_MODEL_TS590S, "COM7")
 {
     ui->setupUi(this);
-    setOnAir(false);
     pttOffTimer = new QTimer(this);
     pttOffTimer->setSingleShot(true);
     connect(pttOffTimer, &QTimer::timeout, this, [this]() {
@@ -71,6 +88,13 @@ MainWindow::MainWindow(QWidget *parent)
         }
         setOnAir(false);
     });
+    swrTimer = new QTimer(this);
+    swrTimer->setInterval(1000);
+    connect(swrTimer, &QTimer::timeout, this, &MainWindow::updateSWRLabel);
+    sMeterTimer = new QTimer(this);
+    sMeterTimer->setInterval(1000);
+    connect(sMeterTimer, &QTimer::timeout, this, &MainWindow::updateSMeterLabel);
+    setOnAir(false);
     initBandConfigs();
     loadBandSettings();
 
@@ -123,6 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }
+    updateSMeterLabel();
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -130,7 +155,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
     connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
-    connect(ui->swrButton, &QPushButton::clicked, this, &MainWindow::onSWRButtonClicked);
     for (const auto &band : bandConfigs) {
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
     }
@@ -258,22 +282,6 @@ void MainWindow::onCopyButtonClicked()
     }
 
     ui->rightFrequency->setValue(freq);
-}
-
-void MainWindow::onSWRButtonClicked()
-{
-    float swr = 0.0f;
-    if (!rig.getSWR(rxVfo, &swr)) {
-        qDebug() << "Hamlib rig_get_level (SWR) failed:" << rig.lastError();
-        if (ui->swrLabel) {
-            ui->swrLabel->setText("SWR: N/A");
-        }
-        return;
-    }
-
-    if (ui->swrLabel) {
-        ui->swrLabel->setText(QString("SWR: %1").arg(QString::number(swr, 'f', 2)));
-    }
 }
 
 void MainWindow::onModeButtonClicked()
@@ -537,9 +545,63 @@ void MainWindow::setOnAir(bool enabled)
     if (enabled) {
         ui->onAirLabel->setText("On Air");
         ui->onAirLabel->setStyleSheet("color: white; background-color: red; padding: 2px 6px;");
+        if (swrTimer) {
+            swrTimer->start();
+        }
+        if (sMeterTimer) {
+            sMeterTimer->stop();
+        }
+        if (ui->sValueLabel) {
+            ui->sValueLabel->setText("--");
+        }
+        updateSWRLabel();
     } else {
         ui->onAirLabel->setText(QString());
         ui->onAirLabel->setStyleSheet(QString());
+        if (swrTimer) {
+            swrTimer->stop();
+        }
+        if (sMeterTimer && rig.isOpen()) {
+            sMeterTimer->start();
+        } else if (sMeterTimer) {
+            sMeterTimer->stop();
+        }
+        if (ui->swrLabel) {
+            ui->swrLabel->setText("--");
+        }
+        updateSMeterLabel();
     }
     ui->onAirLabel->repaint();
+}
+
+void MainWindow::updateSWRLabel()
+{
+    if (!ui || !ui->swrLabel) {
+        return;
+    }
+    float swr = 0.0f;
+    if (!rig.getSWR(rxVfo, &swr)) {
+        qDebug() << "Hamlib rig_get_level (SWR) failed:" << rig.lastError();
+        ui->swrLabel->setText("--");
+        return;
+    }
+    ui->swrLabel->setText(QString::number(swr, 'f', 2));
+}
+
+void MainWindow::updateSMeterLabel()
+{
+    if (!ui || !ui->sValueLabel) {
+        return;
+    }
+    if (!rig.isOpen()) {
+        ui->sValueLabel->setText("--");
+        return;
+    }
+    float strength = 0.0f;
+    if (!rig.getStrength(rxVfo, &strength)) {
+        qDebug() << "Hamlib rig_get_level (STRENGTH) failed:" << rig.lastError();
+        ui->sValueLabel->setText("--");
+        return;
+    }
+    ui->sValueLabel->setText(formatSMeter(strength));
 }

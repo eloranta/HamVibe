@@ -312,6 +312,32 @@ bool Rig::getSWR(vfo_t vfo, float *swr)
     return true;
 }
 
+bool Rig::getStrength(float *strength)
+{
+    return getStrength(RIG_VFO_CURR, strength);
+}
+
+bool Rig::getStrength(vfo_t vfo, float *strength)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int getStatus = rig_get_level(rig, vfo, RIG_LEVEL_STRENGTH, &level);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_level(STRENGTH) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (strength) {
+        *strength = level.f;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {
