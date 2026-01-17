@@ -56,22 +56,26 @@ static int estimateMorseDurationMs(const QString &text, int wpm)
     return units * ditMs + 200;
 }
 
-static float interpolateSMeter(float y)
+static float mapStrengthToS(int raw)
 {
-    static const float inVals[] = {0.0f, 3.0f, 6.0f, 9.0f, 12.0f, 15.0f, 20.0f, 25.0f, 30.0f};
-    static const float outVals[] = {0.0f, 1.0f, 3.0f, 5.0f, 7.0f, 9.0f, 20.0f, 40.0f, 60.0f};
-    const int count = static_cast<int>(sizeof(inVals) / sizeof(inVals[0]));
+    if (raw > 0) {
+        return static_cast<float>(raw);
+    }
 
-    if (y <= inVals[0]) {
+    static const float rawVals[] = {0.0f, -12.0f, -24.0f, -36.0f, -48.0f, -60.0f};
+    static const float outVals[] = {9.0f, 7.0f, 5.0f, 3.0f, 1.0f, 0.0f};
+    const int count = static_cast<int>(sizeof(rawVals) / sizeof(rawVals[0]));
+
+    if (raw >= rawVals[0]) {
         return outVals[0];
     }
-    if (y >= inVals[count - 1]) {
+    if (raw <= rawVals[count - 1]) {
         return outVals[count - 1];
     }
 
     for (int i = 0; i < count - 1; ++i) {
-        if (y <= inVals[i + 1]) {
-            const float t = (y - inVals[i]) / (inVals[i + 1] - inVals[i]);
+        if (raw <= rawVals[i] && raw >= rawVals[i + 1]) {
+            const float t = (raw - rawVals[i]) / (rawVals[i + 1] - rawVals[i]);
             return outVals[i] + t * (outVals[i + 1] - outVals[i]);
         }
     }
@@ -610,9 +614,8 @@ void MainWindow::updateSMeterLabel()
         ui->sValueLabel->setText("--");
         return;
     }
-    const float y = (strength + 54) / 4.0f;
-    const float mapped = interpolateSMeter(y);
+    const float mapped = mapStrengthToS(strength);
     const QString formatted = QString::number(static_cast<int>(std::round(mapped)));
-    qDebug() << "S-meter raw:" << strength << "y:" << y << "mapped:" << mapped;
+    qDebug() << "S-meter raw:" << strength << "mapped:" << mapped;
     ui->sValueLabel->setText(formatted);
 }
