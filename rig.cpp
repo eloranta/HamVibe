@@ -1,6 +1,7 @@
 #include "Rig.h"
 
 #include <QByteArray>
+#include <QDebug>
 
 Rig::Rig(rig_model_t model, const QString &portName, QObject *parent)
     : QObject(parent)
@@ -312,12 +313,12 @@ bool Rig::getSWR(vfo_t vfo, float *swr)
     return true;
 }
 
-bool Rig::getStrength(float *strength)
+bool Rig::getStrength(int *strength)
 {
     return getStrength(RIG_VFO_CURR, strength);
 }
 
-bool Rig::getStrength(vfo_t vfo, float *strength)
+bool Rig::getStrength(vfo_t vfo, int *strength)
 {
     if (!rig) {
         setError("rig not open");
@@ -330,9 +331,8 @@ bool Rig::getStrength(vfo_t vfo, float *strength)
         setError(QString("rig_get_level(STRENGTH) failed: %1").arg(rigerror(getStatus)));
         return false;
     }
-
     if (strength) {
-        *strength = level.f;
+        *strength = level.i;
     }
 
     return true;

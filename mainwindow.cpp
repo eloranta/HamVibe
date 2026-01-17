@@ -8,7 +8,6 @@
 #include <QPushButton>
 #include <QTimer>
 #include <cmath>
-#include <limits>
 #include <hamlib/rig.h>
 
 static int estimateMorseDurationMs(const QString &text, int wpm)
@@ -57,20 +56,27 @@ static int estimateMorseDurationMs(const QString &text, int wpm)
     return units * ditMs + 200;
 }
 
-static QString formatSMeter(float strength)
+static float interpolateSMeter(float y)
 {
-    static const int steps[] = {1, 3, 5, 7, 9, 20, 40, 60};
-    const int count = static_cast<int>(sizeof(steps) / sizeof(steps[0]));
-    float bestDiff = std::numeric_limits<float>::max();
-    int best = steps[0];
-    for (int i = 0; i < count; ++i) {
-        const float diff = std::abs(strength - steps[i]);
-        if (diff < bestDiff) {
-            bestDiff = diff;
-            best = steps[i];
+    static const float inVals[] = {0.0f, 3.0f, 6.0f, 9.0f, 12.0f, 15.0f, 20.0f, 25.0f, 30.0f};
+    static const float outVals[] = {0.0f, 1.0f, 3.0f, 5.0f, 7.0f, 9.0f, 20.0f, 40.0f, 60.0f};
+    const int count = static_cast<int>(sizeof(inVals) / sizeof(inVals[0]));
+
+    if (y <= inVals[0]) {
+        return outVals[0];
+    }
+    if (y >= inVals[count - 1]) {
+        return outVals[count - 1];
+    }
+
+    for (int i = 0; i < count - 1; ++i) {
+        if (y <= inVals[i + 1]) {
+            const float t = (y - inVals[i]) / (inVals[i + 1] - inVals[i]);
+            return outVals[i] + t * (outVals[i + 1] - outVals[i]);
         }
     }
-    return QString::number(best);
+
+    return outVals[count - 1];
 }
 
 MainWindow::MainWindow(QWidget *parent)
@@ -147,6 +153,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }
+    setOnAir(false);
     updateSMeterLabel();
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
@@ -597,13 +604,15 @@ void MainWindow::updateSMeterLabel()
         ui->sValueLabel->setText("--");
         return;
     }
-    float strength = 0.0f;
+    int strength = 0;
     if (!rig.getStrength(rxVfo, &strength)) {
         qDebug() << "Hamlib rig_get_level (STRENGTH) failed:" << rig.lastError();
         ui->sValueLabel->setText("--");
         return;
     }
-    const QString formatted = formatSMeter(strength);
-    qDebug() << "S-meter raw:" << strength << "mapped:" << formatted;
+    const float y = (strength + 54) / 4.0f;
+    const float mapped = interpolateSMeter(y);
+    const QString formatted = QString::number(static_cast<int>(std::round(mapped)));
+    qDebug() << "S-meter raw:" << strength << "y:" << y << "mapped:" << mapped;
     ui->sValueLabel->setText(formatted);
 }

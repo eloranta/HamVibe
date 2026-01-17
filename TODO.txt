@@ -1,0 +1,2 @@
+- add threads to morse send - get notification when sending ends
+- abort send with esc
