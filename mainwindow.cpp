@@ -286,63 +286,63 @@ void MainWindow::initBandConfigs()
     };
 
     static const BandStep steps1_8[4] = {
+        {1800000, RIG_MODE_CW},
         {1840000, RIG_MODE_USB},
         {1840000, RIG_MODE_USB}, // TODO:
-        {1800000, RIG_MODE_CW},
         {1800000, RIG_MODE_LSB}
     };
     static const BandStep steps3_5[4] = {
+        {3501000, RIG_MODE_CW},
         {3573000, RIG_MODE_USB},
         {3595000, RIG_MODE_USB},
-        {3501000, RIG_MODE_CW},
         {3600000, RIG_MODE_LSB}
     };
     static const BandStep steps7[4] = {
+        {7001000, RIG_MODE_CW},
         {7074000, RIG_MODE_USB},
         {7047500, RIG_MODE_USB},
-        {7001000, RIG_MODE_CW},
         {7100000, RIG_MODE_LSB}
     };
     static const BandStep steps10[4] = {
+        {10000000, RIG_MODE_CW}, // TODO:
         {10136000, RIG_MODE_USB},
         {10140000, RIG_MODE_USB},
-        {10000000, RIG_MODE_CW}, // TODO:
         {10000000, RIG_MODE_USB} // TODO:
     };
     static const BandStep steps14[4] = {
+        {14001000, RIG_MODE_CW},
         {14074000, RIG_MODE_USB},
         {14080000, RIG_MODE_USB},
-        {14001000, RIG_MODE_CW},
         {14200000, RIG_MODE_USB}
     };
     static const BandStep steps18[4] = {
+        {18000000, RIG_MODE_CW}, // TODO:
         {18100000, RIG_MODE_USB},
         {18104000, RIG_MODE_USB},
-        {18000000, RIG_MODE_CW}, // TODO:
         {18000000, RIG_MODE_USB}
     };
     static const BandStep steps21[4] = {
+        {21001000, RIG_MODE_CW},
         {21074000, RIG_MODE_USB},
         {21140000, RIG_MODE_USB},
-        {21001000, RIG_MODE_CW},
         {21200000, RIG_MODE_USB}
     };
     static const BandStep steps24[4] = {
+        {24000000, RIG_MODE_CW},
         {24915000, RIG_MODE_USB},
         {24919000, RIG_MODE_USB},
-        {24000000, RIG_MODE_CW},
         {24000000, RIG_MODE_USB}
     };
     static const BandStep steps28[4] = {
+        {28000000, RIG_MODE_CW},
         {28074000, RIG_MODE_USB},
         {28180000, RIG_MODE_USB},
-        {28000000, RIG_MODE_CW},
         {28000000, RIG_MODE_USB}
     };
     static const BandStep steps50[4] = {
+        {50100000, RIG_MODE_CW},
         {50313000, RIG_MODE_USB},
         {50318000, RIG_MODE_USB},
-        {50100000, RIG_MODE_CW},
         {50300000, RIG_MODE_USB}
     };
 
