@@ -53,6 +53,7 @@ private:
     void updateSWRLabel();
     void updateSMeterLabel();
     void updatePowerLabel();
+    void updateALCLabel();
 
     Ui::MainWindow *ui;
     Rig rig;
@@ -68,6 +69,7 @@ private:
     QTimer *swrTimer = nullptr;
     QTimer *sMeterTimer = nullptr;
     QTimer *powerTimer = nullptr;
+    QTimer *alcTimer = nullptr;
     int morseWpm = 30;
     rmode_t currentMode = RIG_MODE_USB;
     bool manualTx = false;

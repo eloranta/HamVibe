@@ -110,6 +110,9 @@ MainWindow::MainWindow(QWidget *parent)
     powerTimer = new QTimer(this);
     powerTimer->setInterval(1000);
     connect(powerTimer, &QTimer::timeout, this, &MainWindow::updatePowerLabel);
+    alcTimer = new QTimer(this);
+    alcTimer->setInterval(1000);
+    connect(alcTimer, &QTimer::timeout, this, &MainWindow::updateALCLabel);
     setOnAir(false);
     initBandConfigs();
     loadBandSettings();
@@ -604,11 +607,15 @@ void MainWindow::setOnAir(bool enabled)
         if (powerTimer) {
             powerTimer->start();
         }
+        if (alcTimer) {
+            alcTimer->start();
+        }
         if (ui->sValueLabel) {
             ui->sValueLabel->setText("--");
         }
         updateSWRLabel();
         updatePowerLabel();
+        updateALCLabel();
     } else {
         ui->onAirLabel->setText(QString());
         ui->onAirLabel->setStyleSheet(QString());
@@ -626,8 +633,14 @@ void MainWindow::setOnAir(bool enabled)
         if (powerTimer) {
             powerTimer->stop();
         }
+        if (alcTimer) {
+            alcTimer->stop();
+        }
         if (ui->swrLabel) {
             ui->swrLabel->setText("--");
+        }
+        if (ui->alcValueLabel) {
+            ui->alcValueLabel->setText(QString());
         }
         updateSMeterLabel();
     }
@@ -685,4 +698,22 @@ void MainWindow::updatePowerLabel()
     }
     const QString formatted = QString::number(power, 'f', 1);
     ui->sValueLabel->setText(formatted);
+}
+
+void MainWindow::updateALCLabel()
+{
+    if (!ui || !ui->alcValueLabel) {
+        return;
+    }
+    if (!rig.isOpen()) {
+        ui->alcValueLabel->setText(QString());
+        return;
+    }
+    float alc = 0.0f;
+    if (!rig.getALC(rxVfo, &alc)) {
+        qDebug() << "Hamlib rig_get_level (ALC) failed:" << rig.lastError();
+        ui->alcValueLabel->setText(QString());
+        return;
+    }
+    ui->alcValueLabel->setText(QString::number(alc, 'f', 1));
 }

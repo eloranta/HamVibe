@@ -364,6 +364,32 @@ bool Rig::getPower(vfo_t vfo, float *power)
     return true;
 }
 
+bool Rig::getALC(float *alc)
+{
+    return getALC(RIG_VFO_CURR, alc);
+}
+
+bool Rig::getALC(vfo_t vfo, float *alc)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int getStatus = rig_get_level(rig, vfo, RIG_LEVEL_ALC, &level);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_level(ALC) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (alc) {
+        *alc = level.f;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

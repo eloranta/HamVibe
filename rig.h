@@ -40,6 +40,8 @@ public:
     bool getStrength(vfo_t vfo, int *strength);
     bool getPower(float *power);
     bool getPower(vfo_t vfo, float *power);
+    bool getALC(float *alc);
+    bool getALC(vfo_t vfo, float *alc);
     QString lastError() const;
 
     static QString versionString();
