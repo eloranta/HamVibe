@@ -129,6 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
+    connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
     connect(ui->swrButton, &QPushButton::clicked, this, &MainWindow::onSWRButtonClicked);
     for (const auto &band : bandConfigs) {
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
@@ -273,6 +274,29 @@ void MainWindow::onSWRButtonClicked()
     if (ui->swrLabel) {
         ui->swrLabel->setText(QString("SWR: %1").arg(QString::number(swr, 'f', 2)));
     }
+}
+
+void MainWindow::onModeButtonClicked()
+{
+    rmode_t next = RIG_MODE_USB;
+    switch (currentMode) {
+    case RIG_MODE_USB:
+        next = RIG_MODE_CW;
+        break;
+    case RIG_MODE_CW:
+        next = RIG_MODE_FM;
+        break;
+    case RIG_MODE_FM:
+    default:
+        next = RIG_MODE_USB;
+        break;
+    }
+
+    if (!rig.setMode(rxVfo, next)) {
+        qDebug() << "Hamlib rig_set_mode (RX) failed:" << rig.lastError();
+        return;
+    }
+    updateModeLabel(next);
 }
 
 void MainWindow::onBandButtonClicked()
@@ -476,13 +500,17 @@ void MainWindow::updateModeLabel(rmode_t mode)
     case RIG_MODE_CW:
         label = "CW";
         break;
+    case RIG_MODE_FM:
+        label = "FM";
+        break;
     case RIG_MODE_USB:
     default:
         label = "USB";
         break;
     }
 
-    ui->modeLabel->setText(QString::fromLatin1(label));
+    currentMode = mode;
+    ui->modeButton->setText(QString::fromLatin1(label));
 }
 
 void MainWindow::setSelectedBandButton(QPushButton *button)

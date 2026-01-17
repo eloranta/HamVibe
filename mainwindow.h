@@ -29,6 +29,7 @@ private slots:
     void onSwapButtonClicked();
     void onCopyButtonClicked();
     void onSWRButtonClicked();
+    void onModeButtonClicked();
     void onBandButtonClicked();
     void onSendTextButtonClicked();
 
@@ -62,5 +63,6 @@ private:
     QPushButton *selectedBandButton = nullptr;
     QTimer *pttOffTimer = nullptr;
     int morseWpm = 30;
+    rmode_t currentMode = RIG_MODE_USB;
 };
 #endif // MAINWINDOW_H

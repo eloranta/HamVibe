@@ -53,7 +53,7 @@
           </layout>
          </item>
          <item>
-         <widget class="QLabel" name="modeLabel">
+         <widget class="QPushButton" name="modeButton">
           <property name="font">
            <font>
             <bold>true</bold>
@@ -61,9 +61,6 @@
           </property>
           <property name="text">
            <string>USB</string>
-          </property>
-          <property name="alignment">
-           <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
           </property>
          </widget>
         </item>
