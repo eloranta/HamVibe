@@ -38,6 +38,8 @@ public:
     bool getSWR(vfo_t vfo, float *swr);
     bool getStrength(int *strength);
     bool getStrength(vfo_t vfo, int *strength);
+    bool getPower(float *power);
+    bool getPower(vfo_t vfo, float *power);
     QString lastError() const;
 
     static QString versionString();

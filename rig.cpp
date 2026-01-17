@@ -338,6 +338,32 @@ bool Rig::getStrength(vfo_t vfo, int *strength)
     return true;
 }
 
+bool Rig::getPower(float *power)
+{
+    return getPower(RIG_VFO_CURR, power);
+}
+
+bool Rig::getPower(vfo_t vfo, float *power)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int getStatus = rig_get_level(rig, vfo, RIG_LEVEL_RFPOWER_METER_WATTS, &level);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_level(RFPOWER) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+    qDebug() << level.f;
+    if (power) {
+        *power = level.f;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

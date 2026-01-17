@@ -92,6 +92,9 @@ MainWindow::MainWindow(QWidget *parent)
     pttOffTimer = new QTimer(this);
     pttOffTimer->setSingleShot(true);
     connect(pttOffTimer, &QTimer::timeout, this, [this]() {
+        if (manualTx) {
+            return;
+        }
         if (!rig.setPtt(rxVfo, false)) {
             qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
             return;
@@ -104,6 +107,9 @@ MainWindow::MainWindow(QWidget *parent)
     sMeterTimer = new QTimer(this);
     sMeterTimer->setInterval(1000);
     connect(sMeterTimer, &QTimer::timeout, this, &MainWindow::updateSMeterLabel);
+    powerTimer = new QTimer(this);
+    powerTimer->setInterval(1000);
+    connect(powerTimer, &QTimer::timeout, this, &MainWindow::updatePowerLabel);
     setOnAir(false);
     initBandConfigs();
     loadBandSettings();
@@ -165,6 +171,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
+    connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
     connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
     for (const auto &band : bandConfigs) {
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
@@ -293,6 +300,35 @@ void MainWindow::onCopyButtonClicked()
     }
 
     ui->rightFrequency->setValue(freq);
+}
+
+void MainWindow::onSendButtonClicked()
+{
+    if (manualTx) {
+        if (!rig.setPtt(rxVfo, false)) {
+            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+            return;
+        }
+        manualTx = false;
+        setOnAir(false);
+        if (ui->sendButton) {
+            ui->sendButton->setText("Send");
+        }
+        return;
+    }
+
+    if (pttOffTimer && pttOffTimer->isActive()) {
+        pttOffTimer->stop();
+    }
+    if (!rig.setPtt(rxVfo, true)) {
+        qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
+        return;
+    }
+    manualTx = true;
+    setOnAir(true);
+    if (ui->sendButton) {
+        ui->sendButton->setText("Stop");
+    }
 }
 
 void MainWindow::onModeButtonClicked()
@@ -556,19 +592,29 @@ void MainWindow::setOnAir(bool enabled)
     if (enabled) {
         ui->onAirLabel->setText("On Air");
         ui->onAirLabel->setStyleSheet("color: white; background-color: red; padding: 2px 6px;");
+        if (ui->sTextLabel) {
+            ui->sTextLabel->setText("P");
+        }
         if (swrTimer) {
             swrTimer->start();
         }
         if (sMeterTimer) {
             sMeterTimer->stop();
         }
+        if (powerTimer) {
+            powerTimer->start();
+        }
         if (ui->sValueLabel) {
             ui->sValueLabel->setText("--");
         }
         updateSWRLabel();
+        updatePowerLabel();
     } else {
         ui->onAirLabel->setText(QString());
         ui->onAirLabel->setStyleSheet(QString());
+        if (ui->sTextLabel) {
+            ui->sTextLabel->setText("S");
+        }
         if (swrTimer) {
             swrTimer->stop();
         }
@@ -576,6 +622,9 @@ void MainWindow::setOnAir(bool enabled)
             sMeterTimer->start();
         } else if (sMeterTimer) {
             sMeterTimer->stop();
+        }
+        if (powerTimer) {
+            powerTimer->stop();
         }
         if (ui->swrLabel) {
             ui->swrLabel->setText("--");
@@ -616,6 +665,24 @@ void MainWindow::updateSMeterLabel()
     }
     const float mapped = mapStrengthToS(strength);
     const QString formatted = QString::number(static_cast<int>(std::round(mapped)));
-    qDebug() << "S-meter raw:" << strength << "mapped:" << mapped;
+    ui->sValueLabel->setText(formatted);
+}
+
+void MainWindow::updatePowerLabel()
+{
+    if (!ui || !ui->sValueLabel) {
+        return;
+    }
+    if (!rig.isOpen()) {
+        ui->sValueLabel->setText("--");
+        return;
+    }
+    float power = 0.0f;
+    if (!rig.getPower(rxVfo, &power)) {
+        qDebug() << "Hamlib rig_get_level (RFPOWER) failed:" << rig.lastError();
+        ui->sValueLabel->setText("--");
+        return;
+    }
+    const QString formatted = QString::number(power, 'f', 1);
     ui->sValueLabel->setText(formatted);
 }

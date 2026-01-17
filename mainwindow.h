@@ -28,6 +28,7 @@ private slots:
     void onSplitToggled(bool enabled);
     void onSwapButtonClicked();
     void onCopyButtonClicked();
+    void onSendButtonClicked();
     void onModeButtonClicked();
     void onBandButtonClicked();
     void onSendTextButtonClicked();
@@ -51,6 +52,7 @@ private:
     void setOnAir(bool enabled);
     void updateSWRLabel();
     void updateSMeterLabel();
+    void updatePowerLabel();
 
     Ui::MainWindow *ui;
     Rig rig;
@@ -65,7 +67,9 @@ private:
     QTimer *pttOffTimer = nullptr;
     QTimer *swrTimer = nullptr;
     QTimer *sMeterTimer = nullptr;
+    QTimer *powerTimer = nullptr;
     int morseWpm = 30;
     rmode_t currentMode = RIG_MODE_USB;
+    bool manualTx = false;
 };
 #endif // MAINWINDOW_H
