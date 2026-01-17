@@ -603,5 +603,7 @@ void MainWindow::updateSMeterLabel()
         ui->sValueLabel->setText("--");
         return;
     }
-    ui->sValueLabel->setText(formatSMeter(strength));
+    const QString formatted = formatSMeter(strength);
+    qDebug() << "S-meter raw:" << strength << "mapped:" << formatted;
+    ui->sValueLabel->setText(formatted);
 }
