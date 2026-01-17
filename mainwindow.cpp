@@ -2,10 +2,58 @@
 #include "ui_mainwindow.h"
 
 #include <QDebug>
+#include <QHash>
 #include <QSettings>
 #include <QSignalBlocker>
 #include <QPushButton>
+#include <QTimer>
 #include <hamlib/rig.h>
+
+static int estimateMorseDurationMs(const QString &text, int wpm)
+{
+    if (wpm <= 0) {
+        return 0;
+    }
+
+    static const QHash<QChar, QByteArray> morseMap = {
+        {'A', ".-"},    {'B', "-..."},  {'C', "-.-."}, {'D', "-.."},   {'E', "."},
+        {'F', "..-."},  {'G', "--."},   {'H', "...."}, {'I', ".."},    {'J', ".---"},
+        {'K', "-.-"},   {'L', ".-.."},  {'M', "--"},   {'N', "-."},    {'O', "---"},
+        {'P', ".--."},  {'Q', "--.-"},  {'R', ".-."},  {'S', "..."},   {'T', "-"},
+        {'U', "..-"},   {'V', "...-"},  {'W', ".--"},  {'X', "-..-"},  {'Y', "-.--"},
+        {'Z', "--.."},
+        {'0', "-----"}, {'1', ".----"}, {'2', "..---"},{'3', "...--"},{'4', "....-"},
+        {'5', "....."}, {'6', "-...."}, {'7', "--..."},{'8', "---.."},{'9', "----."},
+        {'/', "-..-."}
+    };
+
+    const int ditMs = 1200 / wpm;
+    int units = 0;
+    const QStringList words = text.toUpper().split(' ', Qt::SkipEmptyParts);
+    for (int w = 0; w < words.size(); ++w) {
+        const QString &word = words[w];
+        for (int i = 0; i < word.size(); ++i) {
+            const QByteArray pattern = morseMap.value(word[i]);
+            if (pattern.isEmpty()) {
+                continue;
+            }
+            for (int s = 0; s < pattern.size(); ++s) {
+                units += (pattern[s] == '-') ? 3 : 1;
+                if (s < pattern.size() - 1) {
+                    units += 1;
+                }
+            }
+            if (i < word.size() - 1) {
+                units += 3;
+            }
+        }
+        if (w < words.size() - 1) {
+            units += 7;
+        }
+    }
+
+    return units * ditMs + 200;
+}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -13,6 +61,16 @@ MainWindow::MainWindow(QWidget *parent)
     , rig(RIG_MODEL_TS590S, "COM7")
 {
     ui->setupUi(this);
+    setOnAir(false);
+    pttOffTimer = new QTimer(this);
+    pttOffTimer->setSingleShot(true);
+    connect(pttOffTimer, &QTimer::timeout, this, [this]() {
+        if (!rig.setPtt(rxVfo, false)) {
+            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+            return;
+        }
+        setOnAir(false);
+    });
     initBandConfigs();
     loadBandSettings();
 
@@ -62,7 +120,7 @@ MainWindow::MainWindow(QWidget *parent)
     if (rig.getMode(rxVfo, &initialMode, nullptr)) {
         updateModeLabel(initialMode);
     }
-    if (!rig.setMorseSpeed(rxVfo, 30)) {
+    if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }
 
@@ -256,17 +314,29 @@ void MainWindow::onSendTextButtonClicked()
         return;
     }
 
+    if (pttOffTimer && pttOffTimer->isActive()) {
+        pttOffTimer->stop();
+    }
     if (!rig.setPtt(rxVfo, true)) {
         qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
         return;
     }
+    setOnAir(true);
+    qApp->processEvents();
 
     if (!rig.sendMorse(rxVfo, text)) {
         qDebug() << "Hamlib rig_send_morse failed:" << rig.lastError();
+        if (!rig.setPtt(rxVfo, false)) {
+            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+            return;
+        }
+        setOnAir(false);
+        return;
     }
 
-    if (!rig.setPtt(rxVfo, false)) {
-        qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+    const int durationMs = estimateMorseDurationMs(text, morseWpm);
+    if (pttOffTimer) {
+        pttOffTimer->start(durationMs > 0 ? durationMs : 200);
     }
 }
 
@@ -412,4 +482,19 @@ void MainWindow::setSelectedBandButton(QPushButton *button)
     if (selectedBandButton) {
         selectedBandButton->setStyleSheet("QPushButton { border: 2px solid #1e88e5; }");
     }
+}
+
+void MainWindow::setOnAir(bool enabled)
+{
+    if (!ui || !ui->onAirLabel) {
+        return;
+    }
+    if (enabled) {
+        ui->onAirLabel->setText("On Air");
+        ui->onAirLabel->setStyleSheet("color: white; background-color: red; padding: 2px 6px;");
+    } else {
+        ui->onAirLabel->setText(QString());
+        ui->onAirLabel->setStyleSheet(QString());
+    }
+    ui->onAirLabel->repaint();
 }

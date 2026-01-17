@@ -12,6 +12,7 @@ class MainWindow;
 QT_END_NAMESPACE
 
 class QPushButton;
+class QTimer;
 
 class MainWindow : public QMainWindow
 {
@@ -46,6 +47,7 @@ private:
     void saveBandFrequency(int bandIndex, int level, int frequency);
     void updateModeLabel(rmode_t mode);
     void setSelectedBandButton(QPushButton *button);
+    void setOnAir(bool enabled);
 
     Ui::MainWindow *ui;
     Rig rig;
@@ -57,5 +59,7 @@ private:
     int bandSavedFreqs[10][4] = {};
     int currentBandIndex = -1;
     QPushButton *selectedBandButton = nullptr;
+    QTimer *pttOffTimer = nullptr;
+    int morseWpm = 30;
 };
 #endif // MAINWINDOW_H
