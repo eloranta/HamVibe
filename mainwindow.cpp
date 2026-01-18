@@ -677,7 +677,8 @@ void MainWindow::updateSMeterLabel()
         return;
     }
     const float mapped = mapStrengthToS(strength);
-    const QString formatted = QString::number(static_cast<int>(std::round(mapped)));
+    const QString formatted = QString("%1 dB")
+        .arg(static_cast<int>(std::round(mapped)));
     ui->sValueLabel->setText(formatted);
 }
 
@@ -696,7 +697,8 @@ void MainWindow::updatePowerLabel()
         ui->sValueLabel->setText("--");
         return;
     }
-    const QString formatted = QString::number(power, 'f', 1);
+    const QString formatted = QString("%1 W")
+        .arg(QString::number(power, 'f', 1));
     ui->sValueLabel->setText(formatted);
 }
 
