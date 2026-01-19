@@ -517,6 +517,53 @@ bool Rig::setAntenna(vfo_t vfo, ant_t ant)
     return true;
 }
 
+bool Rig::getTunerEnabled(bool *enabled)
+{
+    return getTunerEnabled(RIG_VFO_CURR, enabled);
+}
+
+bool Rig::getTunerEnabled(vfo_t vfo, bool *enabled)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    int status = 0;
+    const int getStatus = rig_get_func(rig, vfo, RIG_FUNC_TUNER, &status);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_func(TUNER) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (enabled) {
+        *enabled = (status != 0);
+    }
+
+    return true;
+}
+
+bool Rig::setTunerEnabled(bool enabled)
+{
+    return setTunerEnabled(RIG_VFO_CURR, enabled);
+}
+
+bool Rig::setTunerEnabled(vfo_t vfo, bool enabled)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int setStatus = rig_set_func(rig, vfo, RIG_FUNC_TUNER, enabled ? 1 : 0);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_set_func(TUNER) failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

@@ -52,6 +52,10 @@ public:
     bool getAntenna(vfo_t vfo, ant_t *ant);
     bool setAntenna(ant_t ant);
     bool setAntenna(vfo_t vfo, ant_t ant);
+    bool getTunerEnabled(bool *enabled);
+    bool getTunerEnabled(vfo_t vfo, bool *enabled);
+    bool setTunerEnabled(bool enabled);
+    bool setTunerEnabled(vfo_t vfo, bool enabled);
     QString lastError() const;
 
     static QString versionString();

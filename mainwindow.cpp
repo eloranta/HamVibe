@@ -178,6 +178,7 @@ MainWindow::MainWindow(QWidget *parent)
     updateAGCLabel();
     updateVoxLabel();
     updateAntennaLabel();
+    updateTunerLabel();
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -185,6 +186,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
     connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
+    connect(ui->tunerToggleButton, &QPushButton::clicked, this, &MainWindow::onTunerToggleClicked);
     connect(ui->antToggleButton, &QPushButton::clicked, this, &MainWindow::onAntennaToggleClicked);
     connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
     if (ui->powerLevelCombo) {
@@ -358,6 +360,22 @@ void MainWindow::onSendButtonClicked()
     if (ui->sendButton) {
         ui->sendButton->setText("Stop");
     }
+}
+
+void MainWindow::onTunerToggleClicked()
+{
+    bool enabled = false;
+    if (!rig.getTunerEnabled(rxVfo, &enabled)) {
+        qDebug() << "Hamlib rig_get_func (TUNER) failed:" << rig.lastError();
+        return;
+    }
+
+    if (!rig.setTunerEnabled(rxVfo, !enabled)) {
+        qDebug() << "Hamlib rig_set_func (TUNER) failed:" << rig.lastError();
+        return;
+    }
+
+    updateTunerLabel();
 }
 
 void MainWindow::onAntennaToggleClicked()
@@ -731,6 +749,7 @@ void MainWindow::updateSMeterLabel()
     updateAGCLabel();
     updateVoxLabel();
     updateAntennaLabel();
+    updateTunerLabel();
 }
 
 void MainWindow::updatePowerLabel()
@@ -854,4 +873,24 @@ void MainWindow::updateAntennaLabel()
         value = "2";
     }
     ui->antValueLabel->setText(value);
+}
+
+void MainWindow::updateTunerLabel()
+{
+    if (!ui || !ui->tunerLabel) {
+        return;
+    }
+    if (!rig.isOpen()) {
+        ui->tunerLabel->setText(QString());
+        return;
+    }
+
+    bool enabled = false;
+    if (!rig.getTunerEnabled(rxVfo, &enabled)) {
+        qDebug() << "Hamlib rig_get_func (TUNER) failed:" << rig.lastError();
+        ui->tunerLabel->setText(QString());
+        return;
+    }
+
+    ui->tunerLabel->setText(enabled ? "AT>TX" : QString());
 }
