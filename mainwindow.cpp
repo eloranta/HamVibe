@@ -167,6 +167,9 @@ MainWindow::MainWindow(QWidget *parent)
     if (ui->sValueLabel) {
         ui->sValueLabel->setFixedWidth(80);
     }
+    if (ui->onAirLabel) {
+        ui->onAirLabel->setFixedWidth(70);
+    }
     if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }

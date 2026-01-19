@@ -63,6 +63,13 @@
 
         10. Gain: RF/AF/SQL
 
+    Menu
+        1. COM port selection
+
+        2. speed
+
+        2. parity?
+
     CW Sending
 
         1.  Message buttons
@@ -70,5 +77,9 @@
         2.  Morse send: add thread
 
         3.  abort with esc
+
+        4. Speed
+
+
 
 

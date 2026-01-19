@@ -40,18 +40,6 @@
             </widget>
            </item>
           <item>
-           <widget class="QPushButton" name="modeButton">
-            <property name="font">
-             <font>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>USB</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QLabel" name="onAirLabel">
              <property name="font">
               <font>
@@ -64,6 +52,18 @@
              <property name="alignment">
               <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
              </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="modeButton">
+            <property name="font">
+             <font>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>USB</string>
+            </property>
            </widget>
           </item>
           <item>
