@@ -163,6 +163,9 @@ MainWindow::MainWindow(QWidget *parent)
     if (rig.getMode(rxVfo, &initialMode, nullptr)) {
         updateModeLabel(initialMode);
     }
+    if (ui->sValueLabel) {
+        ui->sValueLabel->setFixedWidth(80);
+    }
     if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }
@@ -592,6 +595,7 @@ void MainWindow::setOnAir(bool enabled)
     if (!ui || !ui->onAirLabel) {
         return;
     }
+    ui->onAirLabel->show();
     if (enabled) {
         ui->onAirLabel->setText("On Air");
         ui->onAirLabel->setStyleSheet("color: white; background-color: red; padding: 2px 6px;");
