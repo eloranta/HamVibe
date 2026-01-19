@@ -67,6 +67,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QLabel" name="agcLabel">
+            <property name="text">
+             <string>AGC --</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="meterTopSpacer">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>

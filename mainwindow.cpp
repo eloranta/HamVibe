@@ -175,6 +175,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     setOnAir(false);
     updateSMeterLabel();
+    updateAGCLabel();
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -703,6 +704,7 @@ void MainWindow::updateSMeterLabel()
     const QString formatted = QString("%1 dB")
         .arg(static_cast<int>(std::round(mapped)));
     ui->sValueLabel->setText(formatted);
+    updateAGCLabel();
 }
 
 void MainWindow::updatePowerLabel()
@@ -741,4 +743,45 @@ void MainWindow::updateALCLabel()
         return;
     }
     ui->alcValueLabel->setText(QString::number(alc, 'f', 1));
+}
+
+void MainWindow::updateAGCLabel()
+{
+    if (!ui || !ui->agcLabel) {
+        return;
+    }
+    static bool warned = false;
+    if (!rig.isOpen()) {
+        ui->agcLabel->setText("AGC --");
+        return;
+    }
+    int agc = 0;
+    if (!rig.getAGC(rxVfo, &agc)) {
+        if (!warned) {
+            qDebug() << "Hamlib rig_get_level (AGC) failed:" << rig.lastError();
+            warned = true;
+        }
+        ui->agcLabel->setText("AGC --");
+        return;
+    }
+    warned = false;
+
+    QString label = "AGC";
+    switch (agc) {
+    case RIG_AGC_OFF:
+        label = "AGC NONE";
+        break;
+    case RIG_AGC_SLOW:
+        label = "AGC SLOW";
+        break;
+    case RIG_AGC_FAST:
+    case RIG_AGC_SUPERFAST:
+    case 5:
+        label = "AGC FAST";
+        break;
+    default:
+        label = QString("AGC %1").arg(agc);
+        break;
+    }
+    ui->agcLabel->setText(label);
 }

@@ -54,6 +54,7 @@ private:
     void updateSMeterLabel();
     void updatePowerLabel();
     void updateALCLabel();
+    void updateAGCLabel();
 
     Ui::MainWindow *ui;
     Rig rig;

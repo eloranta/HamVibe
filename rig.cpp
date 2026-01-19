@@ -413,6 +413,32 @@ bool Rig::setPower(vfo_t vfo, float power)
     return true;
 }
 
+bool Rig::getAGC(int *agc)
+{
+    return getAGC(RIG_VFO_CURR, agc);
+}
+
+bool Rig::getAGC(vfo_t vfo, int *agc)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int getStatus = rig_get_level(rig, vfo, RIG_LEVEL_AGC, &level);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_level(AGC) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (agc) {
+        *agc = level.i;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {
