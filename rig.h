@@ -48,6 +48,10 @@ public:
     bool getAGC(vfo_t vfo, int *agc);
     bool getVoxEnabled(bool *enabled);
     bool getVoxEnabled(vfo_t vfo, bool *enabled);
+    bool getAntenna(ant_t *ant);
+    bool getAntenna(vfo_t vfo, ant_t *ant);
+    bool setAntenna(ant_t ant);
+    bool setAntenna(vfo_t vfo, ant_t ant);
     QString lastError() const;
 
     static QString versionString();

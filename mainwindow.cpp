@@ -177,6 +177,7 @@ MainWindow::MainWindow(QWidget *parent)
     updateSMeterLabel();
     updateAGCLabel();
     updateVoxLabel();
+    updateAntennaLabel();
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -184,6 +185,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
     connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
+    connect(ui->antToggleButton, &QPushButton::clicked, this, &MainWindow::onAntennaToggleClicked);
     connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
     if (ui->powerLevelCombo) {
         ui->powerLevelCombo->setCurrentText("100 W");
@@ -356,6 +358,27 @@ void MainWindow::onSendButtonClicked()
     if (ui->sendButton) {
         ui->sendButton->setText("Stop");
     }
+}
+
+void MainWindow::onAntennaToggleClicked()
+{
+    ant_t ant = RIG_ANT_NONE;
+    if (!rig.getAntenna(rxVfo, &ant)) {
+        qDebug() << "Hamlib rig_get_ant failed:" << rig.lastError();
+        return;
+    }
+
+    ant_t next = RIG_ANT_1;
+    if (ant & RIG_ANT_1) {
+        next = RIG_ANT_2;
+    }
+
+    if (!rig.setAntenna(rxVfo, next)) {
+        qDebug() << "Hamlib rig_set_ant failed:" << rig.lastError();
+        return;
+    }
+
+    updateAntennaLabel();
 }
 
 void MainWindow::onModeButtonClicked()
@@ -707,6 +730,7 @@ void MainWindow::updateSMeterLabel()
     ui->sValueLabel->setText(formatted);
     updateAGCLabel();
     updateVoxLabel();
+    updateAntennaLabel();
 }
 
 void MainWindow::updatePowerLabel()
@@ -804,4 +828,30 @@ void MainWindow::updateVoxLabel()
         return;
     }
     ui->voxLabel->setText(enabled ? "VOX" : QString());
+}
+
+void MainWindow::updateAntennaLabel()
+{
+    if (!ui || !ui->antValueLabel) {
+        return;
+    }
+    if (!rig.isOpen()) {
+        ui->antValueLabel->setText("--");
+        return;
+    }
+
+    ant_t ant = RIG_ANT_NONE;
+    if (!rig.getAntenna(rxVfo, &ant)) {
+        qDebug() << "Hamlib rig_get_ant failed:" << rig.lastError();
+        ui->antValueLabel->setText("--");
+        return;
+    }
+
+    QString value = "--";
+    if (ant & RIG_ANT_1) {
+        value = "1";
+    } else if (ant & RIG_ANT_2) {
+        value = "2";
+    }
+    ui->antValueLabel->setText(value);
 }

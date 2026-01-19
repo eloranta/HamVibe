@@ -465,6 +465,58 @@ bool Rig::getVoxEnabled(vfo_t vfo, bool *enabled)
     return true;
 }
 
+bool Rig::getAntenna(ant_t *ant)
+{
+    return getAntenna(RIG_VFO_CURR, ant);
+}
+
+bool Rig::getAntenna(vfo_t vfo, ant_t *ant)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    ant_t current = RIG_ANT_NONE;
+    ant_t antTx = RIG_ANT_NONE;
+    ant_t antRx = RIG_ANT_NONE;
+    value_t option;
+    const int getStatus = rig_get_ant(rig, vfo, RIG_ANT_CURR, &option, &current, &antTx, &antRx);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_ant failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (ant) {
+        *ant = current;
+    }
+
+    return true;
+}
+
+bool Rig::setAntenna(ant_t ant)
+{
+    return setAntenna(RIG_VFO_CURR, ant);
+}
+
+bool Rig::setAntenna(vfo_t vfo, ant_t ant)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t option;
+    option.i = 0;
+    const int setStatus = rig_set_ant(rig, vfo, ant, option);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_set_ant failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

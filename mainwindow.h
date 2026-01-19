@@ -29,6 +29,7 @@ private slots:
     void onSwapButtonClicked();
     void onCopyButtonClicked();
     void onSendButtonClicked();
+    void onAntennaToggleClicked();
     void onModeButtonClicked();
     void onBandButtonClicked();
     void onSendTextButtonClicked();
@@ -56,6 +57,7 @@ private:
     void updateALCLabel();
     void updateAGCLabel();
     void updateVoxLabel();
+    void updateAntennaLabel();
 
     Ui::MainWindow *ui;
     Rig rig;
