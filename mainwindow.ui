@@ -24,225 +24,234 @@
        <item row="0" column="0" colspan="2">
         <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <layout class="QHBoxLayout" name="meterTopLayout">
-           <item>
-            <widget class="QLabel" name="sTextLabel">
-             <property name="text">
-              <string>S</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="sValueLabel">
-             <property name="text">
-              <string>--</string>
-             </property>
-            </widget>
-           </item>
-          <item>
-           <widget class="QLabel" name="onAirLabel">
-             <property name="font">
-              <font>
-               <bold>true</bold>
-              </font>
-             </property>
-             <property name="text">
-              <string>On Air</string>
-             </property>
-             <property name="alignment">
-              <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="modeButton">
-            <property name="font">
-             <font>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>USB</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="agcLabel">
-            <property name="text">
-             <string>AGC --</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="voxLabel">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="meterTopSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-          <layout class="QHBoxLayout" name="alcLayout">
-           <item>
-            <widget class="QLabel" name="alcTextLabel">
-             <property name="text">
-              <string>ALC</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="alcValueLabel">
-             <property name="text">
-              <string>--</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="alcSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-          </layout>
-         </item>
-         <item>
-        <layout class="QHBoxLayout" name="swrLayout">
-          <item>
-           <widget class="QLabel" name="swrTextLabel">
-             <property name="text">
-              <string>SWR</string>
-             </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="swrLabel">
-             <property name="text">
-              <string>--</string>
-             </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="swrSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="antLayout">
-          <item>
-           <widget class="QLabel" name="antTextLabel">
-            <property name="text">
-             <string>ANT</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="antValueLabel">
-            <property name="text">
-             <string>--</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QLabel" name="tunerLabel">
-            <property name="text">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <spacer name="antSpacer">
-            <property name="orientation">
-             <enum>Qt::Orientation::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout">
-           <item>
-            <widget class="FrequencyLabel" name="leftFrequency">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="font">
-              <font>
-               <family>Consolas</family>
-               <pointsize>32</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>A 50000000</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <spacer name="horizontalSpacer">
-             <property name="orientation">
-              <enum>Qt::Orientation::Horizontal</enum>
-             </property>
-             <property name="sizeHint" stdset="0">
-              <size>
-               <width>40</width>
-               <height>20</height>
-              </size>
-             </property>
-            </spacer>
-           </item>
-           <item>
-            <widget class="FrequencyLabel" name="rightFrequency">
-             <property name="enabled">
-              <bool>true</bool>
-             </property>
-             <property name="font">
-              <font>
-               <family>Consolas</family>
-               <pointsize>32</pointsize>
-              </font>
-             </property>
-             <property name="text">
-              <string>A 50000000</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <widget class="QWidget" name="freqSectionWidget">
+           <property name="styleSheet">
+            <string>background-color: #ffaa00;</string>
+           </property>
+           <layout class="QVBoxLayout" name="freqSectionLayout">
+            <item>
+             <layout class="QHBoxLayout" name="meterTopLayout">
+              <item>
+               <widget class="QLabel" name="sTextLabel">
+                <property name="text">
+                 <string>S</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="sValueLabel">
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="onAirLabel">
+                <property name="font">
+                 <font>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>On Air</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="modeButton">
+                <property name="font">
+                 <font>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>USB</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="agcLabel">
+                <property name="text">
+                 <string>AGC --</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="voxLabel">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="meterTopSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="alcLayout">
+              <item>
+               <widget class="QLabel" name="alcTextLabel">
+                <property name="text">
+                 <string>ALC</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="alcValueLabel">
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="alcSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="swrLayout">
+              <item>
+               <widget class="QLabel" name="swrTextLabel">
+                <property name="text">
+                 <string>SWR</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="swrLabel">
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="swrSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="antLayout">
+              <item>
+               <widget class="QLabel" name="antTextLabel">
+                <property name="text">
+                 <string>ANT</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="antValueLabel">
+                <property name="text">
+                 <string>--</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="tunerLabel">
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="antSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="FrequencyLabel" name="leftFrequency">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Consolas</family>
+                  <pointsize>32</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>A 50000000</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="FrequencyLabel" name="rightFrequency">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <family>Consolas</family>
+                  <pointsize>32</pointsize>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>A 50000000</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </item>
          <item>
           <layout class="QHBoxLayout" name="powerLevelLayout">
