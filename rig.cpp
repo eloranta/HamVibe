@@ -390,6 +390,29 @@ bool Rig::getALC(vfo_t vfo, float *alc)
     return true;
 }
 
+bool Rig::setPower(float power)
+{
+    return setPower(RIG_VFO_CURR, power);
+}
+
+bool Rig::setPower(vfo_t vfo, float power)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    level.f = power;
+    const int setStatus = rig_set_level(rig, vfo, RIG_LEVEL_RFPOWER, level);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_set_level(RFPOWER) failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

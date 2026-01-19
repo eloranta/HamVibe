@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QSettings>
 #include <QSignalBlocker>
+#include <QComboBox>
 #include <QPushButton>
 #include <QTimer>
 #include <cmath>
@@ -179,6 +180,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
     connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
     connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
+    if (ui->powerLevelCombo) {
+        ui->powerLevelCombo->setCurrentText("100 W");
+        connect(ui->powerLevelCombo, &QComboBox::currentTextChanged, this, [this](const QString &text) {
+            const QString trimmed = text.trimmed();
+            bool ok = false;
+            const float watts = trimmed.split(' ').first().toFloat(&ok);
+            if (!ok || watts <= 0.0f) {
+                return;
+            }
+            const float ratio = watts / 100.0f;
+            if (!rig.setPower(rxVfo, ratio)) {
+                qDebug() << "Hamlib rig_set_level (RFPOWER) failed:" << rig.lastError();
+            }
+        });
+    }
     for (const auto &band : bandConfigs) {
         connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
     }

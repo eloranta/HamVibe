@@ -144,6 +144,134 @@
           </layout>
          </item>
          <item>
+          <layout class="QHBoxLayout" name="powerLevelLayout">
+           <item>
+            <widget class="QLabel" name="powerLevelLabel">
+             <property name="text">
+              <string>Power</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+                        <widget class="QComboBox" name="powerLevelCombo">
+             <item>
+              <property name="text">
+               <string>5 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>10 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>15 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>20 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>25 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>30 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>35 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>40 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>45 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>50 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>55 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>60 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>65 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>70 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>75 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>80 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>85 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>90 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>95 W</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>100 W</string>
+              </property>
+             </item>
+            </widget>
+           </item>
+           <item>
+            <spacer name="powerLevelSpacer">
+             <property name="orientation">
+              <enum>Qt::Orientation::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+          </layout>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="sendLayout">
            <item>
             <widget class="QPushButton" name="sendButton">

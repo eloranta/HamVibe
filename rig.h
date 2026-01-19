@@ -42,6 +42,8 @@ public:
     bool getPower(vfo_t vfo, float *power);
     bool getALC(float *alc);
     bool getALC(vfo_t vfo, float *alc);
+    bool setPower(float power);
+    bool setPower(vfo_t vfo, float power);
     QString lastError() const;
 
     static QString versionString();
