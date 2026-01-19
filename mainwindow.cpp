@@ -90,6 +90,8 @@ MainWindow::MainWindow(QWidget *parent)
     , rig(RIG_MODEL_TS590S, "COM7")
 {
     ui->setupUi(this);
+
+    // TODO: remove this later
     pttOffTimer = new QTimer(this);
     pttOffTimer->setSingleShot(true);
     connect(pttOffTimer, &QTimer::timeout, this, [this]() {
@@ -102,18 +104,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
         setOnAir(false);
     });
-    swrTimer = new QTimer(this);
-    swrTimer->setInterval(1000);
-    connect(swrTimer, &QTimer::timeout, this, &MainWindow::updateSWRLabel);
-    sMeterTimer = new QTimer(this);
-    sMeterTimer->setInterval(1000);
-    connect(sMeterTimer, &QTimer::timeout, this, &MainWindow::updateSMeterLabel);
-    powerTimer = new QTimer(this);
-    powerTimer->setInterval(1000);
-    connect(powerTimer, &QTimer::timeout, this, &MainWindow::updatePowerLabel);
-    alcTimer = new QTimer(this);
-    alcTimer->setInterval(1000);
-    connect(alcTimer, &QTimer::timeout, this, &MainWindow::updateALCLabel);
+
+    pollTimer = new QTimer(this);
+    pollTimer->setInterval(1000);
+    connect(pollTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
+
     setOnAir(false);
     initBandConfigs();
     loadBandSettings();
@@ -174,11 +169,10 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }
     setOnAir(false);
-    updateSMeterLabel();
-    updateAGCLabel();
-    updateVoxLabel();
-    updateAntennaLabel();
-    updateTunerLabel();
+    updateMeters();
+    if (pollTimer) {
+        pollTimer->start();
+    }
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -666,6 +660,7 @@ void MainWindow::setOnAir(bool enabled)
     if (!ui || !ui->onAirLabel) {
         return;
     }
+    onAirState = enabled;
     ui->onAirLabel->show();
     if (enabled) {
         ui->onAirLabel->setText("On Air");
@@ -673,43 +668,14 @@ void MainWindow::setOnAir(bool enabled)
         if (ui->sTextLabel) {
             ui->sTextLabel->setText("P");
         }
-        if (swrTimer) {
-            swrTimer->start();
-        }
-        if (sMeterTimer) {
-            sMeterTimer->stop();
-        }
-        if (powerTimer) {
-            powerTimer->start();
-        }
-        if (alcTimer) {
-            alcTimer->start();
-        }
         if (ui->sValueLabel) {
             ui->sValueLabel->setText("--");
         }
-        updateSWRLabel();
-        updatePowerLabel();
-        updateALCLabel();
     } else {
         ui->onAirLabel->setText(QString());
         ui->onAirLabel->setStyleSheet(QString());
         if (ui->sTextLabel) {
             ui->sTextLabel->setText("S");
-        }
-        if (swrTimer) {
-            swrTimer->stop();
-        }
-        if (sMeterTimer && rig.isOpen()) {
-            sMeterTimer->start();
-        } else if (sMeterTimer) {
-            sMeterTimer->stop();
-        }
-        if (powerTimer) {
-            powerTimer->stop();
-        }
-        if (alcTimer) {
-            alcTimer->stop();
         }
         if (ui->swrLabel) {
             ui->swrLabel->setText("--");
@@ -717,9 +683,9 @@ void MainWindow::setOnAir(bool enabled)
         if (ui->alcValueLabel) {
             ui->alcValueLabel->setText(QString());
         }
-        updateSMeterLabel();
     }
     ui->onAirLabel->repaint();
+    updateMeters();
 }
 
 void MainWindow::updateSWRLabel()
@@ -755,10 +721,6 @@ void MainWindow::updateSMeterLabel()
     const QString formatted = QString("%1 dB")
         .arg(static_cast<int>(std::round(mapped)));
     ui->sValueLabel->setText(formatted);
-    updateAGCLabel();
-    updateVoxLabel();
-    updateAntennaLabel();
-    updateTunerLabel();
 }
 
 void MainWindow::updatePowerLabel()
@@ -902,4 +864,24 @@ void MainWindow::updateTunerLabel()
     }
 
     ui->tunerLabel->setText(enabled ? "AT>TX" : QString());
+}
+
+void MainWindow::updateMeters()
+{
+    if (!rig.isOpen()) {
+        return;
+    }
+
+    if (onAirState) {
+        updateSWRLabel();
+        updatePowerLabel();
+        updateALCLabel();
+    } else {
+        updateSMeterLabel();
+        updateAGCLabel();
+        updateVoxLabel();
+    }
+
+    updateAntennaLabel();
+    updateTunerLabel();
 }

@@ -61,6 +61,7 @@ private:
     void updateVoxLabel();
     void updateAntennaLabel();
     void updateTunerLabel();
+    void updateMeters();
 
     Ui::MainWindow *ui;
     Rig rig;
@@ -73,12 +74,10 @@ private:
     int currentBandIndex = -1;
     QPushButton *selectedBandButton = nullptr;
     QTimer *pttOffTimer = nullptr;
-    QTimer *swrTimer = nullptr;
-    QTimer *sMeterTimer = nullptr;
-    QTimer *powerTimer = nullptr;
-    QTimer *alcTimer = nullptr;
+    QTimer *pollTimer = nullptr;
     int morseWpm = 30;
     rmode_t currentMode = RIG_MODE_USB;
     bool manualTx = false;
+    bool onAirState = false;
 };
 #endif // MAINWINDOW_H
