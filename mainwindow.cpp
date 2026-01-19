@@ -176,6 +176,7 @@ MainWindow::MainWindow(QWidget *parent)
     setOnAir(false);
     updateSMeterLabel();
     updateAGCLabel();
+    updateVoxLabel();
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
@@ -705,6 +706,7 @@ void MainWindow::updateSMeterLabel()
         .arg(static_cast<int>(std::round(mapped)));
     ui->sValueLabel->setText(formatted);
     updateAGCLabel();
+    updateVoxLabel();
 }
 
 void MainWindow::updatePowerLabel()
@@ -784,4 +786,22 @@ void MainWindow::updateAGCLabel()
         break;
     }
     ui->agcLabel->setText(label);
+}
+
+void MainWindow::updateVoxLabel()
+{
+    if (!ui || !ui->voxLabel) {
+        return;
+    }
+    if (!rig.isOpen()) {
+        ui->voxLabel->setText(QString());
+        return;
+    }
+    bool enabled = false;
+    if (!rig.getVoxEnabled(rxVfo, &enabled)) {
+        qDebug() << "Hamlib rig_get_func (VOX) failed:" << rig.lastError();
+        ui->voxLabel->setText(QString());
+        return;
+    }
+    ui->voxLabel->setText(enabled ? "VOX" : QString());
 }

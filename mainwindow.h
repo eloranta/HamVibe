@@ -55,6 +55,7 @@ private:
     void updatePowerLabel();
     void updateALCLabel();
     void updateAGCLabel();
+    void updateVoxLabel();
 
     Ui::MainWindow *ui;
     Rig rig;

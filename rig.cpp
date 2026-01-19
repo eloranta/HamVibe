@@ -439,6 +439,32 @@ bool Rig::getAGC(vfo_t vfo, int *agc)
     return true;
 }
 
+bool Rig::getVoxEnabled(bool *enabled)
+{
+    return getVoxEnabled(RIG_VFO_CURR, enabled);
+}
+
+bool Rig::getVoxEnabled(vfo_t vfo, bool *enabled)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    int status = 0;
+    const int getStatus = rig_get_func(rig, vfo, RIG_FUNC_VOX, &status);
+    if (getStatus != RIG_OK) {
+        setError(QString("rig_get_func(VOX) failed: %1").arg(rigerror(getStatus)));
+        return false;
+    }
+
+    if (enabled) {
+        *enabled = (status != 0);
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

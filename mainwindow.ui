@@ -74,6 +74,13 @@
            </widget>
           </item>
           <item>
+           <widget class="QLabel" name="voxLabel">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <spacer name="meterTopSpacer">
              <property name="orientation">
               <enum>Qt::Orientation::Horizontal</enum>

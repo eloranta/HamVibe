@@ -46,6 +46,8 @@ public:
     bool setPower(vfo_t vfo, float power);
     bool getAGC(int *agc);
     bool getAGC(vfo_t vfo, int *agc);
+    bool getVoxEnabled(bool *enabled);
+    bool getVoxEnabled(vfo_t vfo, bool *enabled);
     QString lastError() const;
 
     static QString versionString();
