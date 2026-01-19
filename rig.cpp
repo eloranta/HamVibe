@@ -564,6 +564,22 @@ bool Rig::setTunerEnabled(vfo_t vfo, bool enabled)
     return true;
 }
 
+bool Rig::startTune()
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int setStatus = rig_vfo_op(rig, RIG_VFO_CURR, RIG_OP_TUNE);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_vfo_op(TUNE) failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::getActiveVfo(vfo_t *vfo)
 {
     if (!rig) {

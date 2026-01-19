@@ -56,6 +56,7 @@ public:
     bool getTunerEnabled(vfo_t vfo, bool *enabled);
     bool setTunerEnabled(bool enabled);
     bool setTunerEnabled(vfo_t vfo, bool enabled);
+    bool startTune();
     QString lastError() const;
 
     static QString versionString();

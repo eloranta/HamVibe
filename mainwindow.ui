@@ -389,9 +389,16 @@
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="tunerToggleButton">
+           <widget class="QPushButton" name="tunerToggleButton">
              <property name="text">
               <string>AT</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="tuneButton">
+             <property name="text">
+              <string>TUNE</string>
              </property>
             </widget>
            </item>

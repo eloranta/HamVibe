@@ -187,6 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
     connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
     connect(ui->tunerToggleButton, &QPushButton::clicked, this, &MainWindow::onTunerToggleClicked);
+    connect(ui->tuneButton, &QPushButton::clicked, this, &MainWindow::onTuneButtonClicked);
     connect(ui->antToggleButton, &QPushButton::clicked, this, &MainWindow::onAntennaToggleClicked);
     connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
     if (ui->powerLevelCombo) {
@@ -376,6 +377,14 @@ void MainWindow::onTunerToggleClicked()
     }
 
     updateTunerLabel();
+}
+
+void MainWindow::onTuneButtonClicked()
+{
+    if (!rig.startTune()) {
+        qDebug() << "Hamlib rig_vfo_op (TUNE) failed:" << rig.lastError();
+        return;
+    }
 }
 
 void MainWindow::onAntennaToggleClicked()

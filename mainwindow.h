@@ -31,6 +31,7 @@ private slots:
     void onSendButtonClicked();
     void onTunerToggleClicked();
     void onAntennaToggleClicked();
+    void onTuneButtonClicked();
     void onModeButtonClicked();
     void onBandButtonClicked();
     void onSendTextButtonClicked();
