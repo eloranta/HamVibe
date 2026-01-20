@@ -60,17 +60,14 @@
                </widget>
               </item>
               <item>
-               <widget class="QLabel" name="onAirLabel">
+               <widget class="QPushButton" name="onAirLabel">
                 <property name="font">
                  <font>
                   <bold>true</bold>
                  </font>
                 </property>
                 <property name="text">
-                 <string>On Air</string>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                 <string>Standby</string>
                 </property>
                </widget>
               </item>
@@ -398,13 +395,6 @@
          <item>
           <layout class="QHBoxLayout" name="sendLayout">
            <item>
-           <widget class="QPushButton" name="sendButton">
-             <property name="text">
-              <string>Send</string>
-             </property>
-            </widget>
-           </item>
-           <item>
             <widget class="QPushButton" name="antToggleButton">
              <property name="text">
               <string>ANT</string>
@@ -412,7 +402,7 @@
             </widget>
            </item>
            <item>
-           <widget class="QPushButton" name="tunerToggleButton">
+            <widget class="QPushButton" name="tunerToggleButton">
              <property name="text">
               <string>AT</string>
              </property>

@@ -164,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     if (ui->onAirLabel) {
         ui->onAirLabel->setFixedWidth(70);
-        ui->onAirLabel->setAlignment(Qt::AlignCenter);
+        ui->onAirLabel->setFixedHeight(24);
     }
     if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
@@ -180,7 +180,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
     connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
     connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
-    connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::onSendButtonClicked);
+    connect(ui->onAirLabel, &QPushButton::clicked, this, &MainWindow::onOnAirButtonClicked);
     connect(ui->tunerToggleButton, &QPushButton::clicked, this, &MainWindow::onTunerToggleClicked);
     connect(ui->tuneButton, &QPushButton::clicked, this, &MainWindow::onTuneButtonClicked);
     connect(ui->antToggleButton, &QPushButton::clicked, this, &MainWindow::onAntennaToggleClicked);
@@ -329,18 +329,15 @@ void MainWindow::onCopyButtonClicked()
     ui->rightFrequency->setValue(freq);
 }
 
-void MainWindow::onSendButtonClicked()
+void MainWindow::onOnAirButtonClicked()
 {
-    if (manualTx) {
+    if (onAirState) {
         if (!rig.setPtt(rxVfo, false)) {
             qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
             return;
         }
         manualTx = false;
         setOnAir(false);
-        if (ui->sendButton) {
-            ui->sendButton->setText("Send");
-        }
         return;
     }
 
@@ -353,9 +350,6 @@ void MainWindow::onSendButtonClicked()
     }
     manualTx = true;
     setOnAir(true);
-    if (ui->sendButton) {
-        ui->sendButton->setText("Stop");
-    }
 }
 
 void MainWindow::onTunerToggleClicked()
@@ -665,7 +659,8 @@ void MainWindow::setOnAir(bool enabled)
     ui->onAirLabel->show();
     if (enabled) {
         ui->onAirLabel->setText("On Air");
-        ui->onAirLabel->setStyleSheet("color: white; background-color: red; padding: 2px 6px;");
+        ui->onAirLabel->setStyleSheet(
+            "color: white; background-color: red;");
         if (ui->sTextLabel) {
             ui->sTextLabel->setText("P");
         }
@@ -674,7 +669,8 @@ void MainWindow::setOnAir(bool enabled)
         }
     } else {
         ui->onAirLabel->setText("Standby");
-        ui->onAirLabel->setStyleSheet("color: white; background-color: black; padding: 2px 6px;");
+        ui->onAirLabel->setStyleSheet(
+            "color: white; background-color: black;");
         if (ui->sTextLabel) {
             ui->sTextLabel->setText("S");
         }

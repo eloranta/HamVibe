@@ -28,7 +28,7 @@ private slots:
     void onSplitToggled(bool enabled);
     void onSwapButtonClicked();
     void onCopyButtonClicked();
-    void onSendButtonClicked();
+    void onOnAirButtonClicked();
     void onTunerToggleClicked();
     void onAntennaToggleClicked();
     void onTuneButtonClicked();
