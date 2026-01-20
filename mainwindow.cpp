@@ -688,7 +688,7 @@ void MainWindow::setOnAir(bool enabled)
     updateMeters();
 }
 
-void MainWindow::updateSWRLabel()
+void MainWindow::updateSWR()
 {
     if (!ui || !ui->swrLabel) {
         return;
@@ -702,7 +702,7 @@ void MainWindow::updateSWRLabel()
     ui->swrLabel->setText(QString::number(swr, 'f', 2));
 }
 
-void MainWindow::updateSMeterLabel()
+void MainWindow::updateSMeter()
 {
     if (!ui || !ui->sValueLabel) {
         return;
@@ -723,7 +723,7 @@ void MainWindow::updateSMeterLabel()
     ui->sValueLabel->setText(formatted);
 }
 
-void MainWindow::updatePowerLabel()
+void MainWindow::updatePowerMeter()
 {
     if (!ui || !ui->sValueLabel) {
         return;
@@ -743,7 +743,7 @@ void MainWindow::updatePowerLabel()
     ui->sValueLabel->setText(formatted);
 }
 
-void MainWindow::updateALCLabel()
+void MainWindow::updateAlcMeter()
 {
     if (!ui || !ui->alcValueLabel) {
         return;
@@ -873,15 +873,10 @@ void MainWindow::updateMeters()
     }
 
     if (onAirState) {
-        updateSWRLabel();
-        updatePowerLabel();
-        updateALCLabel();
+        updateSWR();
+        updatePowerMeter();
+        updateAlcMeter();
     } else {
-        updateSMeterLabel();
-        updateAGCLabel();
-        updateVoxLabel();
+        updateSMeter();
     }
-
-    updateAntennaLabel();
-    updateTunerLabel();
 }

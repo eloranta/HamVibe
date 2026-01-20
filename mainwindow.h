@@ -53,10 +53,10 @@ private:
     void updateModeLabel(rmode_t mode);
     void setSelectedBandButton(QPushButton *button);
     void setOnAir(bool enabled);
-    void updateSWRLabel();
-    void updateSMeterLabel();
-    void updatePowerLabel();
-    void updateALCLabel();
+    void updateSWR();
+    void updateSMeter();
+    void updatePowerMeter();
+    void updateAlcMeter();
     void updateAGCLabel();
     void updateVoxLabel();
     void updateAntennaLabel();
