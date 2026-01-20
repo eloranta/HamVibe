@@ -164,6 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     if (ui->onAirLabel) {
         ui->onAirLabel->setFixedWidth(70);
+        ui->onAirLabel->setAlignment(Qt::AlignCenter);
     }
     if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
@@ -672,8 +673,8 @@ void MainWindow::setOnAir(bool enabled)
             ui->sValueLabel->setText("--");
         }
     } else {
-        ui->onAirLabel->setText(QString());
-        ui->onAirLabel->setStyleSheet(QString());
+        ui->onAirLabel->setText("Standby");
+        ui->onAirLabel->setStyleSheet("color: white; background-color: black; padding: 2px 6px;");
         if (ui->sTextLabel) {
             ui->sTextLabel->setText("S");
         }
