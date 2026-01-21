@@ -5,6 +5,9 @@
 #include <QtGlobal>
 #include <hamlib/rig.h>
 
+constexpr bool OFF = false;
+constexpr bool ON  = true;
+
 class Rig : public QObject
 {
     Q_OBJECT

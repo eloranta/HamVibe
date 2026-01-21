@@ -11,107 +11,12 @@
 #include <cmath>
 #include <hamlib/rig.h>
 
-static int estimateMorseDurationMs(const QString &text, int wpm)
-{
-    if (wpm <= 0) {
-        return 0;
-    }
-
-    static const QHash<QChar, QByteArray> morseMap = {
-        {'A', ".-"},    {'B', "-..."},  {'C', "-.-."}, {'D', "-.."},   {'E', "."},
-        {'F', "..-."},  {'G', "--."},   {'H', "...."}, {'I', ".."},    {'J', ".---"},
-        {'K', "-.-"},   {'L', ".-.."},  {'M', "--"},   {'N', "-."},    {'O', "---"},
-        {'P', ".--."},  {'Q', "--.-"},  {'R', ".-."},  {'S', "..."},   {'T', "-"},
-        {'U', "..-"},   {'V', "...-"},  {'W', ".--"},  {'X', "-..-"},  {'Y', "-.--"},
-        {'Z', "--.."},
-        {'0', "-----"}, {'1', ".----"}, {'2', "..---"},{'3', "...--"},{'4', "....-"},
-        {'5', "....."}, {'6', "-...."}, {'7', "--..."},{'8', "---.."},{'9', "----."},
-        {'/', "-..-."}
-    };
-
-    const int ditMs = 1200 / wpm;
-    int units = 0;
-    const QStringList words = text.toUpper().split(' ', Qt::SkipEmptyParts);
-    for (int w = 0; w < words.size(); ++w) {
-        const QString &word = words[w];
-        for (int i = 0; i < word.size(); ++i) {
-            const QByteArray pattern = morseMap.value(word[i]);
-            if (pattern.isEmpty()) {
-                continue;
-            }
-            for (int s = 0; s < pattern.size(); ++s) {
-                units += (pattern[s] == '-') ? 3 : 1;
-                if (s < pattern.size() - 1) {
-                    units += 1;
-                }
-            }
-            if (i < word.size() - 1) {
-                units += 3;
-            }
-        }
-        if (w < words.size() - 1) {
-            units += 7;
-        }
-    }
-
-    return units * ditMs + 200;
-}
-
-static float mapStrengthToS(int raw)
-{
-    if (raw > 0) {
-        return static_cast<float>(raw);
-    }
-
-    static const float rawVals[] = {0.0f, -12.0f, -24.0f, -36.0f, -48.0f, -60.0f};
-    static const float outVals[] = {9.0f, 7.0f, 5.0f, 3.0f, 1.0f, 0.0f};
-    const int count = static_cast<int>(sizeof(rawVals) / sizeof(rawVals[0]));
-
-    if (raw >= rawVals[0]) {
-        return outVals[0];
-    }
-    if (raw <= rawVals[count - 1]) {
-        return outVals[count - 1];
-    }
-
-    for (int i = 0; i < count - 1; ++i) {
-        if (raw <= rawVals[i] && raw >= rawVals[i + 1]) {
-            const float t = (raw - rawVals[i]) / (rawVals[i + 1] - rawVals[i]);
-            return outVals[i] + t * (outVals[i + 1] - outVals[i]);
-        }
-    }
-
-    return outVals[count - 1];
-}
-
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , rig(RIG_MODEL_TS590S, "COM7")
+    , rig(RIG_MODEL_TS590S, "COM7") // TODO: make configurable
 {
     ui->setupUi(this);
-
-    // TODO: remove this later
-    pttOffTimer = new QTimer(this);
-    pttOffTimer->setSingleShot(true);
-    connect(pttOffTimer, &QTimer::timeout, this, [this]() {
-        if (manualTx) {
-            return;
-        }
-        if (!rig.setPtt(rxVfo, false)) {
-            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
-            return;
-        }
-        setOnAir(false);
-    });
-
-    pollTimer = new QTimer(this);
-    pollTimer->setInterval(1000);
-    connect(pollTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
-
-    setOnAir(false);
-    initBandConfigs();
-    loadBandSettings();
 
     qDebug() << "hamlib version:" << hamlib_version;
 
@@ -119,16 +24,24 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib rig_open failed:" << rig.lastError();
         return;
     }
-
     if (!rig.getActiveVfo(&rxVfo)) {
         qDebug() << "Hamlib getActiveVfo failed:" << rig.lastError();
         return;
     }
-
     if (!rig.getSplit(rxVfo, &split, &txVfo)) { // txVfo TODO:
         qDebug() << "Hamlib get split failed:" << rig.lastError();
         return;
     }
+
+    setOnAir(OFF);
+    updateMeters();
+
+    pollTimer = new QTimer(this);
+    pollTimer->setInterval(1000); // TODO: make configurable
+    connect(pollTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
+
+    initBandConfigs();
+    loadBandSettings();
 
     txVfo = (rxVfo == RIG_VFO_A) ? RIG_VFO_B : RIG_VFO_A;
     ui->splitButton->setCheckable(true);
@@ -208,6 +121,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->fiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
     connect(ui->rFiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
     connect(ui->og3zTwiceButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+
+    // TODO: remove this later
+    pttOffTimer = new QTimer(this);
+    pttOffTimer->setSingleShot(true);
+    connect(pttOffTimer, &QTimer::timeout, this, [this]() {
+        if (manualTx) {
+            return;
+        }
+        if (!rig.setPtt(rxVfo, false)) {
+            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+            return;
+        }
+        setOnAir(false);
+    });
+
 }
 
 MainWindow::~MainWindow()
@@ -465,6 +393,52 @@ void MainWindow::onBandButtonClicked()
     ui->leftFrequency->setValue(nextFreq);
 }
 
+static int estimateMorseDurationMs(const QString &text, int wpm)
+{
+    if (wpm <= 0) {
+        return 0;
+    }
+
+    static const QHash<QChar, QByteArray> morseMap = {
+        {'A', ".-"},    {'B', "-..."},  {'C', "-.-."}, {'D', "-.."},   {'E', "."},
+        {'F', "..-."},  {'G', "--."},   {'H', "...."}, {'I', ".."},    {'J', ".---"},
+        {'K', "-.-"},   {'L', ".-.."},  {'M', "--"},   {'N', "-."},    {'O', "---"},
+        {'P', ".--."},  {'Q', "--.-"},  {'R', ".-."},  {'S', "..."},   {'T', "-"},
+        {'U', "..-"},   {'V', "...-"},  {'W', ".--"},  {'X', "-..-"},  {'Y', "-.--"},
+        {'Z', "--.."},
+        {'0', "-----"}, {'1', ".----"}, {'2', "..---"},{'3', "...--"},{'4', "....-"},
+        {'5', "....."}, {'6', "-...."}, {'7', "--..."},{'8', "---.."},{'9', "----."},
+        {'/', "-..-."}
+    };
+
+    const int ditMs = 1200 / wpm;
+    int units = 0;
+    const QStringList words = text.toUpper().split(' ', Qt::SkipEmptyParts);
+    for (int w = 0; w < words.size(); ++w) {
+        const QString &word = words[w];
+        for (int i = 0; i < word.size(); ++i) {
+            const QByteArray pattern = morseMap.value(word[i]);
+            if (pattern.isEmpty()) {
+                continue;
+            }
+            for (int s = 0; s < pattern.size(); ++s) {
+                units += (pattern[s] == '-') ? 3 : 1;
+                if (s < pattern.size() - 1) {
+                    units += 1;
+                }
+            }
+            if (i < word.size() - 1) {
+                units += 3;
+            }
+        }
+        if (w < words.size() - 1) {
+            units += 7;
+        }
+    }
+
+    return units * ditMs + 200;
+}
+
 void MainWindow::onSendTextButtonClicked()
 {
     QPushButton *button = qobject_cast<QPushButton *>(sender());
@@ -699,6 +673,33 @@ void MainWindow::updateSWR()
     ui->swrLabel->setText(QString::number(swr, 'f', 2));
 }
 
+static float trengthToS(int raw)
+{
+    if (raw > 0) {
+        return static_cast<float>(raw);
+    }
+
+    static const float rawVals[] = {0.0f, -12.0f, -24.0f, -36.0f, -48.0f, -60.0f};
+    static const float outVals[] = {9.0f, 7.0f, 5.0f, 3.0f, 1.0f, 0.0f};
+    const int count = static_cast<int>(sizeof(rawVals) / sizeof(rawVals[0]));
+
+    if (raw >= rawVals[0]) {
+        return outVals[0];
+    }
+    if (raw <= rawVals[count - 1]) {
+        return outVals[count - 1];
+    }
+
+    for (int i = 0; i < count - 1; ++i) {
+        if (raw <= rawVals[i] && raw >= rawVals[i + 1]) {
+            const float t = (raw - rawVals[i]) / (rawVals[i + 1] - rawVals[i]);
+            return outVals[i] + t * (outVals[i + 1] - outVals[i]);
+        }
+    }
+
+    return outVals[count - 1];
+}
+
 void MainWindow::updateSMeter()
 {
     if (!ui || !ui->sValueLabel) {
@@ -714,7 +715,7 @@ void MainWindow::updateSMeter()
         ui->sValueLabel->setText("--");
         return;
     }
-    const float mapped = mapStrengthToS(strength);
+    const float mapped = trengthToS(strength);
     const QString formatted = QString("%1 dB")
         .arg(static_cast<int>(std::round(mapped)));
     ui->sValueLabel->setText(formatted);
