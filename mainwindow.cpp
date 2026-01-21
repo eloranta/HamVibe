@@ -24,119 +24,122 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib rig_open failed:" << rig.lastError();
         return;
     }
-    if (!rig.getActiveVfo(&mainVfo)) {
-        qDebug() << "Hamlib getActiveVfo failed:" << rig.lastError();
-        return;
-    }
-    if (!rig.getSplit(mainVfo, &split, &subVfo)) {
-        qDebug() << "Hamlib get split failed:" << rig.lastError();
-        return;
-    }
 
     setOnAir(OFF);
     updateMeters();
-
     pollTimer = new QTimer(this);
     pollTimer->setInterval(1000); // TODO: make configurable
     connect(pollTimer, &QTimer::timeout, this, &MainWindow::updateMeters);
+    pollTimer->start();
 
-    initBandConfigs();
-    loadBandSettings();
+    // if (!rig.getActiveVfo(&mainVfo)) {
+    //     qDebug() << "Hamlib getActiveVfo failed:" << rig.lastError();
+    //     return;
+    // }
+    // if (!rig.getSplit(mainVfo, &split, &subVfo)) {
+    //     qDebug() << "Hamlib get split failed:" << rig.lastError();
+    //     return;
+    // }
 
-    subVfo = (mainVfo == RIG_VFO_A) ? RIG_VFO_B : RIG_VFO_A;
-    ui->splitButton->setCheckable(true);
-    ui->splitButton->setChecked(split);
 
-    int rxFreq = 0;
-    if (rig.readFrequency(mainVfo, rxFreq)) {
-        ui->leftFrequency->setPrefix(mainVfo == RIG_VFO_A ? 'A' : 'B');
-        ui->leftFrequency->setValue(rxFreq);
-    } else {
-        qDebug() << "Hamlib rig_get_freq (RX) failed:" << rig.lastError();
-    }
-    int txFreq = 0;
-    if (rig.readFrequency(subVfo, txFreq)) {
-        qDebug() << txFreq;
-        ui->rightFrequency->setPrefix(subVfo == RIG_VFO_A ? 'A' : 'B');
-        ui->rightFrequency->setValue(txFreq);
-    } else {
-        qDebug() << "Hamlib rig_get_freq (TX) failed:" << rig.lastError();
-    }
 
-    if (split) {
-        ui->rightFrequency->show();
-     } else {
-        ui->rightFrequency->hide();
-    }
-    rmode_t initialMode = RIG_MODE_NONE;
-    if (rig.getMode(mainVfo, &initialMode, nullptr)) {
-        updateModeLabel(initialMode);
-    }
+    // rmode_t initialMode = RIG_MODE_NONE;
+    // if (rig.getMode(mainVfo, &initialMode, nullptr)) {
+    //     updateModeLabel(initialMode);
+    // }
+
+
+    // initBandConfigs();
+    // loadBandSettings();
+
+    // subVfo = (mainVfo == RIG_VFO_A) ? RIG_VFO_B : RIG_VFO_A;
+    // ui->splitButton->setCheckable(true);
+    // ui->splitButton->setChecked(split);
+
+    // int rxFreq = 0;
+    // if (rig.readFrequency(mainVfo, rxFreq)) {
+    //     ui->leftFrequency->setPrefix(mainVfo == RIG_VFO_A ? 'A' : 'B');
+    //     ui->leftFrequency->setValue(rxFreq);
+    // } else {
+    //     qDebug() << "Hamlib rig_get_freq (RX) failed:" << rig.lastError();
+    // }
+    // int txFreq = 0;
+    // if (rig.readFrequency(subVfo, txFreq)) {
+    //     qDebug() << txFreq;
+    //     ui->rightFrequency->setPrefix(subVfo == RIG_VFO_A ? 'A' : 'B');
+    //     ui->rightFrequency->setValue(txFreq);
+    // } else {
+    //     qDebug() << "Hamlib rig_get_freq (TX) failed:" << rig.lastError();
+    // }
+
+    // if (split) {
+    //     ui->rightFrequency->show();
+    // } else {
+    //     ui->rightFrequency->hide();
+    // }
     if (ui->sValueLabel) {
         ui->sValueLabel->setFixedWidth(80);
     }
-    if (ui->onAirLabel) {
-        ui->onAirLabel->setFixedWidth(70);
-        ui->onAirLabel->setFixedHeight(24);
-    }
-    if (!rig.setMorseSpeed(mainVfo, morseWpm)) {
-        qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
-    }
-    setOnAir(false);
-    updateMeters();
-    if (pollTimer) {
-        pollTimer->start();
-    }
+    // if (ui->onAirLabel) {
+    //     ui->onAirLabel->setFixedWidth(70);
+    //     ui->onAirLabel->setFixedHeight(24);
+    // }
+    // if (!rig.setMorseSpeed(mainVfo, morseWpm)) {
+    //     qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
+    // }
 
-    connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
-    connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
-    connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
-    connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
-    connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
+
+    // connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onLeftFrequencyChanged);
+    // connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, &MainWindow::onRightFrequencyChanged);
+    // connect(ui->splitButton, &QPushButton::toggled, this, &MainWindow::onSplitToggled);
+    // connect(ui->swapButton, &QPushButton::clicked, this, &MainWindow::onSwapButtonClicked);
+    // connect(ui->copyButton, &QPushButton::clicked, this, &MainWindow::onCopyButtonClicked);
     connect(ui->onAirLabel, &QPushButton::clicked, this, &MainWindow::onOnAirButtonClicked);
-    connect(ui->tunerToggleButton, &QPushButton::clicked, this, &MainWindow::onTunerToggleClicked);
-    connect(ui->tuneButton, &QPushButton::clicked, this, &MainWindow::onTuneButtonClicked);
-    connect(ui->antToggleButton, &QPushButton::clicked, this, &MainWindow::onAntennaToggleClicked);
-    connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
-    if (ui->powerLevelCombo) {
-        ui->powerLevelCombo->setCurrentText("100 W");
-        connect(ui->powerLevelCombo, &QComboBox::currentTextChanged, this, [this](const QString &text) {
-            const QString trimmed = text.trimmed();
-            bool ok = false;
-            const float watts = trimmed.split(' ').first().toFloat(&ok);
-            if (!ok || watts <= 0.0f) {
-                return;
-            }
-            const float ratio = watts / 100.0f;
-            if (!rig.setPower(mainVfo, ratio)) {
-                qDebug() << "Hamlib rig_set_level (RFPOWER) failed:" << rig.lastError();
-            }
-        });
-    }
-    for (const auto &band : bandConfigs) {
-        connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
-    }
-    connect(&rig, &Rig::modeChanged, this, &MainWindow::updateModeLabel);
-    connect(ui->og3zButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
-    connect(ui->fiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
-    connect(ui->rFiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
-    connect(ui->og3zTwiceButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    // connect(ui->tunerToggleButton, &QPushButton::clicked, this, &MainWindow::onTunerToggleClicked);
+    // connect(ui->tuneButton, &QPushButton::clicked, this, &MainWindow::onTuneButtonClicked);
+    // connect(ui->antToggleButton, &QPushButton::clicked, this, &MainWindow::onAntennaToggleClicked);
+    // connect(ui->modeButton, &QPushButton::clicked, this, &MainWindow::onModeButtonClicked);
+    // if (ui->powerLevelCombo) {
+    //     ui->powerLevelCombo->setCurrentText("100 W");
+    //     connect(ui->powerLevelCombo, &QComboBox::currentTextChanged, this, [this](const QString &text) {
+    //         const QString trimmed = text.trimmed();
+    //         bool ok = false;
+    //         const float watts = trimmed.split(' ').first().toFloat(&ok);
+    //         if (!ok || watts <= 0.0f) {
+    //             return;
+    //         }
+    //         const float ratio = watts / 100.0f;
+    //         if (!rig.setPower(mainVfo, ratio)) {
+    //             qDebug() << "Hamlib rig_set_level (RFPOWER) failed:" << rig.lastError();
+    //         }
+    //     });
+    // }
+    // for (const auto &band : bandConfigs) {
+    //     connect(band.button, &QPushButton::clicked, this, &MainWindow::onBandButtonClicked);
+    // }
+    // connect(&rig, &Rig::modeChanged, this, &MainWindow::updateModeLabel);
+    // connect(ui->og3zButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    // connect(ui->fiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    // connect(ui->rFiveNnTuButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
+    // connect(ui->og3zTwiceButton, &QPushButton::clicked, this, &MainWindow::onSendTextButtonClicked);
 
-    // TODO: remove this later
-    pttOffTimer = new QTimer(this);
-    pttOffTimer->setSingleShot(true);
-    connect(pttOffTimer, &QTimer::timeout, this, [this]() {
-        if (manualTx) {
-            return;
-        }
-        if (!rig.setPtt(mainVfo, false)) {
-            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
-            return;
-        }
-        setOnAir(false);
-    });
+    // // TODO: remove this later
+    // pttOffTimer = new QTimer(this);
+    // pttOffTimer->setSingleShot(true);
+    // connect(pttOffTimer, &QTimer::timeout, this, [this]() {
+    //     if (manualTx) {
+    //         return;
+    //     }
+    //     if (!rig.setPtt(mainVfo, false)) {
+    //         qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
+    //         return;
+    //     }
+    //     setOnAir(false);
+    // });
 
 }
+
+
 
 MainWindow::~MainWindow()
 {
@@ -259,25 +262,13 @@ void MainWindow::onCopyButtonClicked()
 
 void MainWindow::onOnAirButtonClicked()
 {
-    if (onAirState) {
-        if (!rig.setPtt(mainVfo, false)) {
-            qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
-            return;
-        }
-        manualTx = false;
-        setOnAir(false);
-        return;
-    }
-
-    if (pttOffTimer && pttOffTimer->isActive()) {
-        pttOffTimer->stop();
-    }
-    if (!rig.setPtt(mainVfo, true)) {
+    const bool next = !onAirState;
+    if (!rig.setPtt(next)) {
         qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
         return;
     }
-    manualTx = true;
-    setOnAir(true);
+
+    setOnAir(next);
 }
 
 void MainWindow::onTunerToggleClicked()
@@ -629,35 +620,21 @@ void MainWindow::setOnAir(bool enabled)
     if (!ui || !ui->onAirLabel) {
         return;
     }
+    if (!rig.setPtt(enabled)) {
+        qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
+        return;
+    }
+
     onAirState = enabled;
-    ui->onAirLabel->show();
+
     if (enabled) {
         ui->onAirLabel->setText("On Air");
-        ui->onAirLabel->setStyleSheet(
-            "color: white; background-color: red;");
-        if (ui->sTextLabel) {
-            ui->sTextLabel->setText("P");
-        }
-        if (ui->sValueLabel) {
-            ui->sValueLabel->setText("--");
-        }
-    } else {
+        ui->onAirLabel->setStyleSheet("color: white; background-color: red;");
+     } else {
         ui->onAirLabel->setText("Standby");
-        ui->onAirLabel->setStyleSheet(
-            "color: white; background-color: black;");
-        if (ui->sTextLabel) {
-            ui->sTextLabel->setText("S");
-        }
-        if (ui->swrLabel) {
-            ui->swrLabel->setText("--");
-        }
-        if (ui->alcValueLabel) {
-            ui->alcValueLabel->setText(QString());
-        }
+        ui->onAirLabel->setStyleSheet("color: white; background-color: black;");
     }
-    ui->onAirLabel->repaint();
-    updateMeters();
-}
+ }
 
 void MainWindow::updateSWR()
 {
@@ -673,7 +650,7 @@ void MainWindow::updateSWR()
     ui->swrLabel->setText(QString::number(swr, 'f', 2));
 }
 
-static float trengthToS(int raw)
+static float strengthToS(int raw)
 {
     if (raw > 0) {
         return static_cast<float>(raw);
@@ -710,14 +687,17 @@ void MainWindow::updateSMeter()
         return;
     }
     int strength = 0;
-    if (!rig.getStrength(mainVfo, &strength)) {
+    if (!rig.getStrength(&strength)) {
         qDebug() << "Hamlib rig_get_level (STRENGTH) failed:" << rig.lastError();
+        ui->sTextLabel->setText("S");
         ui->sValueLabel->setText("--");
         return;
     }
-    const float mapped = trengthToS(strength);
+    const float mapped = strengthToS(strength);
     const QString formatted = QString("%1 dB")
         .arg(static_cast<int>(std::round(mapped)));
+
+    ui->sTextLabel->setText("S");
     ui->sValueLabel->setText(formatted);
 }
 
@@ -731,13 +711,15 @@ void MainWindow::updatePowerMeter()
         return;
     }
     float power = 0.0f;
-    if (!rig.getPower(mainVfo, &power)) {
+    if (!rig.getPower(&power)) {
         qDebug() << "Hamlib rig_get_level (RFPOWER) failed:" << rig.lastError();
         ui->sValueLabel->setText("--");
         return;
     }
     const QString formatted = QString("%1 W")
-        .arg(QString::number(power, 'f', 1));
+        .arg(QString::number(power));
+
+    ui->sTextLabel->setText("P");
     ui->sValueLabel->setText(formatted);
 }
 
@@ -871,8 +853,8 @@ void MainWindow::updateMeters()
     }
 
     if (onAirState) {
-        updateSWR();
         updatePowerMeter();
+        updateSWR();
         updateAlcMeter();
     } else {
         updateSMeter();
