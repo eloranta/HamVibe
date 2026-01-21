@@ -173,6 +173,28 @@ bool Rig::setMode(vfo_t vfo, rmode_t mode, pbwidth_t width)
     return true;
 }
 
+bool Rig::getPtt(bool &enabled)
+{
+    return getPtt(RIG_VFO_CURR, enabled);
+}
+
+bool Rig::getPtt(vfo_t vfo, bool &enabled)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    ptt_t ptt;
+    const int setStatus = rig_get_ptt(rig, vfo, &ptt);
+    if (setStatus != RIG_OK) {
+        setError(QString("rig_get_ptt failed: %1").arg(rigerror(setStatus)));
+        return false;
+    }
+
+    enabled = ptt;
+    return true;
+}
 bool Rig::setPtt(bool enabled)
 {
     return setPtt(RIG_VFO_CURR, enabled);

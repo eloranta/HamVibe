@@ -26,6 +26,8 @@ public:
     bool getMode(vfo_t vfo, rmode_t *mode, pbwidth_t *width = nullptr);
     bool setMode(rmode_t mode, pbwidth_t width = RIG_PASSBAND_NORMAL);
     bool setMode(vfo_t vfo, rmode_t mode, pbwidth_t width = RIG_PASSBAND_NORMAL);
+    bool getPtt(bool &enabled);
+    bool getPtt(vfo_t vfo, bool &enabled);
     bool setPtt(bool enabled);
     bool setPtt(vfo_t vfo, bool enabled);
     bool setMorseSpeed(int wpm);
