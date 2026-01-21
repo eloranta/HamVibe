@@ -30,9 +30,6 @@
              <bold>true</bold>
             </font>
            </property>
-           <property name="styleSheet">
-            <string>background-color: #ffaa00;</string>
-           </property>
            <layout class="QVBoxLayout" name="freqSectionLayout">
             <property name="topMargin">
              <number>6</number>

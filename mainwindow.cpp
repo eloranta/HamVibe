@@ -27,6 +27,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     setOnAir(OFF);
     updateMeters();
+
     pollTimer = new QTimer(this);
     pollTimer->setInterval(1000); // TODO: make configurable
     connect(pollTimer, &QTimer::timeout, this, &MainWindow::updateMeters);

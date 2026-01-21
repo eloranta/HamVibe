@@ -27,6 +27,22 @@ HEADERS += \
 FORMS += \
     mainwindow.ui
 
+QSS_FILE = hamvibe.qss
+DISTFILES += $$QSS_FILE
+WIN_COPY = cmd /c copy /y
+HAMLIB_DLL = $$shell_path(C:/Program Files/hamlib-w64-4.6.5/bin/libhamlib-4.dll)
+LIBUSB_DLL = $$shell_path(C:/Program Files/hamlib-w64-4.6.5/bin/libusb-1.0.dll)
+CONFIG(debug, debug|release) {
+    BUILD_SUBDIR = debug
+} else {
+    BUILD_SUBDIR = release
+}
+win32: QMAKE_POST_LINK += $$WIN_COPY $$shell_path($$PWD/$$QSS_FILE) $$shell_path($$OUT_PWD/$$DESTDIR/$$BUILD_SUBDIR)
+
+# TODO: copy dll win32: QMAKE_POST_LINK += $$quote($$WIN_COPY \"$$HAMLIB_DLL\" \"$$shell_path($$OUT_PWD/$$(DESTDIR)/$$BUILD_SUBDIR/libhamlib-4.dll)\")
+# TODO: copy dll win32: QMAKE_POST_LINK += $$quote($$WIN_COPY \"$$LIBUSB_DLL\" \"$$shell_path($$OUT_PWD/$$(DESTDIR)/$$BUILD_SUBDIR/libusb-1.0.dll)\")
+# TODO:else: QMAKE_POST_LINK += $$QMAKE_COPY $$shell_path($$PWD/$$QSS_FILE) $$shell_path($$OUT_PWD/$$(DESTDIR)/$$QSS_FILE)
+
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
