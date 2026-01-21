@@ -66,8 +66,8 @@ private:
     Ui::MainWindow *ui;
     Rig rig;
     bool split = false;
-    vfo_t rxVfo = RIG_VFO_NONE;
-    vfo_t txVfo = RIG_VFO_NONE;
+    vfo_t mainVfo = RIG_VFO_NONE;
+    vfo_t subVfo = RIG_VFO_NONE;
     QVector<BandConfig> bandConfigs;
     int bandLevels[10] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
     int bandSavedFreqs[10][4] = {};

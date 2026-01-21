@@ -24,11 +24,11 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib rig_open failed:" << rig.lastError();
         return;
     }
-    if (!rig.getActiveVfo(&rxVfo)) {
+    if (!rig.getActiveVfo(&mainVfo)) {
         qDebug() << "Hamlib getActiveVfo failed:" << rig.lastError();
         return;
     }
-    if (!rig.getSplit(rxVfo, &split, &txVfo)) { // txVfo TODO:
+    if (!rig.getSplit(mainVfo, &split, &subVfo)) {
         qDebug() << "Hamlib get split failed:" << rig.lastError();
         return;
     }
@@ -43,21 +43,21 @@ MainWindow::MainWindow(QWidget *parent)
     initBandConfigs();
     loadBandSettings();
 
-    txVfo = (rxVfo == RIG_VFO_A) ? RIG_VFO_B : RIG_VFO_A;
+    subVfo = (mainVfo == RIG_VFO_A) ? RIG_VFO_B : RIG_VFO_A;
     ui->splitButton->setCheckable(true);
     ui->splitButton->setChecked(split);
 
     int rxFreq = 0;
-    if (rig.readFrequency(rxVfo, rxFreq)) {
-        ui->leftFrequency->setPrefix(rxVfo == RIG_VFO_A ? 'A' : 'B');
+    if (rig.readFrequency(mainVfo, rxFreq)) {
+        ui->leftFrequency->setPrefix(mainVfo == RIG_VFO_A ? 'A' : 'B');
         ui->leftFrequency->setValue(rxFreq);
     } else {
         qDebug() << "Hamlib rig_get_freq (RX) failed:" << rig.lastError();
     }
     int txFreq = 0;
-    if (rig.readFrequency(txVfo, txFreq)) {
+    if (rig.readFrequency(subVfo, txFreq)) {
         qDebug() << txFreq;
-        ui->rightFrequency->setPrefix(txVfo == RIG_VFO_A ? 'A' : 'B');
+        ui->rightFrequency->setPrefix(subVfo == RIG_VFO_A ? 'A' : 'B');
         ui->rightFrequency->setValue(txFreq);
     } else {
         qDebug() << "Hamlib rig_get_freq (TX) failed:" << rig.lastError();
@@ -69,7 +69,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->rightFrequency->hide();
     }
     rmode_t initialMode = RIG_MODE_NONE;
-    if (rig.getMode(rxVfo, &initialMode, nullptr)) {
+    if (rig.getMode(mainVfo, &initialMode, nullptr)) {
         updateModeLabel(initialMode);
     }
     if (ui->sValueLabel) {
@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent)
         ui->onAirLabel->setFixedWidth(70);
         ui->onAirLabel->setFixedHeight(24);
     }
-    if (!rig.setMorseSpeed(rxVfo, morseWpm)) {
+    if (!rig.setMorseSpeed(mainVfo, morseWpm)) {
         qDebug() << "Hamlib rig_set_morse_speed failed:" << rig.lastError();
     }
     setOnAir(false);
@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent)
                 return;
             }
             const float ratio = watts / 100.0f;
-            if (!rig.setPower(rxVfo, ratio)) {
+            if (!rig.setPower(mainVfo, ratio)) {
                 qDebug() << "Hamlib rig_set_level (RFPOWER) failed:" << rig.lastError();
             }
         });
@@ -129,7 +129,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (manualTx) {
             return;
         }
-        if (!rig.setPtt(rxVfo, false)) {
+        if (!rig.setPtt(mainVfo, false)) {
             qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
             return;
         }
@@ -166,7 +166,7 @@ void MainWindow::onSplitToggled(bool enabled)
 {
     qDebug() << enabled;
 
-    if (!rig.setSplit(rxVfo, txVfo, enabled)) {
+    if (!rig.setSplit(mainVfo, subVfo, enabled)) {
         qDebug() << "Hamlib setSplit failed:" << rig.lastError();
         QSignalBlocker blocker(ui->splitButton);
         ui->splitButton->setChecked(!enabled);
@@ -175,8 +175,8 @@ void MainWindow::onSplitToggled(bool enabled)
 
     if (enabled) {
         int txFreq = 0;
-        if (rig.readFrequency(txVfo, txFreq)) {
-            ui->rightFrequency->setPrefix(rxVfo == RIG_VFO_A ? 'B' : 'A');
+        if (rig.readFrequency(subVfo, txFreq)) {
+            ui->rightFrequency->setPrefix(mainVfo == RIG_VFO_A ? 'B' : 'A');
             ui->rightFrequency->setValue(txFreq);
         } else {
             qDebug() << "Hamlib rig_get_freq (TX) failed:" << rig.lastError();
@@ -260,7 +260,7 @@ void MainWindow::onCopyButtonClicked()
 void MainWindow::onOnAirButtonClicked()
 {
     if (onAirState) {
-        if (!rig.setPtt(rxVfo, false)) {
+        if (!rig.setPtt(mainVfo, false)) {
             qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
             return;
         }
@@ -272,7 +272,7 @@ void MainWindow::onOnAirButtonClicked()
     if (pttOffTimer && pttOffTimer->isActive()) {
         pttOffTimer->stop();
     }
-    if (!rig.setPtt(rxVfo, true)) {
+    if (!rig.setPtt(mainVfo, true)) {
         qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
         return;
     }
@@ -283,12 +283,12 @@ void MainWindow::onOnAirButtonClicked()
 void MainWindow::onTunerToggleClicked()
 {
     bool enabled = false;
-    if (!rig.getTunerEnabled(rxVfo, &enabled)) {
+    if (!rig.getTunerEnabled(mainVfo, &enabled)) {
         qDebug() << "Hamlib rig_get_func (TUNER) failed:" << rig.lastError();
         return;
     }
 
-    if (!rig.setTunerEnabled(rxVfo, !enabled)) {
+    if (!rig.setTunerEnabled(mainVfo, !enabled)) {
         qDebug() << "Hamlib rig_set_func (TUNER) failed:" << rig.lastError();
         return;
     }
@@ -307,7 +307,7 @@ void MainWindow::onTuneButtonClicked()
 void MainWindow::onAntennaToggleClicked()
 {
     ant_t ant = RIG_ANT_NONE;
-    if (!rig.getAntenna(rxVfo, &ant)) {
+    if (!rig.getAntenna(mainVfo, &ant)) {
         qDebug() << "Hamlib rig_get_ant failed:" << rig.lastError();
         return;
     }
@@ -317,7 +317,7 @@ void MainWindow::onAntennaToggleClicked()
         next = RIG_ANT_2;
     }
 
-    if (!rig.setAntenna(rxVfo, next)) {
+    if (!rig.setAntenna(mainVfo, next)) {
         qDebug() << "Hamlib rig_set_ant failed:" << rig.lastError();
         return;
     }
@@ -341,7 +341,7 @@ void MainWindow::onModeButtonClicked()
         break;
     }
 
-    if (!rig.setMode(rxVfo, next)) {
+    if (!rig.setMode(mainVfo, next)) {
         qDebug() << "Hamlib rig_set_mode (RX) failed:" << rig.lastError();
         return;
     }
@@ -381,11 +381,11 @@ void MainWindow::onBandButtonClicked()
         nextFreq = bandSavedFreqs[bandIndex][level];
     }
 
-    if (!rig.setFrequency(rxVfo, nextFreq)) {
+    if (!rig.setFrequency(mainVfo, nextFreq)) {
         qDebug() << "Hamlib rig_set_freq (RX) failed:" << rig.lastError();
         return;
     }
-    if (!rig.setMode(rxVfo, bandConfigs[bandIndex].steps[level].mode)) {
+    if (!rig.setMode(mainVfo, bandConfigs[bandIndex].steps[level].mode)) {
         qDebug() << "Hamlib rig_set_mode (RX) failed:" << rig.lastError();
         return;
     }
@@ -453,16 +453,16 @@ void MainWindow::onSendTextButtonClicked()
     if (pttOffTimer && pttOffTimer->isActive()) {
         pttOffTimer->stop();
     }
-    if (!rig.setPtt(rxVfo, true)) {
+    if (!rig.setPtt(mainVfo, true)) {
         qDebug() << "Hamlib rig_set_ptt failed:" << rig.lastError();
         return;
     }
     setOnAir(true);
     qApp->processEvents();
 
-    if (!rig.sendMorse(rxVfo, text)) {
+    if (!rig.sendMorse(mainVfo, text)) {
         qDebug() << "Hamlib rig_send_morse failed:" << rig.lastError();
-        if (!rig.setPtt(rxVfo, false)) {
+        if (!rig.setPtt(mainVfo, false)) {
             qDebug() << "Hamlib rig_set_ptt (off) failed:" << rig.lastError();
             return;
         }
@@ -665,7 +665,7 @@ void MainWindow::updateSWR()
         return;
     }
     float swr = 0.0f;
-    if (!rig.getSWR(rxVfo, &swr)) {
+    if (!rig.getSWR(mainVfo, &swr)) {
         qDebug() << "Hamlib rig_get_level (SWR) failed:" << rig.lastError();
         ui->swrLabel->setText("--");
         return;
@@ -710,7 +710,7 @@ void MainWindow::updateSMeter()
         return;
     }
     int strength = 0;
-    if (!rig.getStrength(rxVfo, &strength)) {
+    if (!rig.getStrength(mainVfo, &strength)) {
         qDebug() << "Hamlib rig_get_level (STRENGTH) failed:" << rig.lastError();
         ui->sValueLabel->setText("--");
         return;
@@ -731,7 +731,7 @@ void MainWindow::updatePowerMeter()
         return;
     }
     float power = 0.0f;
-    if (!rig.getPower(rxVfo, &power)) {
+    if (!rig.getPower(mainVfo, &power)) {
         qDebug() << "Hamlib rig_get_level (RFPOWER) failed:" << rig.lastError();
         ui->sValueLabel->setText("--");
         return;
@@ -751,7 +751,7 @@ void MainWindow::updateAlcMeter()
         return;
     }
     float alc = 0.0f;
-    if (!rig.getALC(rxVfo, &alc)) {
+    if (!rig.getALC(mainVfo, &alc)) {
         qDebug() << "Hamlib rig_get_level (ALC) failed:" << rig.lastError();
         ui->alcValueLabel->setText(QString());
         return;
@@ -770,7 +770,7 @@ void MainWindow::updateAGCLabel()
         return;
     }
     int agc = 0;
-    if (!rig.getAGC(rxVfo, &agc)) {
+    if (!rig.getAGC(mainVfo, &agc)) {
         if (!warned) {
             qDebug() << "Hamlib rig_get_level (AGC) failed:" << rig.lastError();
             warned = true;
@@ -810,7 +810,7 @@ void MainWindow::updateVoxLabel()
         return;
     }
     bool enabled = false;
-    if (!rig.getVoxEnabled(rxVfo, &enabled)) {
+    if (!rig.getVoxEnabled(mainVfo, &enabled)) {
         qDebug() << "Hamlib rig_get_func (VOX) failed:" << rig.lastError();
         ui->voxLabel->setText(QString());
         return;
@@ -829,7 +829,7 @@ void MainWindow::updateAntennaLabel()
     }
 
     ant_t ant = RIG_ANT_NONE;
-    if (!rig.getAntenna(rxVfo, &ant)) {
+    if (!rig.getAntenna(mainVfo, &ant)) {
         qDebug() << "Hamlib rig_get_ant failed:" << rig.lastError();
         ui->antValueLabel->setText("--");
         return;
@@ -855,7 +855,7 @@ void MainWindow::updateTunerLabel()
     }
 
     bool enabled = false;
-    if (!rig.getTunerEnabled(rxVfo, &enabled)) {
+    if (!rig.getTunerEnabled(mainVfo, &enabled)) {
         qDebug() << "Hamlib rig_get_func (TUNER) failed:" << rig.lastError();
         ui->tunerLabel->setText(QString());
         return;
