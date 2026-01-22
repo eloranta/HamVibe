@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -48,14 +48,33 @@ target_link_directories(HamVibe PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/g
 target_link_libraries(HamVibe PRIVATE hamlib)
 
 set(HAMLIB_BIN_DIR "C:/Program Files/hamlib-w64-4.6.5/bin")
-foreach(_dll libhamlib-4.dll libusb-1.0.dll)
-    add_custom_command(TARGET HamVibe POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${HAMLIB_BIN_DIR}/${_dll}"
-            "$<TARGET_FILE_DIR:HamVibe>/${_dll}"
-    )
-endforeach()
+function(copy_hamlib_runtime target)
+    foreach(_dll libhamlib-4.dll libusb-1.0.dll)
+        add_custom_command(TARGET ${target} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${HAMLIB_BIN_DIR}/${_dll}"
+                "$<TARGET_FILE_DIR:${target}>/${_dll}"
+        )
+    endforeach()
+endfunction()
+
+copy_hamlib_runtime(HamVibe)
 target_include_directories(HamVibe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../hamlib/include")
+
+enable_testing()
+add_executable(HamVibeTests
+    tests/rig_test.cpp
+    rig.h
+    rig.cpp
+)
+target_include_directories(HamVibeTests PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../hamlib/include"
+)
+target_link_directories(HamVibeTests PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/gcc")
+target_link_libraries(HamVibeTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets hamlib)
+copy_hamlib_runtime(HamVibeTests)
+add_test(NAME HamVibeTests COMMAND HamVibeTests)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

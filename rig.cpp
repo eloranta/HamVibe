@@ -74,13 +74,34 @@ bool Rig::readFrequency(vfo_t vfo, int &frequency)
     }
 
     freq_t freq = 0;
-    const int freqStatus = rig_get_freq(rig, vfo, &freq);
-    if (freqStatus != RIG_OK) {
-        setError(QString("rig_get_freq failed: %1").arg(rigerror(freqStatus)));
+    const int status = rig_get_freq(rig, vfo, &freq);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_freq failed: %1").arg(rigerror(status)));
         return false;
     }
 
     frequency = static_cast<int>(freq);
+
+    return true;
+}
+
+bool Rig::setFrequency(int freq)
+{
+    return setFrequency(RIG_VFO_CURR, freq);
+}
+
+bool Rig::setFrequency(vfo_t vfo, int freq)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int status = rig_set_freq(rig, vfo, static_cast<freq_t>(freq));
+    if (status != RIG_OK) {
+        setError(QString("rig_set_freq failed: %1").arg(rigerror(status)));
+        return false;
+    }
 
     return true;
 }

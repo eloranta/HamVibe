@@ -15,6 +15,8 @@ public:
     QString lastError() const;
     bool readFrequency(int &frequency);
     bool readFrequency(vfo_t vfo, int &frequency);
+    bool setFrequency(int frequency);
+    bool setFrequency(vfo_t vfo, int frequency);
 signals:
 private:
     void setError(const QString &message);
