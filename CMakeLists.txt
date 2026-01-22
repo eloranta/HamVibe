@@ -46,7 +46,16 @@ endif()
 target_link_libraries(HamVibe PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 target_link_directories(HamVibe PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/gcc")
 target_link_libraries(HamVibe PRIVATE hamlib)
-target_include_directories(HamVibe PRIVATE "C:/ZOWN/hamlib/include")
+
+set(HAMLIB_BIN_DIR "C:/Program Files/hamlib-w64-4.6.5/bin")
+foreach(_dll libhamlib-4.dll libusb-1.0.dll)
+    add_custom_command(TARGET HamVibe POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${HAMLIB_BIN_DIR}/${_dll}"
+            "$<TARGET_FILE_DIR:HamVibe>/${_dll}"
+    )
+endforeach()
+target_include_directories(HamVibe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../hamlib/include")
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
