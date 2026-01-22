@@ -628,12 +628,13 @@ void MainWindow::setOnAir(bool enabled)
 
     onAirState = enabled;
 
-    if (enabled) {
+    if (enabled)
+    {
         ui->onAirLabel->setText("On Air");
-        ui->onAirLabel->setStyleSheet("color: white; background-color: red;");
-     } else {
+        ui->onAirLabel->setProperty("onAir", "on");
+    } else {
         ui->onAirLabel->setText("Standby");
-        ui->onAirLabel->setStyleSheet("color: white; background-color: black;");
+        ui->onAirLabel->setProperty("onAir", "off");
     }
  }
 

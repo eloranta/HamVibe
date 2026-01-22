@@ -2,16 +2,24 @@ QWidget#freqSectionWidget {
     background-color: #ffaa00;
 }
 
-QPushButton#onAirLabel[onAir="true"] {
-    color: white;
-    background-color: red;
-}
-
-QPushButton#onAirLabel[onAir="false"] {
+QPushButton#onAirLabel[onAir="off"] {
     color: white;
     background-color: black;
 }
 
-QPushButton[selectedBand="true"] {
-    border: 2px solid #1e88e5;
+QPushButton#onAirLabel[onAir="off"]:hover {
+    color: white;
+    background-color: black;
 }
+
+QPushButton#onAirLabel[onAir="on"] {
+    color: white;
+    background-color: red;
+}
+
+QPushButton#onAirLabel[onAir="on"]:hover {
+    color: white;
+    background-color: red;
+}
+
+
