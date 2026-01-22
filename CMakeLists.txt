@@ -23,6 +23,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(HamVibe
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        rig.h rig.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET HamVibe APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -43,6 +44,9 @@ else()
 endif()
 
 target_link_libraries(HamVibe PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_directories(HamVibe PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/gcc")
+target_link_libraries(HamVibe PRIVATE hamlib)
+target_include_directories(HamVibe PRIVATE "C:/ZOWN/hamlib/include")
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
