@@ -61,6 +61,29 @@ void Rig::setError(const QString &message)
     lastErrorMessage = message;
 }
 
+bool Rig::readSMeter(int &value)
+{
+    return readSMeter(RIG_VFO_CURR, value);
+}
+
+bool Rig::readSMeter(vfo_t vfo, int &value)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int status = rig_get_level(rig, vfo, RIG_LEVEL_STRENGTH, &level);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_level(STRENGTH) failed: %1").arg(rigerror(status)));
+        return false;
+    }
+    value = level.i;
+
+    return true;
+}
+
 bool Rig::readFrequency(int &frequency)
 {
     return readFrequency(RIG_VFO_CURR, frequency);

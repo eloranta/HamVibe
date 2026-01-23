@@ -13,6 +13,10 @@ public:
     bool open();
     void close();
     QString lastError() const;
+
+    bool readSMeter(int &value);
+    bool readSMeter(vfo_t vfo, int &value);
+
     bool readFrequency(int &frequency);
     bool readFrequency(vfo_t vfo, int &frequency);
     bool setFrequency(int frequency);
