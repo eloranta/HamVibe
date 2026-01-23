@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <memory>
 #include "rig.h"
 
 QT_BEGIN_NAMESPACE
@@ -22,7 +23,7 @@ public:
 private:
     Ui::MainWindow *ui;
 
-    Rig rig;
+    std::unique_ptr<Rig> rig;
     QTimer *pollTimer = nullptr;
 
     void poll();

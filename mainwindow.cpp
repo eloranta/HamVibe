@@ -1,23 +1,29 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include <QAction>
+#include <QComboBox>
 #include <QDebug>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QFormLayout>
 #include <QLabel>
+#include <QSettings>
 #include <QVBoxLayout>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , rig(RIG_MODEL_TS590S, "COM7") // TODO: make configurable
 {
     ui->setupUi(this);
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
 
-    if (!rig.open()) {
-        qDebug() << "Hamlib rig_open failed:" << rig.lastError();
+    QSettings settings;
+    const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
+    rig = std::make_unique<Rig>(static_cast<rig_model_t>(model), "COM7");
+
+    if (!rig->open()) {
+        qDebug() << "Hamlib rig_open failed:" << rig->lastError();
         ui->meterLabel->setText("S-meter: -- dB");
         return;
     }
@@ -36,8 +42,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::poll()
 {
+    if (!rig) {
+        ui->meterLabel->setText("S-meter: -- dB");
+        return;
+    }
+
     int value = 0;
-    if (!rig.readSMeter(value)) {
+    if (!rig->readSMeter(value)) {
         ui->meterLabel->setText("S-meter: -- dB");
         return;
     }
@@ -51,14 +62,28 @@ void MainWindow::showSettingsDialog()
     dialog.setWindowTitle("Settings");
 
     QVBoxLayout layout(&dialog);
-    QLabel label("Settings are not implemented yet.", &dialog);
-    QDialogButtonBox buttons(QDialogButtonBox::Close, &dialog);
+    QFormLayout form;
+    QComboBox rigCombo(&dialog);
+    rigCombo.addItem("RIG_MODEL_TS590S", RIG_MODEL_TS590S);
+    rigCombo.addItem("RIG_MODEL_TS590SG", RIG_MODEL_TS590SG);
+
+    QSettings settings;
+    const int currentModel = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
+    const int index = rigCombo.findData(currentModel);
+    rigCombo.setCurrentIndex(index >= 0 ? index : 0);
+
+    form.addRow("Rig:", &rigCombo);
+
+    QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
+    connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 
-    layout.addWidget(&label);
+    layout.addLayout(&form);
     layout.addWidget(&buttons);
 
-    dialog.exec();
+    if (dialog.exec() == QDialog::Accepted) {
+        settings.setValue("rig/model", rigCombo.currentData().toInt());
+    }
 }
 
 void MainWindow::showAboutDialog()
