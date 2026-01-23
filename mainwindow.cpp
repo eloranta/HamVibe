@@ -14,6 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
+    connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
 
     if (!rig.open()) {
         qDebug() << "Hamlib rig_open failed:" << rig.lastError();
@@ -51,6 +52,23 @@ void MainWindow::showSettingsDialog()
 
     QVBoxLayout layout(&dialog);
     QLabel label("Settings are not implemented yet.", &dialog);
+    QDialogButtonBox buttons(QDialogButtonBox::Close, &dialog);
+    connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
+
+    layout.addWidget(&label);
+    layout.addWidget(&buttons);
+
+    dialog.exec();
+}
+
+void MainWindow::showAboutDialog()
+{
+    QDialog dialog(this);
+    dialog.setWindowTitle("About HamVibe");
+
+    QVBoxLayout layout(&dialog);
+    QLabel label("HamVibe\n\nS-meter monitor using hamlib.", &dialog);
+    label.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     QDialogButtonBox buttons(QDialogButtonBox::Close, &dialog);
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
 

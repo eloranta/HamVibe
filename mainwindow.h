@@ -27,5 +27,6 @@ private:
 
     void poll();
     void showSettingsDialog();
+    void showAboutDialog();
 };
 #endif // MAINWINDOW_H
