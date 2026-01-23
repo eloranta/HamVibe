@@ -20,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
-    rig = std::make_unique<Rig>(static_cast<rig_model_t>(model), "COM7");
+    const QString port = settings.value("rig/port", "COM7").toString();
+    rig = std::make_unique<Rig>(static_cast<rig_model_t>(model), port);
 
     if (!rig->open()) {
         qDebug() << "Hamlib rig_open failed:" << rig->lastError();
@@ -74,6 +75,16 @@ void MainWindow::showSettingsDialog()
 
     form.addRow("Rig:", &rigCombo);
 
+    QComboBox portCombo(&dialog);
+    portCombo.addItem("COM7", "COM7");
+    portCombo.addItem("COM 4", "COM 4");
+
+    const QString currentPort = settings.value("rig/port", "COM7").toString();
+    const int portIndex = portCombo.findData(currentPort);
+    portCombo.setCurrentIndex(portIndex >= 0 ? portIndex : 0);
+
+    form.addRow("Port:", &portCombo);
+
     QDialogButtonBox buttons(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, &dialog);
     connect(&buttons, &QDialogButtonBox::accepted, &dialog, &QDialog::accept);
     connect(&buttons, &QDialogButtonBox::rejected, &dialog, &QDialog::reject);
@@ -83,6 +94,7 @@ void MainWindow::showSettingsDialog()
 
     if (dialog.exec() == QDialog::Accepted) {
         settings.setValue("rig/model", rigCombo.currentData().toInt());
+        settings.setValue("rig/port", portCombo.currentData().toString());
     }
 }
 
