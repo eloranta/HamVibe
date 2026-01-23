@@ -6,17 +6,29 @@ class RigTest : public QObject
 {
     Q_OBJECT
 private slots:
+    void initTestCase();
+    void cleanupTestCase();
     void setAndReadFrequency();
+    void readSMeter();
 private:
     static Rig rig;
 };
 
-void RigTest::setAndReadFrequency()
+void RigTest::initTestCase()
 {
     if (!rig.open()) {
         qDebug() << "Hamlib rig_open failed:" << rig.lastError();
-        return;
+        QFAIL("Hamlib rig_open failed");
     }
+}
+
+void RigTest::cleanupTestCase()
+{
+    rig.close();
+}
+
+void RigTest::setAndReadFrequency()
+{
     bool ok = rig.setFrequency(700010);
     QVERIFY(ok);
 
@@ -24,6 +36,13 @@ void RigTest::setAndReadFrequency()
     ok = rig.readFrequency(frequency);
     QVERIFY(ok);
     QCOMPARE(frequency, 700010);
+}
+
+void RigTest::readSMeter()
+{
+    int value = 0;
+    const bool ok = rig.readSMeter(value);
+    QVERIFY(ok);
 }
 
 Rig RigTest::rig(RIG_MODEL_TS590S, "COM7");

@@ -49,6 +49,13 @@ bool Rig::open()
 
 void Rig::close()
 {
+    if (!rig) {
+        return;
+    }
+
+    rig_close(rig);
+    rig_cleanup(rig);
+    rig = nullptr;
 }
 
 QString Rig::lastError() const
