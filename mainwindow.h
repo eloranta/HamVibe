@@ -26,5 +26,6 @@ private:
     QTimer *pollTimer = nullptr;
 
     void poll();
+    void showSettingsDialog();
 };
 #endif // MAINWINDOW_H

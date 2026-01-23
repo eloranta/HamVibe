@@ -1,4 +1,48 @@
 #include "rig.h"
+#include <cmath>
+
+namespace {
+struct SmeterPoint {
+    int raw;
+    int value;
+};
+
+int scaleSmeter(int raw)
+{
+    static const SmeterPoint points[] = {
+        {-60, 0},
+        {-48, 1},
+        {-36, 3},
+        {-24, 5},
+        {-16, 7},
+        {0, 9},
+        {20, 20},
+        {40, 40},
+        {60, 60},
+    };
+
+    if (raw <= points[0].raw) {
+        return points[0].value;
+    }
+    const int last = static_cast<int>(sizeof(points) / sizeof(points[0])) - 1;
+    if (raw >= points[last].raw) {
+        return points[last].value;
+    }
+
+    for (int i = 1; i <= last; ++i) {
+        if (raw <= points[i].raw) {
+            const int x0 = points[i - 1].raw;
+            const int y0 = points[i - 1].value;
+            const int x1 = points[i].raw;
+            const int y1 = points[i].value;
+            const double t = static_cast<double>(raw - x0) / static_cast<double>(x1 - x0);
+            return static_cast<int>(std::lround(y0 + t * (y1 - y0)));
+        }
+    }
+
+    return points[last].value;
+}
+} // namespace
 
 Rig::Rig(rig_model_t model, const QString &portName, QObject *parent)
     : QObject(parent)
@@ -86,30 +130,7 @@ bool Rig::readSMeter(vfo_t vfo, int &value)
         setError(QString("rig_get_level(STRENGTH) failed: %1").arg(rigerror(status)));
         return false;
     }
-    const int raw = level.i;
-
-    // TODÖ: check this
-    if (raw <= -60) {
-        value = 0;
-    } else if (raw <= -48) {
-        value = (raw + 60) * 1 / 12;
-    } else if (raw <= -36) {
-        value = 1 + (raw + 48) * 2 / 12;
-    } else if (raw <= -24) {
-        value = 3 + (raw + 36) * 2 / 12;
-    } else if (raw <= -16) {
-        value = 5 + (raw + 24) * 2 / 8;
-    } else if (raw <= 0) {
-        value = 7 + (raw + 16) * 2 / 16;
-    } else if (raw <= 20) {
-        value = 9 + (raw) * 11 / 20;
-    } else if (raw <= 40) {
-        value = 20 + (raw - 20) * 20 / 20;
-    } else if (raw <= 60) {
-        value = 40 + (raw - 40) * 20 / 20;
-    } else {
-        value = 60;
-    }
+    value = scaleSmeter(level.i);
 
     return true;
 }
