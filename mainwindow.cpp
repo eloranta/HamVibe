@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -10,19 +11,29 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (!rig.open()) {
         qDebug() << "Hamlib rig_open failed:" << rig.lastError();
+        ui->meterLabel->setText("S-meter: -- dB");
         return;
     }
 
-    int freq = 0;
-    if (!rig.readFrequency(freq)) {
-        qDebug() << "Hamlib rig_open failed:" << rig.lastError();
-        return;
-    }
-
-    qDebug() << freq;
+    pollTimer = new QTimer(this);
+    pollTimer->setInterval(1000);
+    connect(pollTimer, &QTimer::timeout, this, [this]() { poll(); });
+    pollTimer->start();
+    poll();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::poll()
+{
+    int value = 0;
+    if (!rig.readSMeter(value)) {
+        ui->meterLabel->setText("S-meter: -- dB");
+        return;
+    }
+
+    ui->meterLabel->setText(QString("S-meter: %1 dB").arg(value));
 }

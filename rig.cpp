@@ -86,7 +86,30 @@ bool Rig::readSMeter(vfo_t vfo, int &value)
         setError(QString("rig_get_level(STRENGTH) failed: %1").arg(rigerror(status)));
         return false;
     }
-    value = level.i;
+    const int raw = level.i;
+
+    // TODÖ: check this
+    if (raw <= -60) {
+        value = 0;
+    } else if (raw <= -48) {
+        value = (raw + 60) * 1 / 12;
+    } else if (raw <= -36) {
+        value = 1 + (raw + 48) * 2 / 12;
+    } else if (raw <= -24) {
+        value = 3 + (raw + 36) * 2 / 12;
+    } else if (raw <= -16) {
+        value = 5 + (raw + 24) * 2 / 8;
+    } else if (raw <= 0) {
+        value = 7 + (raw + 16) * 2 / 16;
+    } else if (raw <= 20) {
+        value = 9 + (raw) * 11 / 20;
+    } else if (raw <= 40) {
+        value = 20 + (raw - 20) * 20 / 20;
+    } else if (raw <= 60) {
+        value = 40 + (raw - 40) * 20 / 20;
+    } else {
+        value = 60;
+    }
 
     return true;
 }
