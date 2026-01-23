@@ -180,3 +180,55 @@ bool Rig::setFrequency(vfo_t vfo, int freq)
     return true;
 }
 
+bool Rig::setPtt(bool enabled)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int status = rig_set_ptt(rig, RIG_VFO_CURR, enabled ? RIG_PTT_ON : RIG_PTT_OFF);
+    if (status != RIG_OK) {
+        setError(QString("rig_set_ptt failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    return true;
+}
+
+bool Rig::getPtt(bool &value)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    ptt_t ptt = RIG_PTT_OFF;
+    const int status = rig_get_ptt(rig, RIG_VFO_CURR, &ptt);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_ptt failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    value = (ptt == RIG_PTT_ON);
+    return true;
+}
+
+bool Rig::readPower(double &watts)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int status = rig_get_level(rig, RIG_VFO_CURR, RIG_LEVEL_RFPOWER_METER_WATTS, &level);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_level(RFPOWER) failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    watts = level.f;
+    return true;
+}
+

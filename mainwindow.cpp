@@ -17,6 +17,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
+    connect(ui->sendButton, &QPushButton::toggled, this, [this](bool checked) {
+        if (!rig || !rig->setPtt(checked)) {
+            ui->sendButton->setChecked(false);
+        }
+    });
 
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
@@ -48,13 +53,27 @@ void MainWindow::poll()
         return;
     }
 
-    int value = 0;
-    if (!rig->readSMeter(value)) {
+    bool ptt = false;
+    if (!rig->getPtt(ptt)) {
         ui->meterLabel->setText("S-meter: -- dB");
         return;
     }
 
-    ui->meterLabel->setText(QString("S-meter: %1 dB").arg(value));
+    if (ptt) {
+        double watts = 0.0;
+        if (!rig->readPower(watts)) {
+            ui->meterLabel->setText("Power: -- W");
+            return;
+        }
+        ui->meterLabel->setText(QString("Power: %1 W").arg(watts, 0, 'f', 1));
+    } else {
+        int value = 0;
+        if (!rig->readSMeter(value)) {
+            ui->meterLabel->setText("S-meter: -- dB");
+            return;
+        }
+        ui->meterLabel->setText(QString("S-meter: %1 dB").arg(value));
+    }
 }
 
 void MainWindow::showSettingsDialog()

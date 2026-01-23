@@ -8,8 +8,10 @@ class RigTest : public QObject
 private slots:
     void initTestCase();
     void cleanupTestCase();
-    void setAndReadFrequency();
     void readSMeter();
+    void setPtt();
+
+    void setAndReadFrequency();
 private:
     static Rig rig;
 };
@@ -44,6 +46,15 @@ void RigTest::readSMeter()
     const bool ok = rig.readSMeter(value);
     QVERIFY(ok);
 }
+
+void RigTest::setPtt()
+{
+    bool ok = rig.setPtt(true);
+    QVERIFY(ok);
+    ok = rig.setPtt(false);
+    QVERIFY(ok);
+}
+
 
 Rig RigTest::rig(RIG_MODEL_TS590S, "COM7");
 

@@ -21,6 +21,9 @@ public:
     bool readFrequency(vfo_t vfo, int &frequency);
     bool setFrequency(int frequency);
     bool setFrequency(vfo_t vfo, int frequency);
+    bool setPtt(bool enabled);
+    bool getPtt(bool &value);
+    bool readPower(double &watts);
 signals:
 private:
     void setError(const QString &message);
