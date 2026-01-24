@@ -17,10 +17,10 @@
    <widget class="QPushButton" name="sendButton">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>250</y>
-      <width>100</width>
-      <height>28</height>
+      <x>210</x>
+      <y>10</y>
+      <width>75</width>
+      <height>24</height>
      </rect>
     </property>
     <property name="text">
@@ -30,30 +30,92 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="sMeter">
+   <widget class="QLabel" name="unitLabel">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>210</y>
-      <width>181</width>
-      <height>16</height>
+      <x>10</x>
+      <y>20</y>
+      <width>156</width>
+      <height>20</height>
      </rect>
     </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>1000</width>
+      <height>24</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Consolas</family>
+      <pointsize>10</pointsize>
+      <bold>false</bold>
+     </font>
+    </property>
     <property name="text">
-     <string>S-meter: -- dB</string>
+     <string>-1-3-5-7-9--20--40--60</string>
     </property>
    </widget>
-   <widget class="QLabel" name="powerMeter">
+   <widget class="QProgressBar" name="meterBar">
     <property name="geometry">
      <rect>
-      <x>100</x>
-      <y>232</y>
-      <width>181</width>
-      <height>16</height>
+      <x>10</x>
+      <y>37</y>
+      <width>156</width>
+      <height>12</height>
      </rect>
     </property>
-    <property name="text">
-     <string>Power: -- W</string>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>1000</width>
+      <height>12</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QProgressBar::chunk {
+    background-color: #CD96CD;
+    width: 4px;
+    margin:0px;
+}</string>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>30</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="textVisible">
+     <bool>false</bool>
+    </property>
+    <property name="format">
+     <string>%v</string>
     </property>
    </widget>
   </widget>

@@ -130,7 +130,7 @@ bool Rig::readSMeter(vfo_t vfo, int &value)
         setError(QString("rig_get_level(STRENGTH) failed: %1").arg(rigerror(status)));
         return false;
     }
-    value = scaleSmeter(level.i);
+    value = (level.i)/4 + 15;
 
     return true;
 }
