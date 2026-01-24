@@ -30,7 +30,7 @@
      <bool>true</bool>
     </property>
    </widget>
-   <widget class="QLabel" name="meterLabel">
+   <widget class="QLabel" name="sMeter">
     <property name="geometry">
      <rect>
       <x>100</x>
@@ -40,7 +40,20 @@
      </rect>
     </property>
     <property name="text">
-     <string/>
+     <string>S-meter: -- dB</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="powerMeter">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>232</y>
+      <width>181</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Power: -- W</string>
     </property>
    </widget>
   </widget>

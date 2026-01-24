@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (!rig || !rig->setPtt(checked)) {
             ui->sendButton->setChecked(false);
         }
+        poll();
     });
 
     QSettings settings;
@@ -30,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (!rig->open()) {
         qDebug() << "Hamlib rig_open failed:" << rig->lastError();
-        ui->meterLabel->setText("S-meter: -- dB");
+        ui->sMeter->setText("S-meter: -- dB");
+        ui->powerMeter->setText("Power: -- W");
         return;
     }
 
@@ -44,36 +46,6 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-void MainWindow::poll()
-{
-    if (!rig) {
-        ui->meterLabel->setText("S-meter: -- dB");
-        return;
-    }
-
-    bool ptt = false;
-    if (!rig->getPtt(ptt)) {
-        ui->meterLabel->setText("S-meter: -- dB");
-        return;
-    }
-
-    if (ptt) {
-        double watts = 0.0;
-        if (!rig->readPower(watts)) {
-            ui->meterLabel->setText("Power: -- W");
-            return;
-        }
-        ui->meterLabel->setText(QString("Power: %1 W").arg(watts, 0, 'f', 1));
-    } else {
-        int value = 0;
-        if (!rig->readSMeter(value)) {
-            ui->meterLabel->setText("S-meter: -- dB");
-            return;
-        }
-        ui->meterLabel->setText(QString("S-meter: %1 dB").arg(value));
-    }
 }
 
 void MainWindow::showSettingsDialog()
@@ -132,4 +104,42 @@ void MainWindow::showAboutDialog()
     layout.addWidget(&buttons);
 
     dialog.exec();
+}
+
+void MainWindow::poll()
+{
+    if (!rig) {
+        ui->sMeter->setText("S-meter: -- dB");
+        ui->powerMeter->setText("Power: -- W");
+        return;
+    }
+
+    bool ptt = false;
+    if (!rig->getPtt(ptt)) {
+        ui->sMeter->setText("S-meter: -- dB");
+        ui->powerMeter->setText("Power: -- W");
+        return;
+    }
+
+    if (ptt) {
+        ui->sMeter->setDisabled(true);
+        ui->powerMeter->setDisabled(false);
+
+        double watts = 0.0;
+        if (!rig->readPower(watts)) {
+            ui->powerMeter->setText("Power: -- W");
+            return;
+        }
+        ui->powerMeter->setText(QString("Power: %1 W").arg(watts, 0, 'f', 1));
+    } else {
+        ui->sMeter->setDisabled(false);
+        ui->powerMeter->setDisabled(true);
+
+        int value = 0;
+        if (!rig->readSMeter(value)) {
+            ui->sMeter->setText("S-meter: -- dB");
+            return;
+        }
+        ui->sMeter->setText(QString("S-meter: %1 dB").arg(value));
+    }
 }
