@@ -128,30 +128,27 @@ void MainWindow::poll()
     qDebug() << value;
     ui->meterBar->setValue(value);
 
+    bool ptt = false;
+    if (!rig->getPtt(ptt)) {
+         return;
+    }
 
-    // if (!rig) {
-    //     ui->sMeter->setText("S-meter: -- dB");
-    //     ui->powerMeter->setText("Power: -- W");
-    //     ui->sendButton->setText("Send");
-    //     ui->sendButton->setProperty("onair", false);
-    //     ui->sendButton->style()->unpolish(ui->sendButton);
-    //     ui->sendButton->style()->polish(ui->sendButton);
-    //     ui->sendButton->update();
-    //     return;
-    // }
-
-    // bool ptt = false;
-    // if (!rig->getPtt(ptt)) {
-    //     ui->sMeter->setText("S-meter: -- dB");
-    //     ui->powerMeter->setText("Power: -- W");
-    //     ui->sendButton->setText("Send");
-    //     ui->sendButton->setProperty("onair", false);
-    //     ui->sendButton->style()->unpolish(ui->sendButton);
-    //     ui->sendButton->style()->polish(ui->sendButton);
-    //     ui->sendButton->update();
-    //     return;
-    // }
-
+    if (ptt) {
+        double power = 0.0;
+        if (!rig->readPower(power)) {
+             return;
+        }
+        ui->unitLabel->setText("---10--25--50--75--100W");
+        ui->meterBar->setValue(power);
+    } else {
+        int value = 0;
+        if (!rig->readSMeter(value)) {
+             return;
+        }
+        ui->unitLabel->setText("--1-3-5-7--9--20-40-60");
+        ui->meterBar->setValue(value);
+    }
+  //-1-3-5-7-9--20--40--60
     // {
     //     QSignalBlocker blocker(ui->sendButton);
     //     ui->sendButton->setChecked(ptt);
@@ -162,25 +159,4 @@ void MainWindow::poll()
     // ui->sendButton->style()->polish(ui->sendButton);
     // ui->sendButton->update();
 
-    // if (ptt) {
-    //     ui->sMeter->setDisabled(true);
-    //     ui->powerMeter->setDisabled(false);
-
-    //     double watts = 0.0;
-    //     if (!rig->readPower(watts)) {
-    //         ui->powerMeter->setText("Power: -- W");
-    //         return;
-    //     }
-    //     ui->powerMeter->setText(QString("Power: %1 W").arg(watts, 0, 'f', 1));
-    // } else {
-    //     ui->sMeter->setDisabled(false);
-    //     ui->powerMeter->setDisabled(true);
-
-    //     int value = 0;
-    //     if (!rig->readSMeter(value)) {
-    //         ui->sMeter->setText("S-meter: -- dB");
-    //         return;
-    //     }
-    //     ui->sMeter->setText(QString("S-meter: %1 dB").arg(value));
-    // }
 }
