@@ -36,6 +36,58 @@
      <bool>false</bool>
     </property>
    </widget>
+   <widget class="QGroupBox" name="modeGroupBox">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>235</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Mode</string>
+    </property>
+    <widget class="QPushButton" name="lsbUsbButton">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>25</y>
+       <width>70</width>
+       <height>24</height>
+      </rect>
+     </property>
+    <property name="text">
+      <string>LSB/USB</string>
+    </property>
+    </widget>
+    <widget class="QPushButton" name="cwButton">
+     <property name="geometry">
+      <rect>
+       <x>85</x>
+       <y>25</y>
+       <width>50</width>
+       <height>24</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>CW</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="fmAmButton">
+     <property name="geometry">
+      <rect>
+       <x>140</x>
+       <y>25</y>
+       <width>70</width>
+       <height>24</height>
+      </rect>
+     </property>
+    <property name="text">
+      <string>FM/AM</string>
+    </property>
+    </widget>
+   </widget>
    <widget class="QLabel" name="unitLabel">
     <property name="geometry">
      <rect>

@@ -21,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
     connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::togglePtt);
+    connect(ui->lsbUsbButton, &QPushButton::clicked, this, &MainWindow::toggleLsbUsb);
+    connect(ui->cwButton, &QPushButton::clicked, this, &MainWindow::setCwMode);
+    connect(ui->fmAmButton, &QPushButton::clicked, this, &MainWindow::toggleFmAm);
 
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
@@ -123,6 +126,40 @@ void MainWindow::togglePtt()
         ui->meterBar->setMaximum(30);
     }
     poll();
+}
+
+void MainWindow::toggleLsbUsb()
+{
+    if (!rig) {
+        return;
+    }
+    const bool nextLsb = !lsbSelected;
+    const int mode = nextLsb ? RIG_MODE_LSB : RIG_MODE_USB;
+    if (!rig->setMode(mode)) {
+        return;
+    }
+    lsbSelected = nextLsb;
+}
+
+void MainWindow::setCwMode()
+{
+    if (!rig) {
+        return;
+    }
+    rig->setMode(RIG_MODE_CW);
+}
+
+void MainWindow::toggleFmAm()
+{
+    if (!rig) {
+        return;
+    }
+    const bool nextFm = !fmSelected;
+    const int mode = nextFm ? RIG_MODE_FM : RIG_MODE_AM;
+    if (!rig->setMode(mode)) {
+        return;
+    }
+    fmSelected = nextFm;
 }
 
 void MainWindow::poll()

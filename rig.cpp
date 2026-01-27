@@ -180,6 +180,27 @@ bool Rig::setFrequency(vfo_t vfo, int freq)
     return true;
 }
 
+bool Rig::setMode(int mode, int width)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int status = rig_set_mode(
+        rig,
+        RIG_VFO_CURR,
+        static_cast<rmode_t>(mode),
+        static_cast<pbwidth_t>(width)
+    );
+    if (status != RIG_OK) {
+        setError(QString("rig_set_mode failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    return true;
+}
+
 bool Rig::setPtt(bool enabled)
 {
     if (!rig) {
@@ -231,4 +252,3 @@ bool Rig::readPower(double &watts)
     watts = level.f;
     return true;
 }
-

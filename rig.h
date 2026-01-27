@@ -21,6 +21,7 @@ public:
     bool readFrequency(vfo_t vfo, int &frequency);
     bool setFrequency(int frequency);
     bool setFrequency(vfo_t vfo, int frequency);
+    bool setMode(int mode, int width = RIG_PASSBAND_NOCHANGE);
     bool setPtt(bool enabled);
     bool getPtt(bool &value);
     bool readPower(double &watts);
