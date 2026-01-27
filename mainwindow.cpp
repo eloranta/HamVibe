@@ -17,25 +17,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    ui->sendButton->setAutoDefault(false);
-    ui->sendButton->setDefault(false);
-    ui->sendButton->setFixedSize(ui->sendButton->sizeHint());
-    ui->sendButton->setProperty("onair", false);
-    ui->sendButton->setStyleSheet("QPushButton[onair=\"true\"] { color: white; background-color: #b00020; border: 1px solid #7c0014; }");
+
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
-    connect(ui->sendButton, &QPushButton::toggled, this, [this](bool checked) {
-        if (!rig || !rig->setPtt(checked)) {
-            ui->sendButton->setChecked(false);
-        }
-        const bool onAir = ui->sendButton->isChecked();
-        ui->sendButton->setText(onAir ? "On Air" : "Send");
-        ui->sendButton->setProperty("onair", onAir);
-        ui->sendButton->style()->unpolish(ui->sendButton);
-        ui->sendButton->style()->polish(ui->sendButton);
-        ui->sendButton->update();
-        poll();
-    });
+    connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::togglePtt);
 
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
@@ -44,8 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     if (!rig->open()) {
         qDebug() << "Hamlib rig_open failed:" << rig->lastError();
-        // ui->sMeter->setText("S-meter: -- dB");
-        // ui->powerMeter->setText("Power: -- W");
         return;
     }
 
@@ -119,44 +102,46 @@ void MainWindow::showAboutDialog()
     dialog.exec();
 }
 
-void MainWindow::poll()
+void MainWindow::togglePtt()
 {
-    int value;
-    if (!rig->readSMeter(value)) {
+    if (!rig) {
         return;
     }
-    qDebug() << value;
-    ui->meterBar->setValue(value);
+    bool ptt = false;
+    if (!rig->getPtt(ptt)) {
+        return;
+    }
+    ptt = !ptt;
+    if (!rig->setPtt(ptt)) {
+        return;
+    }
+    if (ptt) {
+        ui->unitLabel->setText("5-10-25---50---75-100W");
+        ui->meterBar->setMaximum(100);
+    } else {
+        ui->unitLabel->setText("--1-3-5-7--9--20-40-60");
+        ui->meterBar->setMaximum(30);
+    }
+    poll();
+}
 
+void MainWindow::poll()
+{
     bool ptt = false;
     if (!rig->getPtt(ptt)) {
          return;
     }
-
     if (ptt) {
         double power = 0.0;
         if (!rig->readPower(power)) {
              return;
         }
-        ui->unitLabel->setText("---10--25--50--75--100W");
         ui->meterBar->setValue(power);
     } else {
         int value = 0;
         if (!rig->readSMeter(value)) {
              return;
         }
-        ui->unitLabel->setText("--1-3-5-7--9--20-40-60");
         ui->meterBar->setValue(value);
     }
-  //-1-3-5-7-9--20--40--60
-    // {
-    //     QSignalBlocker blocker(ui->sendButton);
-    //     ui->sendButton->setChecked(ptt);
-    // }
-    // ui->sendButton->setText(ptt ? "On Air" : "Send");
-    // ui->sendButton->setProperty("onair", ptt);
-    // ui->sendButton->style()->unpolish(ui->sendButton);
-    // ui->sendButton->style()->polish(ui->sendButton);
-    // ui->sendButton->update();
-
 }
