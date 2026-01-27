@@ -132,12 +132,16 @@ void MainWindow::poll()
          return;
     }
     if (ptt) {
+        ui->busyLabel->setText("ON AIR");
+        ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: #b00020; padding: 2px 6px; }");
         double power = 0.0;
         if (!rig->readPower(power)) {
              return;
         }
         ui->meterBar->setValue(power);
     } else {
+        ui->busyLabel->setText("BUSY");
+        ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: black; padding: 2px 6px; }");
         int value = 0;
         if (!rig->readSMeter(value)) {
              return;
