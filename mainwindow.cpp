@@ -14,6 +14,40 @@
 #include <array>
 #include <utility>
 
+double MainWindow::interpolateSmeterDb(int value) const
+{
+    static constexpr std::array<std::pair<int, double>, 9> kSmeterMap = {{
+        {0, 0.0},
+        {3, 1.0},
+        {6, 3.0},
+        {9, 5.0},
+        {12, 7.0},
+        {15, 9.0},
+        {20, 20.0},
+        {25, 40.0},
+        {30, 60.0},
+    }};
+
+    if (value <= kSmeterMap.front().first) {
+        return kSmeterMap.front().second;
+    }
+    if (value >= kSmeterMap.back().first) {
+        return kSmeterMap.back().second;
+    }
+
+    for (size_t i = 1; i < kSmeterMap.size(); ++i) {
+        if (value <= kSmeterMap[i].first) {
+            const int x0 = kSmeterMap[i - 1].first;
+            const int x1 = kSmeterMap[i].first;
+            const double y0 = kSmeterMap[i - 1].second;
+            const double y1 = kSmeterMap[i].second;
+            const double t = (value - x0) / static_cast<double>(x1 - x0);
+            return y0 + t * (y1 - y0);
+        }
+    }
+
+    return kSmeterMap.back().second;
+}
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -166,65 +200,32 @@ void MainWindow::toggleFmAm()
 
 void MainWindow::poll()
 {
-    int value = 0;
-    if (!rig->readSMeter(value)) {
+
+
+    bool ptt = false;
+    if (!rig->getPtt(ptt)) {
          return;
     }
-    ui->sMeter->setValue(value);
+    if (ptt) {
+        ui->sMeter->setValue(0);
+        ui->sValue->setText("0 dB");
 
-    static constexpr std::array<std::pair<int, double>, 9> kSmeterMap = {{
-        {0, 0.0},
-        {3, 1.0},
-        {6, 3.0},
-        {9, 5.0},
-        {12, 7.0},
-        {15, 9.0},
-        {20, 20.0},
-        {25, 40.0},
-        {30, 60.0},
-    }};
-
-    double db = kSmeterMap.front().second;
-    if (value <= kSmeterMap.front().first) {
-        db = kSmeterMap.front().second;
-    } else if (value >= kSmeterMap.back().first) {
-        db = kSmeterMap.back().second;
-    } else {
-        for (size_t i = 1; i < kSmeterMap.size(); ++i) {
-            if (value <= kSmeterMap[i].first) {
-                const int x0 = kSmeterMap[i - 1].first;
-                const int x1 = kSmeterMap[i].first;
-                const double y0 = kSmeterMap[i - 1].second;
-                const double y1 = kSmeterMap[i].second;
-                const double t = (value - x0) / static_cast<double>(x1 - x0);
-                db = y0 + t * (y1 - y0);
-                break;
-            }
+        double value = 0;
+        if (!rig->readPower(value)) {
+            return;
         }
+        ui->powerMeter->setValue(value);
+        ui->powerValue->setText(QString("%1 W").arg(value, 0, 'f', 0));
+    } else {
+        ui->powerMeter->setValue(0);
+        ui->powerValue->setText("0 W");
+
+        int value = 0;
+        if (!rig->readSMeter(value)) {
+            return;
+        }
+        ui->sMeter->setValue(value);
+        const double db = interpolateSmeterDb(value);
+        ui->sValue->setText(QString("%1 dB").arg(db, 0, 'f', 0));
     }
-
-    ui->sValue->setText(QString("%1 dB").arg(db, 0, 'f', 0));
-
-
-    // bool ptt = false;
-    // if (!rig->getPtt(ptt)) {
-    //      return;
-    // }
-    // if (ptt) {
-    //     ui->busyLabel->setText("ON AIR");
-    //     ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: #b00020; padding: 2px 6px; }");
-    //     double power = 0.0;
-    //     if (!rig->readPower(power)) {
-    //          return;
-    //     }
-    //     ui->meterBar->setValue(power);
-    // } else {
-    //     ui->busyLabel->setText("BUSY");
-    //     ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: black; padding: 2px 6px; }");
-    //     int value = 0;
-    //     if (!rig->readSMeter(value)) {
-    //          return;
-    //     }
-    //     ui->meterBar->setValue(value);
-    // }
 }

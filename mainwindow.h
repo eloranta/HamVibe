@@ -36,5 +36,8 @@ private slots:
     void poll();
     void showSettingsDialog();
     void showAboutDialog();
+
+private:
+    double interpolateSmeterDb(int value) const;
 };
 #endif // MAINWINDOW_H
