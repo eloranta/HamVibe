@@ -25,7 +25,14 @@ private:
 
     std::unique_ptr<Rig> rig;
     QTimer *pollTimer = nullptr;
+    bool lsbSelected = true;
+    bool fmSelected = true;
 
+private slots:
+    void togglePtt();
+    void toggleLsbUsb();
+    void setCwMode();
+    void toggleFmAm();
     void poll();
     void showSettingsDialog();
     void showAboutDialog();

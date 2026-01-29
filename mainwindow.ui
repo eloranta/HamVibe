@@ -11,14 +11,14 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>HamVibe</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QPushButton" name="sendButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>80</y>
+      <x>20</x>
+      <y>273</y>
       <width>75</width>
       <height>24</height>
      </rect>
@@ -39,8 +39,8 @@
    <widget class="QGroupBox" name="modeGroupBox">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>110</y>
+      <x>20</x>
+      <y>303</y>
       <width>235</width>
       <height>70</height>
      </rect>
@@ -57,9 +57,9 @@
        <height>24</height>
       </rect>
      </property>
-    <property name="text">
+     <property name="text">
       <string>LSB/USB</string>
-    </property>
+     </property>
     </widget>
     <widget class="QPushButton" name="cwButton">
      <property name="geometry">
@@ -83,16 +83,16 @@
        <height>24</height>
       </rect>
      </property>
-    <property name="text">
+     <property name="text">
       <string>FM/AM</string>
-    </property>
+     </property>
     </widget>
    </widget>
    <widget class="QLabel" name="unitLabel">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>20</y>
+      <x>20</x>
+      <y>213</y>
       <width>157</width>
       <height>20</height>
      </rect>
@@ -129,8 +129,8 @@
    <widget class="QLabel" name="busyLabel">
     <property name="geometry">
      <rect>
-      <x>175</x>
-      <y>20</y>
+      <x>185</x>
+      <y>213</y>
       <width>70</width>
       <height>20</height>
      </rect>
@@ -153,8 +153,8 @@
    <widget class="QProgressBar" name="meterBar">
     <property name="geometry">
      <rect>
-      <x>10</x>
-      <y>37</y>
+      <x>20</x>
+      <y>230</y>
       <width>157</width>
       <height>12</height>
      </rect>
@@ -203,6 +203,81 @@
      <string>%v</string>
     </property>
    </widget>
+   <widget class="QSlider" name="horizontalSlider">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>90</y>
+      <width>160</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="maximum">
+     <number>30</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Orientation::Horizontal</enum>
+    </property>
+    <property name="tickPosition">
+     <enum>QSlider::TickPosition::TicksAbove</enum>
+    </property>
+    <property name="tickInterval">
+     <number>5</number>
+    </property>
+   </widget>
+   <widget class="QProgressBar" name="sMeter">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>30</y>
+      <width>150</width>
+      <height>10</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>1000</width>
+      <height>1000</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QProgressBar::chunk {
+    background-color: #CD96CD;
+    width: 3px;
+    margin:1px;
+}</string>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>30</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+    </property>
+    <property name="textVisible">
+     <bool>true</bool>
+    </property>
+    <property name="format">
+     <string>%v</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -244,5 +319,22 @@
   </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>horizontalSlider</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>sMeter</receiver>
+   <slot>setValue(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>122</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>108</x>
+     <y>57</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>
