@@ -11,6 +11,8 @@
 #include <QSignalBlocker>
 #include <QStyle>
 #include <QVBoxLayout>
+#include <array>
+#include <utility>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -20,10 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
-    connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::togglePtt);
-    connect(ui->lsbUsbButton, &QPushButton::clicked, this, &MainWindow::toggleLsbUsb);
-    connect(ui->cwButton, &QPushButton::clicked, this, &MainWindow::setCwMode);
-    connect(ui->fmAmButton, &QPushButton::clicked, this, &MainWindow::toggleFmAm);
+    // connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::togglePtt);
+    // connect(ui->lsbUsbButton, &QPushButton::clicked, this, &MainWindow::toggleLsbUsb);
+    // connect(ui->cwButton, &QPushButton::clicked, this, &MainWindow::setCwMode);
+    // connect(ui->fmAmButton, &QPushButton::clicked, this, &MainWindow::toggleFmAm);
 
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
@@ -164,25 +166,65 @@ void MainWindow::toggleFmAm()
 
 void MainWindow::poll()
 {
-    bool ptt = false;
-    if (!rig->getPtt(ptt)) {
+    int value = 0;
+    if (!rig->readSMeter(value)) {
          return;
     }
-    if (ptt) {
-        ui->busyLabel->setText("ON AIR");
-        ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: #b00020; padding: 2px 6px; }");
-        double power = 0.0;
-        if (!rig->readPower(power)) {
-             return;
-        }
-        ui->meterBar->setValue(power);
+    ui->sMeter->setValue(value);
+
+    static constexpr std::array<std::pair<int, double>, 9> kSmeterMap = {{
+        {0, 0.0},
+        {3, 1.0},
+        {6, 3.0},
+        {9, 5.0},
+        {12, 7.0},
+        {15, 9.0},
+        {20, 20.0},
+        {25, 40.0},
+        {30, 60.0},
+    }};
+
+    double db = kSmeterMap.front().second;
+    if (value <= kSmeterMap.front().first) {
+        db = kSmeterMap.front().second;
+    } else if (value >= kSmeterMap.back().first) {
+        db = kSmeterMap.back().second;
     } else {
-        ui->busyLabel->setText("BUSY");
-        ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: black; padding: 2px 6px; }");
-        int value = 0;
-        if (!rig->readSMeter(value)) {
-             return;
+        for (size_t i = 1; i < kSmeterMap.size(); ++i) {
+            if (value <= kSmeterMap[i].first) {
+                const int x0 = kSmeterMap[i - 1].first;
+                const int x1 = kSmeterMap[i].first;
+                const double y0 = kSmeterMap[i - 1].second;
+                const double y1 = kSmeterMap[i].second;
+                const double t = (value - x0) / static_cast<double>(x1 - x0);
+                db = y0 + t * (y1 - y0);
+                break;
+            }
         }
-        ui->meterBar->setValue(value);
     }
+
+    ui->sValue->setText(QString("%1 dB").arg(db, 0, 'f', 0));
+
+
+    // bool ptt = false;
+    // if (!rig->getPtt(ptt)) {
+    //      return;
+    // }
+    // if (ptt) {
+    //     ui->busyLabel->setText("ON AIR");
+    //     ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: #b00020; padding: 2px 6px; }");
+    //     double power = 0.0;
+    //     if (!rig->readPower(power)) {
+    //          return;
+    //     }
+    //     ui->meterBar->setValue(power);
+    // } else {
+    //     ui->busyLabel->setText("BUSY");
+    //     ui->busyLabel->setStyleSheet("QLabel { color: white; background-color: black; padding: 2px 6px; }");
+    //     int value = 0;
+    //     if (!rig->readSMeter(value)) {
+    //          return;
+    //     }
+    //     ui->meterBar->setValue(value);
+    // }
 }
