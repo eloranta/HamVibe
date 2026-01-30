@@ -201,6 +201,19 @@ void MainWindow::toggleFmAm()
 
 void MainWindow::poll()
 {
+    static const QString kNormalChunkStyle =
+        "QProgressBar::chunk {"
+        " background-color: #000000;"
+        " width: 3px;"
+        " margin:1px;"
+        "}";
+    static const QString kAlertChunkStyle =
+        "QProgressBar::chunk {"
+        " background-color: #d00000;"
+        " width: 3px;"
+        " margin:1px;"
+        "}";
+
     bool ptt = false;
     if (!rig->getPtt(ptt)) {
          return;
@@ -233,6 +246,7 @@ void MainWindow::poll()
         if (rig->readAlc(alc)) {
             ui->alcMeter->setValue(alc);
             ui->alcValue->setText(QString::number(alc));
+            ui->alcMeter->setStyleSheet(alc > 1 ? kAlertChunkStyle : kNormalChunkStyle);
         }
 
         int swr = 0;
@@ -240,6 +254,7 @@ void MainWindow::poll()
             const int swrDisplay = std::max(1, swr);
             ui->swrMeter->setValue(swrDisplay);
             ui->swrValue->setText(QString::number(swrDisplay));
+            ui->swrMeter->setStyleSheet(swrDisplay > 2 ? kAlertChunkStyle : kNormalChunkStyle);
         }
     } else {
         ui->label->setEnabled(true);
@@ -261,6 +276,8 @@ void MainWindow::poll()
         ui->alcValue->setText("");
         ui->swrMeter->setValue(1);
         ui->swrValue->setText("");
+        ui->alcMeter->setStyleSheet(kNormalChunkStyle);
+        ui->swrMeter->setStyleSheet(kNormalChunkStyle);
 
         int value = 0;
         if (!rig->readSMeter(value)) {
