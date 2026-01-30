@@ -11,6 +11,7 @@
 #include <QSignalBlocker>
 #include <QStyle>
 #include <QVBoxLayout>
+#include <algorithm>
 #include <array>
 #include <utility>
 
@@ -200,13 +201,24 @@ void MainWindow::toggleFmAm()
 
 void MainWindow::poll()
 {
-
-
     bool ptt = false;
     if (!rig->getPtt(ptt)) {
          return;
     }
     if (ptt) {
+        ui->label->setEnabled(false);
+        ui->sMeter->setEnabled(false);
+        ui->sValue->setEnabled(false);
+        ui->label_2->setEnabled(true);
+        ui->powerMeter->setEnabled(true);
+        ui->powerValue->setEnabled(true);
+        ui->label_3->setEnabled(true);
+        ui->alcMeter->setEnabled(true);
+        ui->alcValue->setEnabled(true);
+        ui->label_4->setEnabled(true);
+        ui->swrMeter->setEnabled(true);
+        ui->swrValue->setEnabled(true);
+
         ui->sMeter->setValue(0);
         ui->sValue->setText("0 dB");
 
@@ -216,9 +228,39 @@ void MainWindow::poll()
         }
         ui->powerMeter->setValue(value);
         ui->powerValue->setText(QString("%1 W").arg(value, 0, 'f', 0));
+
+        int alc = 0;
+        if (rig->readAlc(alc)) {
+            ui->alcMeter->setValue(alc);
+            ui->alcValue->setText(QString::number(alc));
+        }
+
+        int swr = 0;
+        if (rig->readSwr(swr)) {
+            const int swrDisplay = std::max(1, swr);
+            ui->swrMeter->setValue(swrDisplay);
+            ui->swrValue->setText(QString::number(swrDisplay));
+        }
     } else {
+        ui->label->setEnabled(true);
+        ui->sMeter->setEnabled(true);
+        ui->sValue->setEnabled(true);
+        ui->label_2->setEnabled(false);
+        ui->powerMeter->setEnabled(false);
+        ui->powerValue->setEnabled(false);
+        ui->label_3->setEnabled(false);
+        ui->alcMeter->setEnabled(false);
+        ui->alcValue->setEnabled(false);
+        ui->label_4->setEnabled(false);
+        ui->swrMeter->setEnabled(false);
+        ui->swrValue->setEnabled(false);
+
         ui->powerMeter->setValue(0);
         ui->powerValue->setText("0 W");
+        ui->alcMeter->setValue(0);
+        ui->alcValue->setText("");
+        ui->swrMeter->setValue(1);
+        ui->swrValue->setText("");
 
         int value = 0;
         if (!rig->readSMeter(value)) {

@@ -25,6 +25,10 @@ public:
     bool setPtt(bool enabled);
     bool getPtt(bool &value);
     bool readPower(double &watts);
+    bool readAlc(int &value);
+    bool readAlc(vfo_t vfo, int &value);
+    bool readSwr(int &value);
+    bool readSwr(vfo_t vfo, int &value);
 signals:
 private:
     void setError(const QString &message);

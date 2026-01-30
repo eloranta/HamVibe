@@ -252,3 +252,49 @@ bool Rig::readPower(double &watts)
     watts = level.f;
     return true;
 }
+
+bool Rig::readAlc(int &value)
+{
+    return readAlc(RIG_VFO_CURR, value);
+}
+
+bool Rig::readAlc(vfo_t vfo, int &value)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int status = rig_get_level(rig, vfo, RIG_LEVEL_ALC, &level);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_level(ALC) failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    value = level.f;
+    return true;
+}
+
+bool Rig::readSwr(int &value)
+{
+    return readSwr(RIG_VFO_CURR, value);
+}
+
+bool Rig::readSwr(vfo_t vfo, int &value)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    value_t level;
+    const int status = rig_get_level(rig, vfo, RIG_LEVEL_SWR, &level);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_level(SWR) failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    value = level.f;
+    return true;
+}
