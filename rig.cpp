@@ -298,3 +298,25 @@ bool Rig::readSwr(vfo_t vfo, int &value)
     value = level.f;
     return true;
 }
+
+bool Rig::readMode(rmode_t &mode)
+{
+    return readMode(RIG_VFO_CURR, mode);
+}
+
+bool Rig::readMode(vfo_t vfo, rmode_t &mode)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    pbwidth_t width = RIG_PASSBAND_NOCHANGE;
+    const int status = rig_get_mode(rig, vfo, &mode, &width);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_mode failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    return true;
+}

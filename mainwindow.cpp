@@ -49,6 +49,26 @@ double MainWindow::interpolateSmeterDb(int value) const
 
     return kSmeterMap.back().second;
 }
+
+static QString modeToText(rmode_t mode)
+{
+    switch (mode) {
+    case RIG_MODE_LSB:
+        return "LSB";
+    case RIG_MODE_USB:
+        return "USB";
+    case RIG_MODE_CW:
+        return "CW";
+    case RIG_MODE_FM:
+        return "FM";
+    case RIG_MODE_AM:
+        return "AM";
+    case RIG_MODE_RTTY:
+        return "RTTY";
+    default:
+        return "UNK";
+    }
+}
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -195,6 +215,11 @@ void MainWindow::poll()
     bool ptt = false;
     if (!rig->getPtt(ptt)) {
          return;
+    }
+
+    rmode_t mode = RIG_MODE_NONE;
+    if (rig->readMode(mode)) {
+        ui->modeLabel->setText(modeToText(mode));
     }
     if (ptt) {
         ui->ptt->setText("On Air");

@@ -29,6 +29,8 @@ public:
     bool readAlc(vfo_t vfo, int &value);
     bool readSwr(int &value);
     bool readSwr(vfo_t vfo, int &value);
+    bool readMode(rmode_t &mode);
+    bool readMode(vfo_t vfo, rmode_t &mode);
 signals:
 private:
     void setError(const QString &message);
