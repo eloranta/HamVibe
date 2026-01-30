@@ -197,6 +197,9 @@ void MainWindow::poll()
          return;
     }
     if (ptt) {
+        ui->ptt->setText("On Air");
+        ui->ptt->setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(255, 0, 0);");
+
         ui->label->setEnabled(false);
         ui->sMeter->setEnabled(false);
         ui->sValue->setEnabled(false);
@@ -235,6 +238,9 @@ void MainWindow::poll()
             ui->swrMeter->setStyleSheet(swrDisplay > 2 ? kAlertChunkStyle : kNormalChunkStyle);
         }
     } else {
+        ui->ptt->setText("Standby");
+        ui->ptt->setStyleSheet("color: rgb(255, 255, 255); background-color: rgb(0, 0, 0);");
+
         ui->label->setEnabled(true);
         ui->sMeter->setEnabled(true);
         ui->sValue->setEnabled(true);
