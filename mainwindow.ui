@@ -681,6 +681,71 @@ background-color: rgb(0, 0, 0);</string>
      <item><widget class="QPushButton" name="band50Button"><property name="text"><string>50</string></property></widget></item>
     </layout>
    </widget>
+   <widget class="QGroupBox" name="sendButtonsGroup">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>285</y>
+      <width>620</width>
+      <height>55</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Send</string>
+    </property>
+    <layout class="QHBoxLayout" name="sendButtonsLayout">
+     <item>
+      <widget class="QPushButton" name="sendOg3zButton">
+       <property name="text">
+        <string>OG3Z</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="send5nnTuOg3zButton">
+       <property name="text">
+        <string>5NN TU</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="sendOg3zGmButton">
+       <property name="text">
+        <string>GM 5NN TU</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="send5nnTuGaButton">
+       <property name="text">
+        <string>GA 5NN TU</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="send5nnTuGeButton">
+       <property name="text">
+        <string>GE 5NN TU</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="send5nnTuOgButton">
+       <property name="text">
+        <string>OG OG</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="sendOgQmButton">
+       <property name="text">
+        <string>?</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+
 
 
   </widget>

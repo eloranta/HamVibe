@@ -1,5 +1,6 @@
 #include "rig.h"
 #include <cmath>
+#include <QByteArray>
 
 namespace {
 struct SmeterPoint {
@@ -354,5 +355,31 @@ bool Rig::readSplit(bool &enabled, vfo_t &txVfo)
 
     enabled = (split == RIG_SPLIT_ON);
     txVfo = tx;
+    return true;
+}
+
+bool Rig::sendCw(const QString &text, int wpm, vfo_t vfo)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    if (wpm > 0) {
+        value_t level;
+        level.i = wpm;
+        const int speedStatus = rig_set_level(rig, vfo, RIG_LEVEL_KEYSPD, level);
+        if (speedStatus != RIG_OK) {
+            setError(QString("rig_set_level(KEYSPD) failed: %1").arg(rigerror(speedStatus)));
+        }
+    }
+
+    const QByteArray bytes = text.toUtf8();
+    const int status = rig_send_morse(rig, vfo, bytes.constData());
+    if (status != RIG_OK) {
+        setError(QString("rig_send_morse failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
     return true;
 }

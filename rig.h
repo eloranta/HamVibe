@@ -33,6 +33,7 @@ public:
     bool readMode(vfo_t vfo, rmode_t &mode);
     bool readVfo(vfo_t &vfo);
     bool readSplit(bool &enabled, vfo_t &txVfo);
+    bool sendCw(const QString &text, int wpm, vfo_t vfo = RIG_VFO_CURR);
 signals:
 private:
     void setError(const QString &message);
