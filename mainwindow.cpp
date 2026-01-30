@@ -26,11 +26,7 @@
 #include <QTcpSocket>
 #include <QSqlQuery>
 #include <QSqlError>
-
-
-
-
-
+#include <QMessageBox>
 
 double MainWindow::interpolateSmeterDb(int value) const
 {
@@ -375,7 +371,11 @@ MainWindow::MainWindow(QWidget *parent)
         qWarning() << "RBN disconnected";
     });
     rbnSocket->connectToHost("telnet.reversebeacon.net", 7000);
-
+    connect(ui->clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
+    connect(m_model, &QAbstractItemModel::dataChanged,
+            this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
+                updateStatusCounts();
+            });
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
@@ -674,40 +674,40 @@ void MainWindow::poll()
 
 void MainWindow::updateStatusCounts()
 {
-    // int cw = 0, ph = 0, ft8 = 0, ft4 = 0;
+    int cw = 0, ph = 0, ft8 = 0, ft4 = 0;
 
-    // static const QStringList bands = {
-    //     "10","12","15","17","20","30","40","80"
-    // };
+    static const QStringList bands = {
+        "10","12","15","17","20","30","40","80"
+    };
 
-    // QSqlQuery q;
+    QSqlQuery q;
 
-    // for (const QString &band : bands) {
-    //     const QString sql = QString(R"(SELECT "%1" FROM modes)").arg(band);
-    //     if (!q.exec(sql)) {
-    //         qWarning() << "Count query failed:" << q.lastError();
-    //         return;
-    //     }
+    for (const QString &band : bands) {
+        const QString sql = QString(R"(SELECT "%1" FROM modes)").arg(band);
+        if (!q.exec(sql)) {
+            qWarning() << "Count query failed:" << q.lastError();
+            return;
+        }
 
-    //     while (q.next()) {
-    //         const int mask = q.value(0).toInt();
-    //         if (mask & (1 << 0)) cw++;
-    //         if (mask & (1 << 1)) ph++;
-    //         if (mask & (1 << 2)) ft8++;
-    //         if (mask & (1 << 3)) ft4++;
-    //     }
-    // }
+        while (q.next()) {
+            const int mask = q.value(0).toInt();
+            if (mask & (1 << 0)) cw++;
+            if (mask & (1 << 1)) ph++;
+            if (mask & (1 << 2)) ft8++;
+            if (mask & (1 << 3)) ft4++;
+        }
+    }
 
-    // const int total = cw * 10 + ph * 5 + ft8 * 2 + ft4 * 2;
+    const int total = cw * 10 + ph * 5 + ft8 * 2 + ft4 * 2;
 
-    // statusCountsLabel->setText(
-    //     QString("CW:%1  PH:%2  FT8:%3  FT4:%4  TOTAL:%5")
-    //         .arg(cw)
-    //         .arg(ph)
-    //         .arg(ft8)
-    //         .arg(ft4)
-    //         .arg(total)
-    //     );
+    statusCountsLabel->setText(
+        QString("CW:%1  PH:%2  FT8:%3  FT4:%4  TOTAL:%5")
+            .arg(cw)
+            .arg(ph)
+            .arg(ft8)
+            .arg(ft4)
+            .arg(total)
+        );
 }
 
 void MainWindow::updateModeVisibility()
@@ -735,4 +735,46 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
     return QMainWindow::eventFilter(obj, event);
 }
 
+void MainWindow::onClearClicked()
+{
+    const auto response = QMessageBox::question(
+        this,
+        "Confirm Clear",
+        "Set every band value to 0 for all callsigns?",
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+        );
 
+    if (response != QMessageBox::Yes) {
+        return;
+    }
+
+    QSqlQuery q;
+    const QString sql = R"(
+        UPDATE modes SET
+            "10" = 0,
+            "12" = 0,
+            "15" = 0,
+            "17" = 0,
+            "20" = 0,
+            "30" = 0,
+            "40" = 0,
+            "80" = 0
+    )";
+
+    if (!q.exec(sql)) {
+        qWarning() << "Clear failed:" << q.lastError();
+        if (statusInfoLabel) {
+            statusInfoLabel->setText("Clear failed");
+        }
+        return;
+    }
+
+    if (m_model) {
+        m_model->select();
+    }
+    updateStatusCounts();
+    if (statusInfoLabel) {
+        statusInfoLabel->setText("Cleared all data");
+    }
+}

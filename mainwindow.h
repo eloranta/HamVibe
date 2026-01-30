@@ -19,6 +19,10 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+public slots:
+    //void onQsoLogged(const QString &call, const QString &band, const QString &mode);
+    //void onAddClicked();
+    void onClearClicked();
 
 private:
     Ui::MainWindow *ui;
