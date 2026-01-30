@@ -22,6 +22,8 @@ public:
 
 private:
     Ui::MainWindow *ui;
+    class QSqlTableModel *m_model = nullptr;
+    class CheckboxDelegate *checkboxDelegate = nullptr;
 
     std::unique_ptr<Rig> rig;
     QTimer *pollTimer = nullptr;

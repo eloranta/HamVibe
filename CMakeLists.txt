@@ -9,8 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Test)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Test Sql)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Test Sql)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -47,7 +47,7 @@ else()
     endif()
 endif()
 
-target_link_libraries(HamVibe PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(HamVibe PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
 target_include_directories(HamVibe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_directories(HamVibe PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/gcc")
 target_link_libraries(HamVibe PRIVATE hamlib)
@@ -86,7 +86,7 @@ copy_hamlib_runtime(HamVibeTests)
 target_include_directories(HamVibeTests PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
-target_link_libraries(HamVibeTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets)
+target_link_libraries(HamVibeTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Sql)
 add_test(NAME HamVibeTests COMMAND HamVibeTests)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
