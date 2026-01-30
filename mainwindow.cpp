@@ -69,6 +69,26 @@ static QString modeToText(rmode_t mode)
         return "UNK";
     }
 }
+
+static QChar vfoToPrefix(vfo_t vfo)
+{
+    switch (vfo) {
+    case RIG_VFO_A:
+        return QChar('A');
+    case RIG_VFO_B:
+        return QChar('B');
+    case RIG_VFO_MAIN:
+        return QChar('M');
+    case RIG_VFO_SUB:
+        return QChar('S');
+    case RIG_VFO_TX:
+        return QChar('T');
+    case RIG_VFO_RX:
+        return QChar('R');
+    default:
+        return QChar('?');
+    }
+}
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -220,6 +240,14 @@ void MainWindow::poll()
     rmode_t mode = RIG_MODE_NONE;
     if (rig->readMode(mode)) {
         ui->modeLabel->setText(modeToText(mode));
+    }
+    int frequency = 0;
+    if (rig->readFrequency(frequency)) {
+        ui->leftFrequency->setValue(frequency);
+    }
+    vfo_t vfo = RIG_VFO_CURR;
+    if (rig->readVfo(vfo)) {
+        ui->leftFrequency->setPrefix(vfoToPrefix(vfo));
     }
     if (ptt) {
         ui->ptt->setText("On Air");

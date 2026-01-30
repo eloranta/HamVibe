@@ -320,3 +320,19 @@ bool Rig::readMode(vfo_t vfo, rmode_t &mode)
 
     return true;
 }
+
+bool Rig::readVfo(vfo_t &vfo)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    const int status = rig_get_vfo(rig, &vfo);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_vfo failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    return true;
+}
