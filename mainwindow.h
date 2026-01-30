@@ -25,10 +25,21 @@ private:
     class QSqlTableModel *m_model = nullptr;
     class CheckboxDelegate *checkboxDelegate = nullptr;
 
+    class QTcpSocket *rbnSocket = nullptr;
+    QByteArray rbnBuffer;
+    bool rbnLoginSent = false;
+    bool rbnOutputPaused = false;
+    class QLabel *statusInfoLabel = nullptr;
+    class QLabel *statusCountsLabel = nullptr;
+    void updateStatusCounts();
+    void updateModeVisibility();
+
     std::unique_ptr<Rig> rig;
     QTimer *pollTimer = nullptr;
     bool lsbSelected = true;
     bool fmSelected = true;
+protected:
+    bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
     void togglePtt();

@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "udpreceiver.h"
+
 #include <QAction>
 #include <QComboBox>
 #include <QDebug>
@@ -20,6 +22,15 @@
 #include <QStyledItemDelegate>
 #include <QPainter>
 #include <QMouseEvent>
+
+#include <QTcpSocket>
+#include <QSqlQuery>
+#include <QSqlError>
+
+
+
+
+
 
 double MainWindow::interpolateSmeterDb(int value) const
 {
@@ -240,6 +251,130 @@ MainWindow::MainWindow(QWidget *parent)
         ui->tableView->setItemDelegateForColumn(i, checkboxDelegate);
         ui->tableView->setColumnWidth(i, 120);
     }
+
+    statusCountsLabel = new QLabel(this);
+    statusCountsLabel->setMinimumWidth(260);
+    statusCountsLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+    statusInfoLabel = new QLabel(this);
+    statusInfoLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
+    ui->statusbar->addWidget(statusInfoLabel, 1);
+    ui->statusbar->addPermanentWidget(statusCountsLabel);
+    statusInfoLabel->setText("Ready");
+    updateStatusCounts();
+    updateModeVisibility();
+    ui->statusbar->installEventFilter(this);
+
+
+    rbnSocket = new QTcpSocket(this);
+    connect(rbnSocket, &QTcpSocket::readyRead, this, [this]() {
+        const QByteArray data = rbnSocket->readAll();
+        if (data.isEmpty()) {
+            return;
+        }
+
+        rbnBuffer.append(data);
+        // qDebug().noquote() << "RBN:" << data;
+
+        static const QRegularExpression rbnLineRegex(
+            R"(^DX de\s+\S+:\s+([0-9.]+)\s+([A-Za-z0-9/]+)\b(?:\s+([A-Za-z0-9/]+))?)"
+            );
+        auto freqToBand = [](double value) -> QString {
+            // RBN spots often use kHz (e.g. 14074.0); normalize to MHz.
+            double mhz = value;
+            if (mhz > 1000.0) {
+                mhz /= 1000.0;
+            }
+
+            if (mhz >= 3.5 && mhz < 4.0) return "80";
+            if (mhz >= 7.0 && mhz < 7.3) return "40";
+            if (mhz >= 10.1 && mhz < 10.15) return "30";
+            if (mhz >= 14.0 && mhz < 14.35) return "20";
+            if (mhz >= 18.068 && mhz < 18.168) return "17";
+            if (mhz >= 21.0 && mhz < 21.45) return "15";
+            if (mhz >= 24.89 && mhz < 24.99) return "12";
+            if (mhz >= 28.0 && mhz < 29.7) return "10";
+            return QString();
+        };
+
+        if (rbnOutputPaused) {
+            if (!rbnLoginSent && rbnBuffer.contains("Please enter your call:")) {
+                rbnSocket->write("OG3Z\r\n");
+                rbnLoginSent = true;
+                qDebug() << "RBN login sent";
+            }
+            rbnBuffer.clear();
+            return;
+        }
+
+        while (true) {
+            const int newlineIndex = rbnBuffer.indexOf('\n');
+            if (newlineIndex < 0) {
+                break;
+            }
+
+            const QByteArray lineBytes = rbnBuffer.left(newlineIndex);
+            rbnBuffer.remove(0, newlineIndex + 1);
+
+            const QString line = QString::fromUtf8(lineBytes).trimmed();
+            if (line.isEmpty()) {
+                continue;
+            }
+
+            qDebug().noquote() << line;
+
+            const QRegularExpressionMatch match = rbnLineRegex.match(line);
+            if (match.hasMatch()) {
+                const QString freq = match.captured(1);
+                const QString call = match.captured(2);
+                const QString callUp = call.trimmed().toUpper();
+                const QString mode = match.captured(3).trimmed().toUpper();
+                const double freqValue = freq.toDouble();
+                const QString band = freqToBand(freqValue);
+                // qDebug().noquote() << "RBN spot:" << "call=" << call << "freq=" << freq;
+
+                if (band.isEmpty()) {
+                    return;
+                }
+
+                QSqlQuery q;
+                const QString sql = QString(R"(SELECT "%1" FROM modes WHERE callsign = ? LIMIT 1)").arg(band);
+                q.prepare(sql);
+                q.addBindValue(callUp);
+                if (!q.exec()) {
+                    qWarning() << "RBN DB lookup failed:" << q.lastError();
+                } else if (q.next()) {
+                    const int mask = q.value(0).toInt();
+                    //qDebug().noquote() << "RBN in DB:" << callUp;
+                    if (!(mask & (1 << 0))) {
+                        //qDebug().noquote() << callUp << mode << freq;
+                        if (statusInfoLabel && mode == "CW") {
+                            statusInfoLabel->setText(QString("%1 %2").arg(callUp, freq));
+                        } else {
+                            qDebug() << "RBN non-CW:" << callUp << freq << "mode" << (mode.isEmpty() ? "<none>" : mode);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!rbnLoginSent && rbnBuffer.contains("Please enter your call:")) {
+            rbnSocket->write("OG3Z\r\n");
+            rbnLoginSent = true;
+            qDebug() << "RBN login sent";
+        }
+    });
+    connect(rbnSocket,
+            QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::errorOccurred),
+            this, [this](QAbstractSocket::SocketError) {
+                qWarning() << "RBN socket error:" << rbnSocket->errorString();
+            });
+    connect(rbnSocket, &QTcpSocket::connected, this, [this]() {
+        qDebug() << "RBN connected";
+    });
+    connect(rbnSocket, &QTcpSocket::disconnected, this, [this]() {
+        qWarning() << "RBN disconnected";
+    });
+    rbnSocket->connectToHost("telnet.reversebeacon.net", 7000);
 
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
@@ -536,3 +671,68 @@ void MainWindow::poll()
         ui->sValue->setText(QString("%1 dB").arg(db, 0, 'f', 0));
     }
 }
+
+void MainWindow::updateStatusCounts()
+{
+    // int cw = 0, ph = 0, ft8 = 0, ft4 = 0;
+
+    // static const QStringList bands = {
+    //     "10","12","15","17","20","30","40","80"
+    // };
+
+    // QSqlQuery q;
+
+    // for (const QString &band : bands) {
+    //     const QString sql = QString(R"(SELECT "%1" FROM modes)").arg(band);
+    //     if (!q.exec(sql)) {
+    //         qWarning() << "Count query failed:" << q.lastError();
+    //         return;
+    //     }
+
+    //     while (q.next()) {
+    //         const int mask = q.value(0).toInt();
+    //         if (mask & (1 << 0)) cw++;
+    //         if (mask & (1 << 1)) ph++;
+    //         if (mask & (1 << 2)) ft8++;
+    //         if (mask & (1 << 3)) ft4++;
+    //     }
+    // }
+
+    // const int total = cw * 10 + ph * 5 + ft8 * 2 + ft4 * 2;
+
+    // statusCountsLabel->setText(
+    //     QString("CW:%1  PH:%2  FT8:%3  FT4:%4  TOTAL:%5")
+    //         .arg(cw)
+    //         .arg(ph)
+    //         .arg(ft8)
+    //         .arg(ft4)
+    //         .arg(total)
+    //     );
+}
+
+void MainWindow::updateModeVisibility()
+{
+    // modeVisible[0] = ui->cwCheckBox->isChecked();
+    // modeVisible[1] = ui->phCheckBox->isChecked();
+    // modeVisible[2] = ui->ft8CheckBox->isChecked();
+    // modeVisible[3] = ui->ft4CheckBox->isChecked();
+
+    // if (checkboxDelegate) {
+    //     checkboxDelegate->setModeVisibility(modeVisible);
+    // }
+    // ui->tableView->viewport()->update();
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (obj == ui->statusbar && event->type() == QEvent::MouseButtonPress) {
+        rbnOutputPaused = !rbnOutputPaused;
+        if (statusInfoLabel) {
+            statusInfoLabel->setStyleSheet(rbnOutputPaused ? "color: red;" : "");
+        }
+        return true;
+    }
+    return QMainWindow::eventFilter(obj, event);
+}
+
+
