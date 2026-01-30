@@ -17,6 +17,8 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        frequencylabel.cpp
+        frequencylabel.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -24,6 +26,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         rig.h rig.cpp
+        frequencylabel.h
+        frequencylabel.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET HamVibe APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -44,6 +48,7 @@ else()
 endif()
 
 target_link_libraries(HamVibe PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+target_include_directories(HamVibe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_directories(HamVibe PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/gcc")
 target_link_libraries(HamVibe PRIVATE hamlib)
 
