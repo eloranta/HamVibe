@@ -57,10 +57,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
-    // connect(ui->sendButton, &QPushButton::clicked, this, &MainWindow::togglePtt);
-    // connect(ui->lsbUsbButton, &QPushButton::clicked, this, &MainWindow::toggleLsbUsb);
-    // connect(ui->cwButton, &QPushButton::clicked, this, &MainWindow::setCwMode);
-    // connect(ui->fmAmButton, &QPushButton::clicked, this, &MainWindow::toggleFmAm);
 
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
@@ -144,25 +140,7 @@ void MainWindow::showAboutDialog()
 
 void MainWindow::togglePtt()
 {
-    if (!rig) {
-        return;
-    }
-    bool ptt = false;
-    if (!rig->getPtt(ptt)) {
-        return;
-    }
-    ptt = !ptt;
-    if (!rig->setPtt(ptt)) {
-        return;
-    }
-    if (ptt) {
-        ui->unitLabel->setText("5-10-25---50---75-100W");
-        ui->meterBar->setMaximum(100);
-    } else {
-        ui->unitLabel->setText("--1-3-5-7--9--20-40-60");
-        ui->meterBar->setMaximum(30);
-    }
-    poll();
+
 }
 
 void MainWindow::toggleLsbUsb()
