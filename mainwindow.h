@@ -25,6 +25,7 @@ public slots:
     //void onQsoLogged(const QString &call, const QString &band, const QString &mode);
     //void onAddClicked();
     void onClearClicked();
+    void onLogClicked();
 
 private:
     Ui::MainWindow *ui;

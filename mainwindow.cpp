@@ -103,6 +103,30 @@ static QChar vfoToPrefix(vfo_t vfo)
     }
 }
 
+static QString bandFromFrequencyText(const QString &freqText)
+{
+    bool ok = false;
+    const double value = freqText.toDouble(&ok);
+    if (!ok || value <= 0.0) {
+        return QString();
+    }
+
+    double mhz = value;
+    if (mhz > 1000.0) {
+        mhz /= 1000.0;
+    }
+
+    if (mhz >= 3.5 && mhz < 4.0) return "80";
+    if (mhz >= 7.0 && mhz < 7.3) return "40";
+    if (mhz >= 10.1 && mhz < 10.15) return "30";
+    if (mhz >= 14.0 && mhz < 14.35) return "20";
+    if (mhz >= 18.068 && mhz < 18.168) return "17";
+    if (mhz >= 21.0 && mhz < 21.45) return "15";
+    if (mhz >= 24.89 && mhz < 24.99) return "12";
+    if (mhz >= 28.0 && mhz < 29.7) return "10";
+    return QString();
+}
+
 // ✅ Custom delegate
 class CheckboxDelegate : public QStyledItemDelegate {
 public:
@@ -403,6 +427,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->send5nnTuGeButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GE 5NN TU", 30); });
     connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG OG", 30); });
     connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("?", 30); });
+    connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::onLogClicked);
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
         if (rig) {
@@ -747,7 +772,12 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 
 void MainWindow::onStatusBarDoubleClicked(const QString &call, const QString &freq)
 {
-    Q_UNUSED(call);
+    if (ui->callLabel) {
+        ui->callLabel->setText(call);
+    }
+    if (ui->freqLabel) {
+        ui->freqLabel->setText(freq);
+    }
     if (!rig) {
         return;
     }
@@ -809,5 +839,46 @@ void MainWindow::onClearClicked()
     updateStatusCounts();
     if (statusInfoLabel) {
         statusInfoLabel->setText("Cleared all data");
+    }
+}
+
+void MainWindow::onLogClicked()
+{
+    const QString call = ui->callLabel ? ui->callLabel->text().trimmed().toUpper() : QString();
+    const QString freqText = ui->freqLabel ? ui->freqLabel->text().trimmed() : QString();
+    if (call.isEmpty() || freqText.isEmpty()) {
+        if (statusInfoLabel) {
+            statusInfoLabel->setText("Log failed");
+        }
+        return;
+    }
+
+    const QString band = bandFromFrequencyText(freqText);
+    if (band.isEmpty()) {
+        if (statusInfoLabel) {
+            statusInfoLabel->setText("Log failed");
+        }
+        return;
+    }
+
+    QSqlQuery q;
+    const QString sql = QString(R"(UPDATE modes SET "%1" = (COALESCE("%1", 0) | 1) WHERE callsign = ?)")
+                            .arg(band);
+    q.prepare(sql);
+    q.addBindValue(call);
+    if (!q.exec()) {
+        qWarning() << "Log update failed:" << q.lastError();
+        if (statusInfoLabel) {
+            statusInfoLabel->setText("Log failed");
+        }
+        return;
+    }
+
+    if (m_model) {
+        m_model->select();
+    }
+    updateStatusCounts();
+    if (statusInfoLabel) {
+        statusInfoLabel->setText("Logged");
     }
 }
