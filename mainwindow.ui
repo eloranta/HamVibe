@@ -589,10 +589,100 @@ background-color: rgb(0, 0, 0);</string>
          </property>
         </widget>
        </item>
+       <item>
+        <spacer name="horizontalSpacer_3">
+         <property name="orientation">
+          <enum>Qt::Orientation::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
       </layout>
      </item>
     </layout>
    </widget>
+   <widget class="QGroupBox" name="modeButtonsGroup">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>165</y>
+      <width>360</width>
+      <height>55</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Mode</string>
+    </property>
+    <layout class="QHBoxLayout" name="modeButtonsLayout">
+     <item>
+      <widget class="QPushButton" name="modeCwButton">
+       <property name="text">
+        <string>CW</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="modeUsbButton">
+       <property name="text">
+        <string>USB</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="modeLsbButton">
+       <property name="text">
+        <string>LSB</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="modeFmButton">
+       <property name="text">
+        <string>FM</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="modeAmButton">
+       <property name="text">
+        <string>AM</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QGroupBox" name="bandButtonsGroup">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>225</y>
+      <width>520</width>
+      <height>55</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Band [MHz]</string>
+    </property>
+    <layout class="QHBoxLayout" name="bandButtonsLayout">
+     <item><widget class="QPushButton" name="band18Button"><property name="text"><string>1.8</string></property></widget></item>
+     <item><widget class="QPushButton" name="band35Button"><property name="text"><string>3.5</string></property></widget></item>
+     <item><widget class="QPushButton" name="band7Button"><property name="text"><string>7</string></property></widget></item>
+     <item><widget class="QPushButton" name="band10Button"><property name="text"><string>10</string></property></widget></item>
+     <item><widget class="QPushButton" name="band14Button"><property name="text"><string>14</string></property></widget></item>
+     <item><widget class="QPushButton" name="band18mButton"><property name="text"><string>18</string></property></widget></item>
+     <item><widget class="QPushButton" name="band21Button"><property name="text"><string>21</string></property></widget></item>
+     <item><widget class="QPushButton" name="band24Button"><property name="text"><string>24</string></property></widget></item>
+     <item><widget class="QPushButton" name="band28Button"><property name="text"><string>28</string></property></widget></item>
+     <item><widget class="QPushButton" name="band50Button"><property name="text"><string>50</string></property></widget></item>
+    </layout>
+   </widget>
+
+
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

@@ -7,6 +7,7 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QLabel>
+#include <QPushButton>
 #include <QSettings>
 #include <QSignalBlocker>
 #include <QStyle>
@@ -97,6 +98,21 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
+    connect(ui->modeCwButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_CW); });
+    connect(ui->modeUsbButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_USB); });
+    connect(ui->modeLsbButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_LSB); });
+    connect(ui->modeFmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_FM); });
+    connect(ui->modeAmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_AM); });
+    connect(ui->band18Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(1800000); });
+    connect(ui->band35Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(3500000); });
+    connect(ui->band7Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(7000000); });
+    connect(ui->band10Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(10000000); });
+    connect(ui->band14Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(14000000); });
+    connect(ui->band18mButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(18068000); });
+    connect(ui->band21Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(21000000); });
+    connect(ui->band24Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(24900000); });
+    connect(ui->band28Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(28000000); });
+    connect(ui->band50Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(50000000); });
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
         if (rig) {
@@ -104,9 +120,20 @@ MainWindow::MainWindow(QWidget *parent)
         }
     });
     connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
-        if (rig) {
-            rig->setFrequency(RIG_VFO_SUB, value);
+        if (!rig) {
+            return;
         }
+        vfo_t leftVfo = RIG_VFO_CURR;
+        if (!rig->readVfo(leftVfo)) {
+            return;
+        }
+        vfo_t rightVfo = RIG_VFO_SUB;
+        if (leftVfo == RIG_VFO_A) {
+            rightVfo = RIG_VFO_B;
+        } else if (leftVfo == RIG_VFO_B) {
+            rightVfo = RIG_VFO_A;
+        }
+        rig->setFrequency(rightVfo, value);
     });
 
     QSettings settings;
@@ -252,23 +279,30 @@ void MainWindow::poll()
     if (rig->readMode(mode)) {
         ui->modeLabel->setText(modeToText(mode));
     }
+    vfo_t leftVfo = RIG_VFO_CURR;
+    if (rig->readVfo(leftVfo)) {
+        ui->leftFrequency->setPrefix(vfoToPrefix(leftVfo));
+    }
     int frequency = 0;
-    if (rig->readFrequency(frequency)) {
+    if (rig->readFrequency(leftVfo, frequency)) {
         ui->leftFrequency->setValue(frequency);
     }
-    vfo_t vfo = RIG_VFO_CURR;
-    if (rig->readVfo(vfo)) {
-        ui->leftFrequency->setPrefix(vfoToPrefix(vfo));
-    }
+
     bool splitOn = false;
     vfo_t txVfo = RIG_VFO_CURR;
     if (rig->readSplit(splitOn, txVfo)) {
         ui->rightFrequency->setVisible(splitOn);
         if (splitOn) {
+            vfo_t rightVfo = RIG_VFO_SUB;
+            if (leftVfo == RIG_VFO_A) {
+                rightVfo = RIG_VFO_B;
+            } else if (leftVfo == RIG_VFO_B) {
+                rightVfo = RIG_VFO_A;
+            }
             int subFrequency = 0;
-            if (rig->readFrequency(RIG_VFO_SUB, subFrequency)) {
+            if (rig->readFrequency(rightVfo, subFrequency)) {
                 ui->rightFrequency->setValue(subFrequency);
-                ui->rightFrequency->setPrefix(vfoToPrefix(RIG_VFO_SUB));
+                ui->rightFrequency->setPrefix(vfoToPrefix(rightVfo));
             }
         }
     }
