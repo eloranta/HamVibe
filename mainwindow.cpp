@@ -379,6 +379,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
+    connect(this, &MainWindow::statusBarDoubleClicked, this, &MainWindow::onStatusBarDoubleClicked);
     connect(ui->modeCwButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_CW); });
     connect(ui->modeUsbButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_USB); });
     connect(ui->modeLsbButton, &QPushButton::clicked, this, [this]() { if (rig) rig->setMode(RIG_MODE_LSB); });
@@ -725,6 +726,15 @@ void MainWindow::updateModeVisibility()
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if (obj == ui->statusbar && event->type() == QEvent::MouseButtonDblClick) {
+        const QString text = statusInfoLabel ? statusInfoLabel->text().trimmed() : QString();
+        static const QRegularExpression re(R"(^(\S+)\s+([0-9.]+))");
+        const QRegularExpressionMatch match = re.match(text);
+        if (match.hasMatch()) {
+            emit statusBarDoubleClicked(match.captured(1), match.captured(2));
+        }
+        return true;
+    }
     if (obj == ui->statusbar && event->type() == QEvent::MouseButtonPress) {
         rbnOutputPaused = !rbnOutputPaused;
         if (statusInfoLabel) {
@@ -733,6 +743,29 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         return true;
     }
     return QMainWindow::eventFilter(obj, event);
+}
+
+void MainWindow::onStatusBarDoubleClicked(const QString &call, const QString &freq)
+{
+    Q_UNUSED(call);
+    if (!rig) {
+        return;
+    }
+    bool ok = false;
+    const double freqValue = freq.toDouble(&ok);
+    if (!ok) {
+        return;
+    }
+    int hz = 0;
+    if (freqValue >= 1000.0) {
+        hz = static_cast<int>(freqValue * 1000.0);
+    } else {
+        hz = static_cast<int>(freqValue * 1000000.0);
+    }
+    rig->setFrequency(hz);
+    if (ui->leftFrequency) {
+        ui->leftFrequency->setValue(hz);
+    }
 }
 
 void MainWindow::onClearClicked()

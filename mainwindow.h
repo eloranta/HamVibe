@@ -19,6 +19,8 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
+signals:
+    void statusBarDoubleClicked(const QString &call, const QString &freq);
 public slots:
     //void onQsoLogged(const QString &call, const QString &band, const QString &mode);
     //void onAddClicked();
@@ -53,6 +55,7 @@ private slots:
     void poll();
     void showSettingsDialog();
     void showAboutDialog();
+    void onStatusBarDoubleClicked(const QString &call, const QString &freq);
 
 private:
     double interpolateSmeterDb(int value) const;
