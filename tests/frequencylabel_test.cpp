@@ -12,6 +12,11 @@ private slots:
     void leftClickIncrementsDigit();
 };
 
+QObject *createFrequencyLabelTest()
+{
+    return new FrequencyLabelTest();
+}
+
 static QPoint clickPointForChar(const FrequencyLabel &label, int charIndex)
 {
     const QRect textRect = label.contentsRect();
@@ -87,5 +92,4 @@ void FrequencyLabelTest::leftClickIncrementsDigit()
     clickTest(false, 14000000, 0, 0);
 }
 
-QTEST_MAIN(FrequencyLabelTest)
 #include "frequencylabel_test.moc"

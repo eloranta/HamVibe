@@ -68,7 +68,11 @@ target_include_directories(HamVibe PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../hamli
 
 enable_testing()
 add_executable(HamVibeTests
+    tests/main_test.cpp
+    tests/frequencylabel_test.cpp
     tests/rig_test.cpp
+    frequencylabel.h
+    frequencylabel.cpp
     rig.h
     rig.cpp
 )
@@ -79,18 +83,11 @@ target_include_directories(HamVibeTests PRIVATE
 target_link_directories(HamVibeTests PRIVATE "C:/Program Files/hamlib-w64-4.6.5/lib/gcc")
 target_link_libraries(HamVibeTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets hamlib)
 copy_hamlib_runtime(HamVibeTests)
-add_test(NAME HamVibeTests COMMAND HamVibeTests)
-
-add_executable(HamVibeFrequencyLabelTests
-    tests/frequencylabel_test.cpp
-    frequencylabel.h
-    frequencylabel.cpp
-)
-target_include_directories(HamVibeFrequencyLabelTests PRIVATE
+target_include_directories(HamVibeTests PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
 )
-target_link_libraries(HamVibeFrequencyLabelTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets)
-add_test(NAME HamVibeFrequencyLabelTests COMMAND HamVibeFrequencyLabelTests)
+target_link_libraries(HamVibeTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets)
+add_test(NAME HamVibeTests COMMAND HamVibeTests)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

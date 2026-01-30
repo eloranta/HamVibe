@@ -16,6 +16,11 @@ private:
     static Rig rig;
 };
 
+QObject *createRigTest()
+{
+    return new RigTest();
+}
+
 void RigTest::initTestCase()
 {
     if (!rig.open()) {
@@ -54,10 +59,6 @@ void RigTest::setPtt()
     ok = rig.setPtt(false);
     QVERIFY(ok);
 }
-
-
 Rig RigTest::rig(RIG_MODEL_TS590S, "COM7");
-
-QTEST_MAIN(RigTest)
 
 #include "rig_test.moc"
