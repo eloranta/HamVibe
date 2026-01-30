@@ -32,6 +32,7 @@ public:
     bool readMode(rmode_t &mode);
     bool readMode(vfo_t vfo, rmode_t &mode);
     bool readVfo(vfo_t &vfo);
+    bool readSplit(bool &enabled, vfo_t &txVfo);
 signals:
 private:
     void setError(const QString &message);

@@ -336,3 +336,23 @@ bool Rig::readVfo(vfo_t &vfo)
 
     return true;
 }
+
+bool Rig::readSplit(bool &enabled, vfo_t &txVfo)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
+    }
+
+    split_t split = RIG_SPLIT_OFF;
+    vfo_t tx = RIG_VFO_CURR;
+    const int status = rig_get_split_vfo(rig, RIG_VFO_CURR, &split, &tx);
+    if (status != RIG_OK) {
+        setError(QString("rig_get_split_vfo failed: %1").arg(rigerror(status)));
+        return false;
+    }
+
+    enabled = (split == RIG_SPLIT_ON);
+    txVfo = tx;
+    return true;
+}

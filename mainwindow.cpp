@@ -98,6 +98,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
 
+    connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
+        if (rig) {
+            rig->setFrequency(value);
+        }
+    });
+    connect(ui->rightFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
+        if (rig) {
+            rig->setFrequency(RIG_VFO_SUB, value);
+        }
+    });
+
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
     const QString port = settings.value("rig/port", "COM7").toString();
@@ -248,6 +259,18 @@ void MainWindow::poll()
     vfo_t vfo = RIG_VFO_CURR;
     if (rig->readVfo(vfo)) {
         ui->leftFrequency->setPrefix(vfoToPrefix(vfo));
+    }
+    bool splitOn = false;
+    vfo_t txVfo = RIG_VFO_CURR;
+    if (rig->readSplit(splitOn, txVfo)) {
+        ui->rightFrequency->setVisible(splitOn);
+        if (splitOn) {
+            int subFrequency = 0;
+            if (rig->readFrequency(RIG_VFO_SUB, subFrequency)) {
+                ui->rightFrequency->setValue(subFrequency);
+                ui->rightFrequency->setPrefix(vfoToPrefix(RIG_VFO_SUB));
+            }
+        }
     }
     if (ptt) {
         ui->ptt->setText("On Air");
