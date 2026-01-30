@@ -185,7 +185,7 @@ void MainWindow::showSettingsDialog()
 
     QComboBox portCombo(&dialog);
     portCombo.addItem("COM7", "COM7");
-    portCombo.addItem("COM 4", "COM 4");
+    portCombo.addItem("COM4", "COM4");
 
     const QString currentPort = settings.value("rig/port", "COM7").toString();
     const int portIndex = portCombo.findData(currentPort);
