@@ -113,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->band24Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(24900000); });
     connect(ui->band28Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(28000000); });
     connect(ui->band50Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(50000000); });
+
     connect(ui->sendOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG3Z", 30); });
     connect(ui->send5nnTuOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("5NN TU", 30); });
     connect(ui->sendOg3zGmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GM 5NN TU", 30); });

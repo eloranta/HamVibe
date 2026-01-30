@@ -81,6 +81,17 @@ target_link_libraries(HamVibeTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VE
 copy_hamlib_runtime(HamVibeTests)
 add_test(NAME HamVibeTests COMMAND HamVibeTests)
 
+add_executable(HamVibeFrequencyLabelTests
+    tests/frequencylabel_test.cpp
+    frequencylabel.h
+    frequencylabel.cpp
+)
+target_include_directories(HamVibeFrequencyLabelTests PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+target_link_libraries(HamVibeFrequencyLabelTests PRIVATE Qt${QT_VERSION_MAJOR}::Test Qt${QT_VERSION_MAJOR}::Widgets)
+add_test(NAME HamVibeFrequencyLabelTests COMMAND HamVibeFrequencyLabelTests)
+
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
 # explicit, fixed bundle identifier manually though.
