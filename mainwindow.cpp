@@ -889,4 +889,8 @@ void MainWindow::onLogClicked()
     if (statusInfoLabel) {
         statusInfoLabel->setText("Logged");
     }
+    rbnOutputPaused = false;
+    if (statusInfoLabel) {
+        statusInfoLabel->setStyleSheet("");
+    }
 }
