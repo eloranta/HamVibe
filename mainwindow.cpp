@@ -425,7 +425,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->send5nnTuGaButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GA 5NN TU", 30); });
     connect(ui->send5nnTuGeButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GE 5NN TU", 30); });
     connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG OG", 30); });
-    connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("?", 30); });
+    connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("TEST TEST TEST TEST TEST", 30); });
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::onLogClicked);
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
