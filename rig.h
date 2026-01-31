@@ -2,7 +2,6 @@
 #define RIG_H
 
 #include <QObject>
-#include <QMutex>
 #include <hamlib/rig.h>
 
 class Rig : public QObject
@@ -36,7 +35,6 @@ public:
     bool readSplit(bool &enabled, vfo_t &txVfo);
     bool setCwSpeed(int wpm, vfo_t vfo = RIG_VFO_CURR);
     bool sendCw(const QString &text, vfo_t vfo = RIG_VFO_CURR);
-    void sendCwAsync(const QString &text, vfo_t vfo = RIG_VFO_CURR);
 signals:
 private:
     void setError(const QString &message);
@@ -44,7 +42,6 @@ private:
     QString portName;
     RIG *rig = nullptr;
     QString lastErrorMessage;
-    mutable QMutex rigMutex;
 };
 
 #endif // RIG_H

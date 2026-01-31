@@ -345,7 +345,7 @@ MainWindow::MainWindow(QWidget *parent)
                 continue;
             }
 
-            qDebug().noquote() << line;
+            //qDebug().noquote() << line;
 
             const QRegularExpressionMatch match = rbnLineRegex.match(line);
             if (match.hasMatch()) {
@@ -424,13 +424,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->band28Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(28000000); });
     connect(ui->band50Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(50000000); });
 
-    connect(ui->sendOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("OG3Z"); });
-    connect(ui->send5nnTuOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("5NN TU"); });
-    connect(ui->sendOg3zGmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("GM 5NN TU"); });
-    connect(ui->send5nnTuGaButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("GA 5NN TU"); });
-    connect(ui->send5nnTuGeButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("GE 5NN TU"); });
-    connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("OG OG"); });
-    connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCwAsync("TEST TEST TEST TEST TEST"); });
+    connect(ui->sendOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG3Z"); });
+    connect(ui->send5nnTuOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("5NN TU"); });
+    connect(ui->sendOg3zGmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GM 5NN TU"); });
+    connect(ui->send5nnTuGaButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GA 5NN TU"); });
+    connect(ui->send5nnTuGeButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GE 5NN TU"); });
+    connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG OG"); });
+    connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("TEST TEST TEST TEST TEST"); });
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::onLogClicked);
     connect(ui->morseSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int) {
@@ -478,7 +478,7 @@ MainWindow::MainWindow(QWidget *parent)
     rig->setCwSpeed(cwSpeedWpm);
 
     pollTimer = new QTimer(this);
-    pollTimer->setInterval(1000);
+    pollTimer->setInterval(100);
     connect(pollTimer, &QTimer::timeout, this, [this]() { poll(); });
     pollTimer->start();
     poll();

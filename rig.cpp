@@ -1,9 +1,6 @@
 #include "rig.h"
 #include <cmath>
 #include <QByteArray>
-#include <QMutexLocker>
-#include <QPointer>
-#include <QtConcurrent>
 
 namespace {
 struct SmeterPoint {
@@ -62,7 +59,6 @@ Rig::~Rig()
 
 bool Rig::open()
 {
-    QMutexLocker locker(&rigMutex);
     if (rig) return true;
 
     setError("");
@@ -98,7 +94,6 @@ bool Rig::open()
 
 void Rig::close()
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         return;
     }
@@ -110,7 +105,6 @@ void Rig::close()
 
 QString Rig::lastError() const
 {
-    QMutexLocker locker(&rigMutex);
     return lastErrorMessage;
 }
 
@@ -126,7 +120,6 @@ bool Rig::readSMeter(int &value)
 
 bool Rig::readSMeter(vfo_t vfo, int &value)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -150,7 +143,6 @@ bool Rig::readFrequency(int &frequency)
 
 bool Rig::readFrequency(vfo_t vfo, int &frequency)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -175,7 +167,6 @@ bool Rig::setFrequency(int freq)
 
 bool Rig::setFrequency(vfo_t vfo, int freq)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -192,7 +183,6 @@ bool Rig::setFrequency(vfo_t vfo, int freq)
 
 bool Rig::setMode(int mode, int width)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -214,7 +204,6 @@ bool Rig::setMode(int mode, int width)
 
 bool Rig::setPtt(bool enabled)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -231,7 +220,6 @@ bool Rig::setPtt(bool enabled)
 
 bool Rig::getPtt(bool &value)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -250,7 +238,6 @@ bool Rig::getPtt(bool &value)
 
 bool Rig::readPower(double &watts)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -274,7 +261,6 @@ bool Rig::readAlc(int &value)
 
 bool Rig::readAlc(vfo_t vfo, int &value)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -298,7 +284,6 @@ bool Rig::readSwr(int &value)
 
 bool Rig::readSwr(vfo_t vfo, int &value)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -322,7 +307,6 @@ bool Rig::readMode(rmode_t &mode)
 
 bool Rig::readMode(vfo_t vfo, rmode_t &mode)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -340,7 +324,6 @@ bool Rig::readMode(vfo_t vfo, rmode_t &mode)
 
 bool Rig::readVfo(vfo_t &vfo)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -357,7 +340,6 @@ bool Rig::readVfo(vfo_t &vfo)
 
 bool Rig::readSplit(bool &enabled, vfo_t &txVfo)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -378,7 +360,6 @@ bool Rig::readSplit(bool &enabled, vfo_t &txVfo)
 
 bool Rig::setCwSpeed(int wpm, vfo_t vfo)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
@@ -402,11 +383,12 @@ bool Rig::setCwSpeed(int wpm, vfo_t vfo)
 
 bool Rig::sendCw(const QString &text, vfo_t vfo)
 {
-    QMutexLocker locker(&rigMutex);
     if (!rig) {
         setError("rig not open");
         return false;
     }
+
+    qDebug() << "starting send morse";
 
     const QByteArray bytes = text.toUtf8();
     const int status = rig_send_morse(rig, vfo, bytes.constData());
@@ -414,17 +396,7 @@ bool Rig::sendCw(const QString &text, vfo_t vfo)
         setError(QString("rig_send_morse failed: %1").arg(rigerror(status)));
         return false;
     }
+    qDebug() << "stopping send morse";
 
     return true;
-}
-
-void Rig::sendCwAsync(const QString &text, vfo_t vfo)
-{
-    QPointer<Rig> self(this);
-    QtConcurrent::run([self, text, vfo]() {
-        if (!self) {
-            return;
-        }
-        self->sendCw(text, vfo);
-    });
 }
