@@ -358,20 +358,34 @@ bool Rig::readSplit(bool &enabled, vfo_t &txVfo)
     return true;
 }
 
-bool Rig::sendCw(const QString &text, int wpm, vfo_t vfo)
+bool Rig::setCwSpeed(int wpm, vfo_t vfo)
 {
     if (!rig) {
         setError("rig not open");
         return false;
     }
 
-    if (wpm > 0) {
-        value_t level;
-        level.i = wpm;
-        const int speedStatus = rig_set_level(rig, vfo, RIG_LEVEL_KEYSPD, level);
-        if (speedStatus != RIG_OK) {
-            setError(QString("rig_set_level(KEYSPD) failed: %1").arg(rigerror(speedStatus)));
-        }
+    if (wpm <= 0) {
+        setError("invalid CW speed");
+        return false;
+    }
+
+    value_t level;
+    level.i = wpm;
+    const int speedStatus = rig_set_level(rig, vfo, RIG_LEVEL_KEYSPD, level);
+    if (speedStatus != RIG_OK) {
+        setError(QString("rig_set_level(KEYSPD) failed: %1").arg(rigerror(speedStatus)));
+        return false;
+    }
+
+    return true;
+}
+
+bool Rig::sendCw(const QString &text, vfo_t vfo)
+{
+    if (!rig) {
+        setError("rig not open");
+        return false;
     }
 
     const QByteArray bytes = text.toUtf8();

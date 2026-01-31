@@ -41,6 +41,7 @@ private:
 
     std::unique_ptr<Rig> rig;
     QTimer *pollTimer = nullptr;
+    int cwSpeedWpm = 30;
     bool lsbSelected = true;
     bool fmSelected = true;
 protected:

@@ -246,6 +246,11 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
+    const int defaultCwSpeed = 30;
+    const int speedIndex = ui->morseSpeed->findText(QString::number(defaultCwSpeed));
+    ui->morseSpeed->setCurrentIndex(speedIndex >= 0 ? speedIndex : 0);
+    cwSpeedWpm = ui->morseSpeed->currentText().toInt();
+
     m_model = new QSqlTableModel(ui->tableView);
     m_model->setTable("modes");
     m_model->setEditStrategy(QSqlTableModel::OnFieldChange);
@@ -419,14 +424,25 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->band28Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(28000000); });
     connect(ui->band50Button, &QPushButton::clicked, this, [this]() { if (rig) rig->setFrequency(50000000); });
 
-    connect(ui->sendOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG3Z", 30); });
-    connect(ui->send5nnTuOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("5NN TU", 30); });
-    connect(ui->sendOg3zGmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GM 5NN TU", 30); });
-    connect(ui->send5nnTuGaButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GA 5NN TU", 30); });
-    connect(ui->send5nnTuGeButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GE 5NN TU", 30); });
-    connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG OG", 30); });
-    connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("TEST TEST TEST TEST TEST", 30); });
+    connect(ui->sendOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG3Z"); });
+    connect(ui->send5nnTuOg3zButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("5NN TU"); });
+    connect(ui->sendOg3zGmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GM 5NN TU"); });
+    connect(ui->send5nnTuGaButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GA 5NN TU"); });
+    connect(ui->send5nnTuGeButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("GE 5NN TU"); });
+    connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG OG"); });
+    connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("TEST TEST TEST TEST TEST"); });
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::onLogClicked);
+    connect(ui->morseSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged),
+            this, [this](int) {
+                const int wpm = ui->morseSpeed->currentText().toInt();
+                if (wpm <= 0) {
+                    return;
+                }
+                cwSpeedWpm = wpm;
+                if (rig) {
+                    rig->setCwSpeed(wpm);
+                }
+            });
 
     connect(ui->leftFrequency, &FrequencyLabel::valueChanged, this, [this](int value, QChar) {
         if (rig) {
@@ -459,6 +475,7 @@ MainWindow::MainWindow(QWidget *parent)
         qDebug() << "Hamlib rig_open failed:" << rig->lastError();
         return;
     }
+    rig->setCwSpeed(cwSpeedWpm);
 
     pollTimer = new QTimer(this);
     pollTimer->setInterval(1000);
