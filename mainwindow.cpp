@@ -127,7 +127,7 @@ static QString bandFromFrequencyText(const QString &freqText)
     return QString();
 }
 
-// ✅ Custom delegate
+// Custom delegate
 class CheckboxDelegate : public QStyledItemDelegate {
 public:
     using QStyledItemDelegate::QStyledItemDelegate;
@@ -251,7 +251,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->morseSpeed->setCurrentIndex(speedIndex >= 0 ? speedIndex : 0);
     cwSpeedWpm = ui->morseSpeed->currentText().toInt();
 
-    m_model = new QSqlTableModel(ui->tableView);
+    m_model = new QSqlTableModel(this);
     m_model->setTable("modes");
     m_model->setEditStrategy(QSqlTableModel::OnFieldChange);
     const int callCol = m_model->fieldIndex("callsign");
@@ -259,23 +259,32 @@ MainWindow::MainWindow(QWidget *parent)
         m_model->setSort(callCol, Qt::AscendingOrder);
     }
     m_model->select();
+    auto setupModesView = [this](QTableView *view) {
+        if (!view) {
+            return;
+        }
+        view->setModel(m_model);
+        // Single-row selection with light highlight
+        view->setSelectionMode(QAbstractItemView::SingleSelection);
+        view->setSelectionBehavior(QAbstractItemView::SelectRows);
+        view->setStyleSheet(
+            "QTableView::item:selected { background: #dfefff; color: palette(text); }");
 
-    ui->tableView->setModel(m_model);
-    // Single-row selection with light highlight
-    ui->tableView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->tableView->setStyleSheet(
-        "QTableView::item:selected { background: #dfefff; color: palette(text); }");
+        view->setColumnHidden(0, true);
 
-    ui->tableView->setColumnHidden(0, true);
+        if (!checkboxDelegate) {
+            checkboxDelegate = new CheckboxDelegate(this);
+        }
+        // Custom delegate on the 'bands' column
+        for (int i = 2; i < 10; i++)
+        {
+            view->setItemDelegateForColumn(i, checkboxDelegate);
+            view->setColumnWidth(i, 120);
+        }
+    };
 
-    checkboxDelegate = new CheckboxDelegate(ui->tableView);
-    // ✅ Use the custom delegate on the 'bands' column
-    for (int i = 2; i < 10; i++)
-    {
-        ui->tableView->setItemDelegateForColumn(i, checkboxDelegate);
-        ui->tableView->setColumnWidth(i, 120);
-    }
+    setupModesView(ui->tableView);
+    setupModesView(ui->dxccTableView);
 
     statusCountsLabel = new QLabel(this);
     statusCountsLabel->setMinimumWidth(260);
@@ -401,6 +410,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
     rbnSocket->connectToHost("telnet.reversebeacon.net", 7000);
     connect(ui->clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
+    connect(ui->dxccClearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
     connect(m_model, &QAbstractItemModel::dataChanged,
             this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
                 updateStatusCounts();
