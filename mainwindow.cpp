@@ -9,6 +9,7 @@
 #include <QDialog>
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>
 #include <QSettings>
@@ -145,18 +146,13 @@ MainWindow::MainWindow(QWidget *parent)
     }
     m_model->select();
 
-    dxccDb = QSqlDatabase::database("dxcc");
-    m_dxccModel = new QSqlTableModel(this, dxccDb);
-    m_dxccModel->setTable("modes");
+    m_dxccModel = new QSqlTableModel(this);
+    m_dxccModel->setTable("dxcc");
     m_dxccModel->setEditStrategy(QSqlTableModel::OnFieldChange);
-    int dxccCallCol = m_dxccModel->fieldIndex("callsign");
-    if (dxccCallCol >= 0) {
-        m_dxccModel->setSort(dxccCallCol, Qt::AscendingOrder);
-    }
     m_dxccModel->select();
 
-    auto setupModesView = [this](QTableView *view, QSqlTableModel *model, QStyledItemDelegate *delegate) {
-        if (!view || !model || !delegate) {
+    auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {
+        if (!view || !model) {
             return;
         }
         view->setModel(model);
@@ -166,24 +162,28 @@ MainWindow::MainWindow(QWidget *parent)
         view->setStyleSheet(
             "QTableView::item:selected { background: #dfefff; color: palette(text); }");
 
-        view->setColumnHidden(0, true);
+        view->setColumnHidden(0, hideFirstColumn);
 
-        // Custom delegate on the 'bands' column
-        for (int i = 2; i < 10; i++)
-        {
-            view->setItemDelegateForColumn(i, delegate);
-            view->setColumnWidth(i, 120);
+        const int colCount = model->columnCount();
+        if (delegate) {
+            // Custom delegate on the 'bands' columns
+            for (int i = 2; i < colCount; i++) {
+                view->setItemDelegateForColumn(i, delegate);
+            }
+        }
+        for (int i = 0; i < colCount; i++) {
+            view->setColumnWidth(i, 90);
         }
     };
 
     if (!checkboxDelegate) {
         checkboxDelegate = new WwaDelegate(this);
     }
-    if (!dxccDelegate) {
-        dxccDelegate = new DxccDelegate(this);
+    setupModesView(ui->tableView, m_model, checkboxDelegate, true);
+    setupModesView(ui->dxccTableView, m_dxccModel, nullptr, false);
+    if (ui->dxccTableView && ui->dxccTableView->horizontalHeader()) {
+        ui->dxccTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     }
-    setupModesView(ui->tableView, m_model, checkboxDelegate);
-    setupModesView(ui->dxccTableView, m_dxccModel, dxccDelegate);
 
     statusCountsLabel = new QLabel(this);
     statusCountsLabel->setMinimumWidth(260);
@@ -309,7 +309,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     rbnSocket->connectToHost("telnet.reversebeacon.net", 7000);
     connect(ui->clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
-    connect(ui->dxccClearButton, &QPushButton::clicked, this, &MainWindow::onDxccClearClicked);
     connect(m_model, &QAbstractItemModel::dataChanged,
             this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
                 updateStatusCounts();
@@ -756,49 +755,6 @@ void MainWindow::onClearClicked()
     updateStatusCounts();
     if (statusInfoLabel) {
         statusInfoLabel->setText("Cleared all data");
-    }
-}
-
-void MainWindow::onDxccClearClicked()
-{
-    const auto response = QMessageBox::question(
-        this,
-        "Confirm Clear",
-        "Set every band value to 0 for all callsigns?",
-        QMessageBox::Yes | QMessageBox::No,
-        QMessageBox::No
-        );
-
-    if (response != QMessageBox::Yes) {
-        return;
-    }
-
-    QSqlQuery q(dxccDb);
-    const QString sql = R"(
-        UPDATE modes SET
-            "10" = 0,
-            "12" = 0,
-            "15" = 0,
-            "17" = 0,
-            "20" = 0,
-            "30" = 0,
-            "40" = 0,
-            "80" = 0
-    )";
-
-    if (!q.exec(sql)) {
-        qWarning() << "DXCC clear failed:" << q.lastError();
-        if (statusInfoLabel) {
-            statusInfoLabel->setText("DXCC clear failed");
-        }
-        return;
-    }
-
-    if (m_dxccModel) {
-        m_dxccModel->select();
-    }
-    if (statusInfoLabel) {
-        statusInfoLabel->setText("Cleared DXCC data");
     }
 }
 

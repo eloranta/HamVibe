@@ -5,6 +5,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QSet>
 
 static bool setupDatabase(const QString &connectionName,
                           const QString &dbFile,
@@ -86,10 +87,48 @@ int main(int argc, char *argv[])
         "TM29WWA","TM7WWA","TM9WWA","UP7WWA","VB2WWA","VC1WWA","VE9WWA","W4I","YI1RN","YL73R","YO0WWA","YU45MJA","Z30WWA"
     };
 
-    if (!setupDatabase(QString(), "WWA.db", "modes", calls))
+    if (!setupDatabase(QString(), "HamVibe.db", "modes", calls))
         return -1;
-    if (!setupDatabase("dxcc", "DXCC.db", "modes", calls))
-        return -1;
+
+    {
+        QSqlDatabase db = QSqlDatabase::database();
+        QSqlQuery query(db);
+        const QStringList bands = {"2","6","10","12","15","17","20","30","40","80","160"};
+        const QStringList modes = {"cw","ph","dg"};
+        QStringList cols;
+        cols << "dxcc TEXT DEFAULT ''";
+        cols << "prefix TEXT DEFAULT ''";
+        for (const QString &band : bands) {
+            for (const QString &mode : modes) {
+                cols << QString("\"%1%2\" TEXT DEFAULT ''").arg(band, mode);
+            }
+        }
+        const QString createSql = QString("CREATE TABLE IF NOT EXISTS dxcc (%1)").arg(cols.join(", "));
+        if (!query.exec(createSql)) {
+            qWarning() << "Failed to create DXCC table:" << query.lastError();
+            return -1;
+        }
+
+        QSet<QString> existing;
+        QSqlQuery info(db);
+        if (info.exec("PRAGMA table_info(dxcc)")) {
+            while (info.next()) {
+                existing.insert(info.value(1).toString());
+            }
+        }
+        if (!existing.contains("dxcc")) {
+            if (!query.exec("ALTER TABLE dxcc ADD COLUMN dxcc TEXT DEFAULT ''")) {
+                qWarning() << "Failed to add dxcc column:" << query.lastError();
+                return -1;
+            }
+        }
+        if (!existing.contains("prefix")) {
+            if (!query.exec("ALTER TABLE dxcc ADD COLUMN prefix TEXT DEFAULT ''")) {
+                qWarning() << "Failed to add prefix column:" << query.lastError();
+                return -1;
+            }
+        }
+    }
 
     MainWindow window;
     window.show();
