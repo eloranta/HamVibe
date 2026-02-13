@@ -388,7 +388,7 @@ bool Rig::sendCw(const QString &text, vfo_t vfo)
         return false;
     }
 
-    qDebug() << "starting send morse";
+//    qDebug() << "starting send morse";
 
     const QByteArray bytes = text.toUtf8();
     const int status = rig_send_morse(rig, vfo, bytes.constData());
@@ -396,7 +396,7 @@ bool Rig::sendCw(const QString &text, vfo_t vfo)
         setError(QString("rig_send_morse failed: %1").arg(rigerror(status)));
         return false;
     }
-    qDebug() << "stopping send morse";
+//    qDebug() << "stopping send morse";
 
     return true;
 }
