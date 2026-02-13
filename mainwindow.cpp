@@ -155,8 +155,8 @@ MainWindow::MainWindow(QWidget *parent)
     }
     m_dxccModel->select();
 
-    auto setupModesView = [this](QTableView *view, QSqlTableModel *model) {
-        if (!view || !model) {
+    auto setupModesView = [this](QTableView *view, QSqlTableModel *model, QStyledItemDelegate *delegate) {
+        if (!view || !model || !delegate) {
             return;
         }
         view->setModel(model);
@@ -168,19 +168,22 @@ MainWindow::MainWindow(QWidget *parent)
 
         view->setColumnHidden(0, true);
 
-        if (!checkboxDelegate) {
-            checkboxDelegate = new CheckboxDelegate(this);
-        }
         // Custom delegate on the 'bands' column
         for (int i = 2; i < 10; i++)
         {
-            view->setItemDelegateForColumn(i, checkboxDelegate);
+            view->setItemDelegateForColumn(i, delegate);
             view->setColumnWidth(i, 120);
         }
     };
 
-    setupModesView(ui->tableView, m_model);
-    setupModesView(ui->dxccTableView, m_dxccModel);
+    if (!checkboxDelegate) {
+        checkboxDelegate = new WwaDelegate(this);
+    }
+    if (!dxccDelegate) {
+        dxccDelegate = new DxccDelegate(this);
+    }
+    setupModesView(ui->tableView, m_model, checkboxDelegate);
+    setupModesView(ui->dxccTableView, m_dxccModel, dxccDelegate);
 
     statusCountsLabel = new QLabel(this);
     statusCountsLabel->setMinimumWidth(260);

@@ -31,7 +31,8 @@ private:
     Ui::MainWindow *ui;
     class QSqlTableModel *m_model = nullptr;
     class QSqlTableModel *m_dxccModel = nullptr;
-    class CheckboxDelegate *checkboxDelegate = nullptr;
+    class WwaDelegate *checkboxDelegate = nullptr;
+    class DxccDelegate *dxccDelegate = nullptr;
     QSqlDatabase dxccDb;
 
     class QTcpSocket *rbnSocket = nullptr;
