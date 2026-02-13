@@ -254,16 +254,27 @@ MainWindow::MainWindow(QWidget *parent)
     m_model = new QSqlTableModel(this);
     m_model->setTable("modes");
     m_model->setEditStrategy(QSqlTableModel::OnFieldChange);
-    const int callCol = m_model->fieldIndex("callsign");
+    int callCol = m_model->fieldIndex("callsign");
     if (callCol >= 0) {
         m_model->setSort(callCol, Qt::AscendingOrder);
     }
     m_model->select();
-    auto setupModesView = [this](QTableView *view) {
-        if (!view) {
+
+    dxccDb = QSqlDatabase::database("dxcc");
+    m_dxccModel = new QSqlTableModel(this, dxccDb);
+    m_dxccModel->setTable("modes");
+    m_dxccModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    int dxccCallCol = m_dxccModel->fieldIndex("callsign");
+    if (dxccCallCol >= 0) {
+        m_dxccModel->setSort(dxccCallCol, Qt::AscendingOrder);
+    }
+    m_dxccModel->select();
+
+    auto setupModesView = [this](QTableView *view, QSqlTableModel *model) {
+        if (!view || !model) {
             return;
         }
-        view->setModel(m_model);
+        view->setModel(model);
         // Single-row selection with light highlight
         view->setSelectionMode(QAbstractItemView::SingleSelection);
         view->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -283,8 +294,8 @@ MainWindow::MainWindow(QWidget *parent)
         }
     };
 
-    setupModesView(ui->tableView);
-    setupModesView(ui->dxccTableView);
+    setupModesView(ui->tableView, m_model);
+    setupModesView(ui->dxccTableView, m_dxccModel);
 
     statusCountsLabel = new QLabel(this);
     statusCountsLabel->setMinimumWidth(260);
@@ -410,7 +421,7 @@ MainWindow::MainWindow(QWidget *parent)
     });
     rbnSocket->connectToHost("telnet.reversebeacon.net", 7000);
     connect(ui->clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
-    connect(ui->dxccClearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
+    connect(ui->dxccClearButton, &QPushButton::clicked, this, &MainWindow::onDxccClearClicked);
     connect(m_model, &QAbstractItemModel::dataChanged,
             this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
                 updateStatusCounts();
@@ -857,6 +868,49 @@ void MainWindow::onClearClicked()
     updateStatusCounts();
     if (statusInfoLabel) {
         statusInfoLabel->setText("Cleared all data");
+    }
+}
+
+void MainWindow::onDxccClearClicked()
+{
+    const auto response = QMessageBox::question(
+        this,
+        "Confirm Clear",
+        "Set every band value to 0 for all callsigns?",
+        QMessageBox::Yes | QMessageBox::No,
+        QMessageBox::No
+        );
+
+    if (response != QMessageBox::Yes) {
+        return;
+    }
+
+    QSqlQuery q(dxccDb);
+    const QString sql = R"(
+        UPDATE modes SET
+            "10" = 0,
+            "12" = 0,
+            "15" = 0,
+            "17" = 0,
+            "20" = 0,
+            "30" = 0,
+            "40" = 0,
+            "80" = 0
+    )";
+
+    if (!q.exec(sql)) {
+        qWarning() << "DXCC clear failed:" << q.lastError();
+        if (statusInfoLabel) {
+            statusInfoLabel->setText("DXCC clear failed");
+        }
+        return;
+    }
+
+    if (m_dxccModel) {
+        m_dxccModel->select();
+    }
+    if (statusInfoLabel) {
+        statusInfoLabel->setText("Cleared DXCC data");
     }
 }
 

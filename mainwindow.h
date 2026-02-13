@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QTimer>
+#include <QSqlDatabase>
 #include <memory>
 #include "rig.h"
 
@@ -23,12 +24,15 @@ public slots:
     //void onQsoLogged(const QString &call, const QString &band, const QString &mode);
     //void onAddClicked();
     void onClearClicked();
+    void onDxccClearClicked();
     void onLogClicked();
 
 private:
     Ui::MainWindow *ui;
     class QSqlTableModel *m_model = nullptr;
+    class QSqlTableModel *m_dxccModel = nullptr;
     class CheckboxDelegate *checkboxDelegate = nullptr;
+    QSqlDatabase dxccDb;
 
     class QTcpSocket *rbnSocket = nullptr;
     QByteArray rbnBuffer;
