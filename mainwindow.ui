@@ -164,7 +164,7 @@ background-color: rgb(170, 255, 255);</string>
              <item>
               <widget class="QPushButton" name="logButton">
                <property name="text">
-                <string>Log</string>
+                <string>WWA</string>
                </property>
               </widget>
              </item>
@@ -1021,7 +1021,7 @@ background-color: rgb(170, 255, 255);</string>
       </widget>
       <widget class="QWidget" name="logTab">
        <attribute name="title">
-        <string>Log</string>
+        <string>WWA</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="0" column="0">
