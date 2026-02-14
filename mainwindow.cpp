@@ -834,6 +834,29 @@ void MainWindow::onDxccReadAdiClicked()
     const QStringList records = content.split(QRegularExpression(R"(<\s*EOR\s*>)", QRegularExpression::CaseInsensitiveOption), Qt::SkipEmptyParts);
     const QRegularExpression fieldRe(R"(<\s*([^:>\s]+)\s*:\s*([0-9]+)[^>]*>([^<]*))", QRegularExpression::CaseInsensitiveOption);
 
+    auto normalizeBand = [](const QString &bandText) -> QString {
+        QString band = bandText.trimmed().toUpper();
+        if (band.endsWith('M')) {
+            band.chop(1);
+        }
+        if (band == "2" || band == "6" || band == "10" || band == "12" ||
+            band == "15" || band == "17" || band == "20" || band == "30" ||
+            band == "40" || band == "80" || band == "160") {
+            return band;
+        }
+        return QString();
+    };
+
+    auto modeToSuffix = [](const QString &modeText) -> QString {
+        const QString mode = modeText.trimmed().toUpper();
+        if (mode == "CW") return "cw";
+        if (mode == "PHONE") return "ph";
+        if (mode == "DATA") return "dg";
+        return QString();
+    };
+
+    const QSqlDatabase db = QSqlDatabase::database();
+
     for (const QString &record : records) {
         QMap<QString, QString> fields;
         auto it = fieldRe.globalMatch(record);
@@ -848,19 +871,38 @@ void MainWindow::onDxccReadAdiClicked()
             fields.insert(name, value.trimmed());
         }
 
-        const QString call = fields.value("CALL").trimmed().toUpper();
-        QString mode = fields.value("MODE").trimmed().toUpper();
-        if (mode.isEmpty()) {
-            mode = fields.value("APP_LOTW_MODEGROUP").trimmed().toUpper();
+        const QString deleted = fields.value("APP_LOTW_DELETED_ENTITY").trimmed();
+        if (deleted.compare("Yes", Qt::CaseInsensitive) == 0) {
+            continue;
         }
-        const QString band = fields.value("BAND").trimmed().toUpper();
+
+        const QString call = fields.value("CALL").trimmed().toUpper();
+        const QString modeGroup = fields.value("APP_LOTW_MODEGROUP").trimmed().toUpper();
+        const QString bandRaw = fields.value("BAND").trimmed().toUpper();
         QString country = fields.value("COUNTRY").trimmed();
         if (country.isEmpty()) {
             country = fields.value("DXCC").trimmed();
         }
-        if (!call.isEmpty() || !band.isEmpty() || !mode.isEmpty() || !country.isEmpty()) {
-            qDebug().noquote() << "ADI" << call << mode << band << country;
+
+        const QString band = normalizeBand(bandRaw);
+        const QString modeSuffix = modeToSuffix(modeGroup);
+        if (!country.isEmpty() && !band.isEmpty() && !modeSuffix.isEmpty()) {
+            const QString column = QString("\"%1%2\"").arg(band, modeSuffix);
+            QSqlQuery q(db);
+            const QString sql = QString("UPDATE dxcc SET %1 = 'V' WHERE dxcc LIKE ?").arg(column);
+            q.prepare(sql);
+            q.addBindValue(country + "%");
+            if (!q.exec()) {
+                qWarning() << "DXCC update failed:" << q.lastError();
+            }
         }
+
+        if (!call.isEmpty() || !bandRaw.isEmpty() || !modeGroup.isEmpty() || !country.isEmpty()) {
+            qDebug().noquote() << "ADI" << call << modeGroup << bandRaw << country;
+        }
+    }
+    if (m_dxccModel) {
+        m_dxccModel->select();
     }
     if (statusInfoLabel) {
         statusInfoLabel->setText("ADI loaded");
