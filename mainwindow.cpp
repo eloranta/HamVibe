@@ -8,7 +8,10 @@
 #include <QDebug>
 #include <QDialog>
 #include <QDialogButtonBox>
+#include <QFileDialog>
 #include <QFormLayout>
+#include <QFile>
+#include <QTextStream>
 #include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>
@@ -340,6 +343,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->send5nnTuOgButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("OG OG"); });
     connect(ui->sendOgQmButton, &QPushButton::clicked, this, [this]() { if (rig) rig->sendCw("TEST TEST TEST TEST TEST"); });
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::onLogClicked);
+    if (ui->dxccReadAdiButton) {
+        connect(ui->dxccReadAdiButton, &QPushButton::clicked, this, &MainWindow::onDxccReadAdiClicked);
+    }
     connect(ui->morseSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int) {
                 const int wpm = ui->morseSpeed->currentText().toInt();
@@ -800,5 +806,63 @@ void MainWindow::onLogClicked()
     rbnOutputPaused = false;
     if (statusInfoLabel) {
         statusInfoLabel->setStyleSheet("");
+    }
+}
+
+void MainWindow::onDxccReadAdiClicked()
+{
+    const QString path = QFileDialog::getOpenFileName(
+        this,
+        "Open ADI",
+        QString(),
+        "ADI Files (*.adi *.ADI);;All Files (*.*)");
+    if (path.isEmpty()) {
+        return;
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qWarning() << "Failed to open ADI:" << path;
+        if (statusInfoLabel) {
+            statusInfoLabel->setText("ADI open failed");
+        }
+        return;
+    }
+
+    QTextStream in(&file);
+    const QString content = in.readAll();
+    const QStringList records = content.split(QRegularExpression(R"(<\s*EOR\s*>)", QRegularExpression::CaseInsensitiveOption), Qt::SkipEmptyParts);
+    const QRegularExpression fieldRe(R"(<\s*([^:>\s]+)\s*:\s*([0-9]+)[^>]*>([^<]*))", QRegularExpression::CaseInsensitiveOption);
+
+    for (const QString &record : records) {
+        QMap<QString, QString> fields;
+        auto it = fieldRe.globalMatch(record);
+        while (it.hasNext()) {
+            const QRegularExpressionMatch match = it.next();
+            const QString name = match.captured(1).trimmed().toUpper();
+            const int len = match.captured(2).toInt();
+            QString value = match.captured(3);
+            if (len > 0 && value.size() > len) {
+                value = value.left(len);
+            }
+            fields.insert(name, value.trimmed());
+        }
+
+        const QString call = fields.value("CALL").trimmed().toUpper();
+        QString mode = fields.value("MODE").trimmed().toUpper();
+        if (mode.isEmpty()) {
+            mode = fields.value("APP_LOTW_MODEGROUP").trimmed().toUpper();
+        }
+        const QString band = fields.value("BAND").trimmed().toUpper();
+        QString country = fields.value("COUNTRY").trimmed();
+        if (country.isEmpty()) {
+            country = fields.value("DXCC").trimmed();
+        }
+        if (!call.isEmpty() || !band.isEmpty() || !mode.isEmpty() || !country.isEmpty()) {
+            qDebug().noquote() << "ADI" << call << mode << band << country;
+        }
+    }
+    if (statusInfoLabel) {
+        statusInfoLabel->setText("ADI loaded");
     }
 }

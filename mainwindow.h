@@ -24,6 +24,7 @@ public slots:
     //void onAddClicked();
     void onClearClicked();
     void onLogClicked();
+    void onDxccReadAdiClicked();
 
 private:
     Ui::MainWindow *ui;
