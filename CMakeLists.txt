@@ -21,6 +21,8 @@ set(PROJECT_SOURCES
         frequencylabel.h
         udpreceiver.cpp
         udpreceiver.h
+        tcplistener.cpp
+        tcplistener.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
