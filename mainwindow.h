@@ -5,7 +5,7 @@
 #include <QTimer>
 #include <memory>
 #include "rig.h"
-#include "tcplistener.h"
+#include "tcpreceiver.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -43,7 +43,7 @@ private:
     void updateModeVisibility();
 
     std::unique_ptr<Rig> rig;
-    std::unique_ptr<TcpListener> tcpListener;
+    std::unique_ptr<TcpReceiver> tcpReceiver;
     QTimer *pollTimer = nullptr;
     int cwSpeedWpm = 30;
     bool lsbSelected = true;

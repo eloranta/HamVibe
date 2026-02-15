@@ -2,7 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "udpreceiver.h"
 #include "delegate.h"
-#include "tcplistener.h"
+#include "tcpreceiver.h"
 
 #include <QAction>
 #include <QComboBox>
@@ -356,8 +356,8 @@ MainWindow::MainWindow(QWidget *parent)
         connect(ui->dxccReadAdiButton, &QPushButton::clicked, this, &MainWindow::onDxccReadAdiClicked);
     }
 
-    tcpListener = std::make_unique<TcpListener>("ham.connect.fi", 7300, this);
-    tcpListener->start();
+    tcpReceiver = std::make_unique<TcpReceiver>("ham.connect.fi", 7300, this);
+    tcpReceiver->start();
 
     connect(ui->morseSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, [this](int) {

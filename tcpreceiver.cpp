@@ -1,18 +1,18 @@
-#include "tcplistener.h"
+#include "tcpreceiver.h"
 
 #include <QDebug>
 
-TcpListener::TcpListener(const QString &host, quint16 port, QObject *parent)
+TcpReceiver::TcpReceiver(const QString &host, quint16 port, QObject *parent)
     : QObject(parent)
     , m_host(host)
     , m_port(port)
 {
     m_socket = new QTcpSocket(this);
-    connect(m_socket, &QTcpSocket::connected, this, &TcpListener::connected);
+    connect(m_socket, &QTcpSocket::connected, this, &TcpReceiver::connected);
     connect(m_socket, &QTcpSocket::disconnected, this, [this]() {
         qDebug() << "TCP disconnected:" << m_host << m_port;
     });
-    connect(m_socket, &QTcpSocket::readyRead, this, &TcpListener::onReadyRead);
+    connect(m_socket, &QTcpSocket::readyRead, this, &TcpReceiver::onReadyRead);
     connect(m_socket,
             QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::errorOccurred),
             this, [this](QAbstractSocket::SocketError) {
@@ -20,7 +20,7 @@ TcpListener::TcpListener(const QString &host, quint16 port, QObject *parent)
             });
 }
 
-void TcpListener::start()
+void TcpReceiver::start()
 {
     if (!m_socket) {
         return;
@@ -30,7 +30,7 @@ void TcpListener::start()
     }
 }
 
-void TcpListener::stop()
+void TcpReceiver::stop()
 {
     if (!m_socket) {
         return;
@@ -38,7 +38,7 @@ void TcpListener::stop()
     m_socket->disconnectFromHost();
 }
 
-void TcpListener::connected()
+void TcpReceiver::connected()
 {
     qDebug() << "connected...";
     if (m_socket) {
@@ -46,7 +46,7 @@ void TcpListener::connected()
     }
 }
 
-void TcpListener::onReadyRead()
+void TcpReceiver::onReadyRead()
 {
     if (!m_socket) {
         return;

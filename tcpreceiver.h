@@ -1,14 +1,14 @@
-#ifndef TCPLISTENER_H
-#define TCPLISTENER_H
+#ifndef TCPRECEIVER_H
+#define TCPRECEIVER_H
 
 #include <QObject>
 #include <QTcpSocket>
 
-class TcpListener : public QObject
+class TcpReceiver : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpListener(const QString &host, quint16 port, QObject *parent = nullptr);
+    explicit TcpReceiver(const QString &host, quint16 port, QObject *parent = nullptr);
 
     void start();
     void stop();
@@ -23,4 +23,4 @@ private:
     QTcpSocket *m_socket = nullptr;
 };
 
-#endif // TCPLISTENER_H
+#endif // TCPRECEIVER_H
