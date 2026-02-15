@@ -933,6 +933,7 @@ void MainWindow::onDxccReadAdiClicked()
     if (m_dxccModel) {
         m_dxccModel->select();
     }
+    updateStatusCounts();
     if (statusInfoLabel) {
         statusInfoLabel->setText("ADI loaded");
     }
