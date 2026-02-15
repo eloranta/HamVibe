@@ -152,6 +152,8 @@ MainWindow::MainWindow(QWidget *parent)
     m_dxccModel = new QSqlTableModel(this);
     m_dxccModel->setTable("dxcc");
     m_dxccModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    m_dxccModel->setHeaderData(0, Qt::Horizontal, "Prefix");
+    m_dxccModel->setHeaderData(1, Qt::Horizontal, "Entity");
     m_dxccModel->select();
 
     auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {
@@ -185,7 +187,8 @@ MainWindow::MainWindow(QWidget *parent)
     setupModesView(ui->tableView, m_model, checkboxDelegate, true);
     setupModesView(ui->dxccTableView, m_dxccModel, nullptr, false);
     if (ui->dxccTableView && ui->dxccTableView->horizontalHeader()) {
-        ui->dxccTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        auto *header = ui->dxccTableView->horizontalHeader();
+        header->setSectionResizeMode(QHeaderView::ResizeToContents);
     }
 
     statusCountsLabel = new QLabel(this);
@@ -847,14 +850,6 @@ void MainWindow::onDxccReadAdiClicked()
         return QString();
     };
 
-    auto modeToSuffix = [](const QString &modeText) -> QString {
-        const QString mode = modeText.trimmed().toUpper();
-        if (mode == "CW") return "cw";
-        if (mode == "PHONE") return "ph";
-        if (mode == "DATA") return "dg";
-        return QString();
-    };
-
     const QSqlDatabase db = QSqlDatabase::database();
 
     for (const QString &record : records) {
@@ -883,23 +878,65 @@ void MainWindow::onDxccReadAdiClicked()
         if (country.isEmpty()) {
             country = fields.value("DXCC").trimmed();
         }
+        const QString entityKey = country.trimmed().toUpper();
+
+        if (!entityKey.isEmpty()) {
+            QSqlQuery q(db);
+            const QString sql = QString("UPDATE dxcc SET Mix = 'X' WHERE entity = ?");
+            q.prepare(sql);
+            q.addBindValue(entityKey);
+            if (!q.exec()) {
+                qWarning() << "DXCC mix update failed:" << q.lastError();
+            }
+        }
 
         const QString band = normalizeBand(bandRaw);
-        const QString modeSuffix = modeToSuffix(modeGroup);
-        if (!country.isEmpty() && !band.isEmpty() && !modeSuffix.isEmpty()) {
-            const QString column = QString("\"%1%2\"").arg(band, modeSuffix);
+        const bool validMode = (modeGroup == "CW" || modeGroup == "PHONE" || modeGroup == "DATA");
+        if (!entityKey.isEmpty() && !band.isEmpty() && validMode) {
+            const QString column = QString("\"%1\"").arg(band);
             QSqlQuery q(db);
-            const QString sql = QString("UPDATE dxcc SET %1 = 'V' WHERE dxcc LIKE ?").arg(column);
+            const QString sql = QString("UPDATE dxcc SET %1 = 'V' WHERE entity = ?").arg(column);
             q.prepare(sql);
-            q.addBindValue(country + "%");
+            q.addBindValue(entityKey);
             if (!q.exec()) {
                 qWarning() << "DXCC update failed:" << q.lastError();
             }
         }
 
-        if (!call.isEmpty() || !bandRaw.isEmpty() || !modeGroup.isEmpty() || !country.isEmpty()) {
-            qDebug().noquote() << "ADI" << call << modeGroup << bandRaw << country;
+        if (!entityKey.isEmpty() && validMode) {
+            QString modeColumn;
+            if (modeGroup == "PHONE") {
+                modeColumn = "Ph";
+            } else if (modeGroup == "CW") {
+                modeColumn = "CW";
+            } else if (modeGroup == "DATA") {
+                modeColumn = "RT";
+            }
+            if (!modeColumn.isEmpty()) {
+                QSqlQuery q(db);
+                const QString sql = QString("UPDATE dxcc SET %1 = 'X' WHERE entity = ?").arg(modeColumn);
+                q.prepare(sql);
+                q.addBindValue(entityKey);
+                if (!q.exec()) {
+                    qWarning() << "DXCC mode update failed:" << q.lastError();
+                }
+            }
         }
+
+        const QString propMode = fields.value("PROP_MODE").trimmed().toUpper();
+        if (!entityKey.isEmpty() && propMode == "SAT") {
+            QSqlQuery q(db);
+            const QString sql = QString("UPDATE dxcc SET SAT = 'X' WHERE entity = ?");
+            q.prepare(sql);
+            q.addBindValue(entityKey);
+            if (!q.exec()) {
+                qWarning() << "DXCC SAT update failed:" << q.lastError();
+            }
+        }
+
+        // if (!call.isEmpty() || !bandRaw.isEmpty() || !modeGroup.isEmpty() || !country.isEmpty()) {
+        //     qDebug().noquote() << "ADI" << call << modeGroup << bandRaw << country;
+        // }
     }
     if (m_dxccModel) {
         m_dxccModel->select();
