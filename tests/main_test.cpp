@@ -2,6 +2,7 @@
 
 QObject *createFrequencyLabelTest();
 QObject *createRigTest();
+QObject *createCountryTest();
 
 int main(int argc, char **argv)
 {
@@ -15,6 +16,10 @@ int main(int argc, char **argv)
     QObject *rigTest = createRigTest();
     status |= QTest::qExec(rigTest, argc, argv);
     delete rigTest;
+
+    QObject *countryTest = createCountryTest();
+    status |= QTest::qExec(countryTest, argc, argv);
+    delete countryTest;
 
     return status;
 }

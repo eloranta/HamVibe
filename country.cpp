@@ -74,13 +74,54 @@ void Country::ParseCty(const QString &content)
             }
         }
 
-        qDebug().noquote() << "CTY" << country << continent
-                           << "prefixes" << prefixes.join(",")
-                           << "calls" << calls.join(",");
+        for (const QString &call : calls) {
+            callMap.insert(call.toUpper(), country);
+        }
+        for (const QString &prefix : prefixes) {
+            prefixMap.insert(prefix.toUpper(), country);
+        }
+
+        // qDebug().noquote() << "CTY" << country << continent
+        //                    << "prefixes" << prefixes.join(",")
+        //                    << "calls" << calls.join(",");
     }
 }
 
 QString Country::GetCountry(const QString &call) const
 {
-    return call;
+    const QString key = call.toUpper();
+
+    auto resolve = [&](const QString &k) -> QString {
+        const QString direct = callMap.value(k, QString());
+        if (!direct.isEmpty()) {
+            return direct;
+        }
+        QString best;
+        for (auto it = prefixMap.constBegin(); it != prefixMap.constEnd(); ++it) {
+            const QString &prefix = it.key();
+            if (k.startsWith(prefix)) {
+                if (prefix.size() > best.size()) {
+                    best = prefix;
+                }
+            }
+        }
+        if (!best.isEmpty()) {
+            return prefixMap.value(best);
+        }
+        return QString();
+    };
+
+    QString result = resolve(key);
+    if (!result.isEmpty()) {
+        return result;
+    }
+
+    const QStringList parts = key.split('/', Qt::SkipEmptyParts);
+    for (const QString &part : parts) {
+        result = resolve(part);
+        if (!result.isEmpty()) {
+            return result;
+        }
+    }
+    return QString();
 }

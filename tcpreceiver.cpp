@@ -79,19 +79,19 @@ void TcpReceiver::onReadyRead()
             if (colon > 0) {
                 sender = line.mid(6, colon - 6).trimmed();
                 const QString rest = line.mid(colon + 1);
-                if (rest.size() >= 10) {
-                    freq = rest.mid(0, 10).trimmed();
+                if (rest.size() >= 11) {
+                    freq = rest.mid(0, 11).trimmed();
                 }
-                if (rest.size() >= 22) {
-                    call = rest.mid(10, 12).trimmed();
+                if (rest.size() >= 23) {
+                    call = rest.mid(11, 12).trimmed();
                 }
-                if (rest.size() >= 52) {
-                    msg = rest.mid(22, 30).trimmed();
-                } else if (rest.size() > 22) {
-                    msg = rest.mid(22).trimmed();
+                if (rest.size() >= 53) {
+                    msg = rest.mid(23, 30).trimmed();
+                } else if (rest.size() > 23) {
+                    msg = rest.mid(23).trimmed();
                 }
-                if (rest.size() >= 57) {
-                    time = rest.mid(52).trimmed();
+                if (rest.size() >= 58) {
+                    time = rest.mid(53).trimmed();
                     const int space = time.indexOf(' ');
                     if (space > 0) {
                         time = time.left(space);
@@ -105,7 +105,7 @@ void TcpReceiver::onReadyRead()
             if (match.hasMatch()) {
                 sender = match.captured(1);
                 freq = match.captured(2);
-                call = match.captured(3);
+                call = match.captured(3).trimmed();
                 msg = match.captured(4).trimmed();
                 time = match.captured(5);
             }

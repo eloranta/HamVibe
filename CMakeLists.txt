@@ -78,10 +78,13 @@ add_executable(HamVibeTests
     tests/main_test.cpp
     tests/frequencylabel_test.cpp
     tests/rig_test.cpp
+    tests/country_test.cpp
     frequencylabel.h
     frequencylabel.cpp
     rig.h
     rig.cpp
+    country.h
+    country.cpp
 )
 target_include_directories(HamVibeTests PRIVATE
     "${CMAKE_CURRENT_SOURCE_DIR}"
