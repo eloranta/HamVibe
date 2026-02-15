@@ -23,6 +23,8 @@ set(PROJECT_SOURCES
         udpreceiver.h
         tcpreceiver.cpp
         tcpreceiver.h
+        country.cpp
+        country.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

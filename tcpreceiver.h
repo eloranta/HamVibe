@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include "country.h"
 
 class TcpReceiver : public QObject
 {
@@ -21,6 +22,8 @@ private:
     QString m_host;
     quint16 m_port = 0;
     QTcpSocket *m_socket = nullptr;
+    QString m_buffer;
+    Country m_country;
 };
 
 #endif // TCPRECEIVER_H
