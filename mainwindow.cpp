@@ -191,12 +191,11 @@ MainWindow::MainWindow(QWidget *parent)
         header->setSectionResizeMode(QHeaderView::ResizeToContents);
     }
 
-    statusCountsLabel = new QLabel(this);
-    statusCountsLabel->setMinimumWidth(260);
-    statusCountsLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     statusInfoLabel = new QLabel(this);
     statusInfoLabel->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     ui->statusbar->addWidget(statusInfoLabel, 1);
+    statusCountsLabel = new QLabel(this);
+    statusCountsLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
     ui->statusbar->addPermanentWidget(statusCountsLabel);
     statusInfoLabel->setText("Ready");
     updateStatusCounts();
@@ -319,6 +318,12 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
                 updateStatusCounts();
             });
+    if (m_dxccModel) {
+        connect(m_dxccModel, &QAbstractItemModel::dataChanged,
+                this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
+                    updateStatusCounts();
+                });
+    }
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
@@ -633,40 +638,27 @@ void MainWindow::poll()
 
 void MainWindow::updateStatusCounts()
 {
-    int cw = 0, ph = 0, ft8 = 0, ft4 = 0;
-
-    static const QStringList bands = {
-        "10","12","15","17","20","30","40","80"
-    };
-
-    QSqlQuery q;
-
-    for (const QString &band : bands) {
-        const QString sql = QString(R"(SELECT "%1" FROM modes)").arg(band);
-        if (!q.exec(sql)) {
-            qWarning() << "Count query failed:" << q.lastError();
-            return;
-        }
-
-        while (q.next()) {
-            const int mask = q.value(0).toInt();
-            if (mask & (1 << 0)) cw++;
-            if (mask & (1 << 1)) ph++;
-            if (mask & (1 << 2)) ft8++;
-            if (mask & (1 << 3)) ft4++;
-        }
+    if (!statusCountsLabel) {
+        return;
     }
 
-    const int total = cw * 10 + ph * 5 + ft8 * 2 + ft4 * 2;
-
-    statusCountsLabel->setText(
-        QString("CW:%1  PH:%2  FT8:%3  FT4:%4  TOTAL:%5")
-            .arg(cw)
-            .arg(ph)
-            .arg(ft8)
-            .arg(ft4)
-            .arg(total)
-        );
+    const QStringList columns = {
+        "Mix","Ph","CW","RT","SAT","160","80","40","30","20","17","15","12","10","6","2"
+    };
+    QStringList parts;
+    QSqlQuery q;
+    for (const QString &col : columns) {
+        const QString sql = QString("SELECT COUNT(*) FROM dxcc WHERE COALESCE(\"%1\", '') <> ''").arg(col);
+        if (!q.exec(sql)) {
+            qWarning() << "DXCC count failed:" << q.lastError();
+            return;
+        }
+        if (q.next()) {
+            const int count = q.value(0).toInt();
+            parts << QString("%1:%2").arg(col, QString::number(count));
+        }
+    }
+    statusCountsLabel->setText(parts.join("  "));
 }
 
 void MainWindow::updateModeVisibility()
