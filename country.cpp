@@ -40,7 +40,12 @@ void Country::ParseCty(const QString &content)
 
         const QString country = headerParts.at(0).trimmed();
         const QString continent = headerParts.at(3).trimmed();
+        const QString headerPrefix = headerParts.at(7).trimmed();
         QStringList prefixes;
+        if (!headerPrefix.isEmpty()) {
+            prefixes << headerPrefix;
+        }
+
         QStringList calls;
 
         QString rest;

@@ -289,7 +289,7 @@ MainWindow::MainWindow(QWidget *parent)
                         if (statusInfoLabel && mode == "CW") {
                             statusInfoLabel->setText(QString("%1 %2").arg(callUp, freq));
                         } else {
-                            qDebug() << "RBN non-CW:" << callUp << freq << "mode" << (mode.isEmpty() ? "<none>" : mode);
+                            //qDebug() << "RBN non-CW:" << callUp << freq << "mode" << (mode.isEmpty() ? "<none>" : mode);
                         }
                     }
                 }

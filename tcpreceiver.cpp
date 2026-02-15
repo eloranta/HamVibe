@@ -57,6 +57,7 @@ void TcpReceiver::onReadyRead()
     if (data.isEmpty()) {
         return;
     }
+
     m_buffer.append(QString::fromUtf8(data));
     int newline = -1;
     static const QRegularExpression re(
@@ -74,16 +75,18 @@ void TcpReceiver::onReadyRead()
         QString msg;
         QString time;
 
+        //qDebug() << line;
+
         if (line.startsWith("DX de")) {
             const int colon = line.indexOf(':');
             if (colon > 0) {
                 sender = line.mid(6, colon - 6).trimmed();
                 const QString rest = line.mid(colon + 1);
                 if (rest.size() >= 11) {
-                    freq = rest.mid(0, 11).trimmed();
+                    freq = rest.mid(0, 13).trimmed();
                 }
                 if (rest.size() >= 23) {
-                    call = rest.mid(11, 12).trimmed();
+                    call = rest.mid(13, 12).trimmed();
                 }
                 if (rest.size() >= 53) {
                     msg = rest.mid(23, 30).trimmed();
@@ -100,26 +103,14 @@ void TcpReceiver::onReadyRead()
             }
         }
 
-        if (sender.isEmpty() || freq.isEmpty() || call.isEmpty() || time.isEmpty()) {
-            const QRegularExpressionMatch match = re.match(line);
-            if (match.hasMatch()) {
-                sender = match.captured(1);
-                freq = match.captured(2);
-                call = match.captured(3).trimmed();
-                msg = match.captured(4).trimmed();
-                time = match.captured(5);
-            }
-        }
+        //qDebug() << sender << freq << call << msg << time;
 
         if (!sender.isEmpty() && !freq.isEmpty() && !call.isEmpty() && !time.isEmpty()) {
-            freq.replace(QRegularExpression(R"(\s*\.\s*)"), ".");
-            QString t = time.trimmed();
-            if (t.endsWith('Z')) {
-                t.chop(1);
+            if (time.size() > 3) {
+                time.chop(3);
             }
-            t.remove(QRegularExpression(R"([^\d])"));
             const QString country = m_country.GetCountry(call);
-            qDebug().noquote() << sender << freq << call << msg << t << country;
+            qDebug().noquote() << sender << freq << call << msg << time << country;
         } else if (line.startsWith("DX de")) {
             qDebug().noquote() << line;
         }
