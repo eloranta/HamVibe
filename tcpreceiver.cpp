@@ -109,8 +109,28 @@ void TcpReceiver::onReadyRead()
             if (time.size() > 3) {
                 time.chop(3);
             }
+            QString band;
+            bool ok = false;
+            const double freqVal = freq.trimmed().toDouble(&ok);
+            if (ok) {
+                double mhz = freqVal;
+                if (mhz > 1000.0) {
+                    mhz /= 1000.0;
+                }
+                if (mhz >= 1.8 && mhz < 2.0) band = "160";
+                else if (mhz >= 3.5 && mhz < 4.0) band = "80";
+                else if (mhz >= 7.0 && mhz < 7.3) band = "40";
+                else if (mhz >= 10.1 && mhz < 10.15) band = "30";
+                else if (mhz >= 14.0 && mhz < 14.35) band = "20";
+                else if (mhz >= 18.068 && mhz < 18.168) band = "17";
+                else if (mhz >= 21.0 && mhz < 21.45) band = "15";
+                else if (mhz >= 24.89 && mhz < 24.99) band = "12";
+                else if (mhz >= 28.0 && mhz < 29.7) band = "10";
+                else if (mhz >= 50.0 && mhz < 54.0) band = "6";
+                else if (mhz >= 144.0 && mhz < 148.0) band = "2";
+            }
             const QString country = m_country.GetCountry(call);
-            qDebug().noquote() << sender << freq << call << msg << time << country;
+            qDebug().noquote() << sender << freq << band << call << msg << time << country;
         } else if (line.startsWith("DX de")) {
             qDebug().noquote() << line;
         }
