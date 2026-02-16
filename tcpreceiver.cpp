@@ -129,8 +129,52 @@ void TcpReceiver::onReadyRead()
                 else if (mhz >= 50.0 && mhz < 54.0) band = "6";
                 else if (mhz >= 144.0 && mhz < 148.0) band = "2";
             }
+            QString mode = "??";
+            const QString msgUp = msg.toUpper();
+            if (msgUp.contains("SAT")) mode = "SAT";
+            else if (msgUp.contains("CW")) mode = "CW";
+            else if (msgUp.contains("RTTY") || msgUp.contains("FT8") || msgUp.contains("FT4") || msgUp.contains("DATA")) mode = "RT";
+            else if (msgUp.contains("SSB") || msgUp.contains("PHONE")) mode = "Ph";
+            if (mode == "??" && ok) {
+                static const QSet<QString> kRtFreqs = {
+                    "1840.0","1837.0","3573.0","3575.0","7074.0","7047.5",
+                    "10136.0","10140.0","14074.0","14080.0","18100.0","18104.0",
+                    "21074.0","21140.0","24915.0","24919.0","28074.0","28180.0",
+                    "50313.0","50318.0"
+                };
+                const QString freqKey = QString::number(freqVal, 'f', 1);
+                if (kRtFreqs.contains(freqKey)) {
+                    mode = "RT";
+                } else if (!band.isEmpty()) {
+                    double mhz = freqVal;
+                    if (mhz > 1000.0) {
+                        mhz /= 1000.0;
+                    }
+                    double bandStart = 0.0;
+                    if (band == "160") bandStart = 1.8;
+                    else if (band == "80") bandStart = 3.5;
+                    else if (band == "40") bandStart = 7.0;
+                    else if (band == "30") bandStart = 10.1;
+                    else if (band == "20") bandStart = 14.0;
+                    else if (band == "17") bandStart = 18.068;
+                    else if (band == "15") bandStart = 21.0;
+                    else if (band == "12") bandStart = 24.89;
+                    else if (band == "10") bandStart = 28.0;
+                    else if (band == "6") bandStart = 50.0;
+                    else if (band == "2") bandStart = 144.0;
+
+                    if (bandStart > 0.0) {
+                        if (mhz >= bandStart && mhz < bandStart + 0.1) {
+                            mode = "CW";
+                        } else {
+                            mode = "Ph";
+                        }
+                    }
+                }
+            }
+
             const QString country = m_country.GetCountry(call);
-            qDebug().noquote() << sender << freq << band << call << msg << time << country;
+            qDebug().noquote() << sender << freq << band << call << mode << msg << time << country;
         } else if (line.startsWith("DX de")) {
             qDebug().noquote() << line;
         }
