@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QRegularExpression>
+#include <QSqlQuery>
 
 TcpReceiver::TcpReceiver(const QString &host, quint16 port, QObject *parent)
     : QObject(parent)
@@ -173,10 +174,21 @@ void TcpReceiver::onReadyRead()
                 }
             }
 
-            const QString country = m_country.GetCountry(call);
-            qDebug().noquote() << sender << freq << band << call << mode << msg << time << country;
+            const QString country = m_country.GetCountry(call).toUpper();
+            if (!country.isEmpty() && !band.isEmpty()) {
+                QSqlQuery q;
+                const QString sql = QString("SELECT COALESCE(\"%1\", '') FROM dxcc WHERE entity = ? LIMIT 1").arg(band);
+                q.prepare(sql);
+                q.addBindValue(country);
+                if (q.exec() && q.next()) {
+                    const QString value = q.value(0).toString();
+                    if (value.isEmpty()) {
+                        qDebug().noquote() << time << call << freq << band << mode << country;
+                    }
+                }
+            }
         } else if (line.startsWith("DX de")) {
-            qDebug().noquote() << line;
+            // qDebug().noquote() << line;
         }
     }
 }
