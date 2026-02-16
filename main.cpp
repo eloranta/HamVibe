@@ -9,22 +9,11 @@
 #include <QSet>
 #include <QRegularExpression>
 
-static bool setupDatabase(const QString &connectionName,
-                          const QString &dbFile,
-                          const QString &tableName,
-                          const QStringList &calls)
+bool setupWwaTable(QSqlDatabase db)
 {
-    QSqlDatabase db = connectionName.isEmpty()
-        ? QSqlDatabase::addDatabase("QSQLITE")
-        : QSqlDatabase::addDatabase("QSQLITE", connectionName);
-    db.setDatabaseName(dbFile);
-
-    if (!db.open()) {
-        qFatal("Cannot open database!");
-        return false;
-    }
-
     QSqlQuery query(db);
+
+    const QString tableName = "modes";
 
     const QString createSql = QString(R"(
         CREATE TABLE IF NOT EXISTS %1 (
@@ -45,6 +34,74 @@ static bool setupDatabase(const QString &connectionName,
         qWarning() << "Failed to create table:" << query.lastError();
         return false;
     }
+
+    return true;
+}
+
+bool setupDxccTable(QSqlDatabase db)
+{
+    QSqlQuery query(db);
+
+    const QString tableName = "dxcc";
+
+    const QString createSql = QString(R"(
+        CREATE TABLE IF NOT EXISTS %1 (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            Prefix TEXT,
+            Entity TEXT,
+            Mix TEXT,
+            Ph TEXT,
+            CW TEXT,
+            RT TEXT,
+            "160" INTEGER,
+            "80" INTEGER,
+            "40" INTEGER,
+            "50" INTEGER,
+            "20" INTEGER,
+            "17" INTEGER,
+            "15" INTEGER,
+            "12" INTEGER,
+            "10" INTEGER,
+            "6"  INTEGER,
+            "2"  INTEGER
+        )
+    )").arg(tableName);
+
+    if (!query.exec(createSql)) {
+        qWarning() << "Failed to create table:" << query.lastError();
+        return false;
+    }
+
+    return true;
+}
+
+bool setupDatabase()
+{
+    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    const QString dbPath = QDir(QCoreApplication::applicationDirPath()).filePath("HamVibe.db");
+    db.setDatabaseName(dbPath);
+
+    if (!db.open()) {
+        qFatal("Cannot open database!");
+        return false;
+    }
+
+    if (!setupWwaTable(db)) {
+        qFatal("Cannot set WWA table!");
+        return false;
+    }
+
+    if (!setupDxccTable(db)) {
+        qFatal("Cannot set DXCC table!");
+        return false;
+    }
+
+    return true;
+}
+
+
+/*
+
 
     const QString countSql = QString("SELECT COUNT(*) FROM %1").arg(tableName);
     if (!query.exec(countSql)) {
@@ -782,89 +839,25 @@ ZS8=PRINCE EDWARD & MARION ISLANDS
     return map;
 }
 
-int main(int argc, char *argv[])
+static bool setupDxccTable(QSqlDatabase &db)
 {
-    QApplication app(argc, argv);
-    QCoreApplication::setOrganizationName("HamVibe");
-    QCoreApplication::setApplicationName("HamVibe");
+    QSqlQuery query(db);
+    const QStringList bands = {"160","80","40","30","20","17","15","12","10","6","2"};
 
-    const QStringList calls = {
-        "3B8WWA","3Z6I","4M5A","4M5DX","4U1A","8A1A","9M2WWA","9M8WWA","A43WWA","AT2WWA","AT3WWA","AT4WWA","AT6WWA","AT7WWA","BA3RA","BA7CK","BG0DXC","BH9CA","BI4SSB","BY1RX",
-        "BY2WL","BY5HB","BY6SX","BY8MA","CQ7WWA","CR2WWA","CR5WWA","CR6WWA","D4W","DA0WWA","DL0WWA","DU0WWA","E2WWA","E7W","EG1WWA","EG2WWA","EG3WWA","EG4WWA","EG5WWA","EG6WWA",
-        "EG7WWA","EG9WWA","EM0WWA","GB0WWA","GB1WWA","GB2WWA","GB4WWA","GB5WWA","GB6WWA","GB8WWA","GB9WWA","HB9WWA","HI3WWA","HI6WWA","HI7WWA","HI8WWA","HZ1WWA","II0WWA","II1WWA",
-        "II2WWA","II3WWA","II4WWA","II5WWA","II6WWA","II7WWA","II8WWA","II9WWA","IR0WWA","IR1WWA","LR1WWA","N0W","N1W","N4W","N6W","N8W","N9W","OL6WWA","OP0WWA","PA26WWA","PC26WWA",
-        "PD26WWA","PE26WWA","PF26WWA","RW1F","S53WWA","SB9WWA","SC9WWA","SD9WWA","SN0WWA","SN1WWA","SN2WWA","SN3WWA","SN4WWA","SN6WWA","SO3WWA","SX0W","TK4TH","TM18WWA","TM1WWA",
-        "TM29WWA","TM7WWA","TM9WWA","UP7WWA","VB2WWA","VC1WWA","VE9WWA","W4I","YI1RN","YL73R","YO0WWA","YU45MJA","Z30WWA"
-    };
-
-    const QString dbPath = QDir(QCoreApplication::applicationDirPath())
-                               .filePath("HamVibe.db");
-    if (!setupDatabase(QString(), dbPath, "modes", calls))
-        return -1;
-
-    {
-        QSqlDatabase db = QSqlDatabase::database();
-        QSqlQuery query(db);
-        const QStringList bands = {"160","80","40","30","20","17","15","12","10","6","2"};
-
-        QSet<QString> existing;
-        QSqlQuery info(db);
-        if (info.exec("PRAGMA table_info(dxcc)")) {
-            while (info.next()) {
-                existing.insert(info.value(1).toString());
-            }
+    QSet<QString> existing;
+    QSqlQuery info(db);
+    if (info.exec("PRAGMA table_info(dxcc)")) {
+        while (info.next()) {
+            existing.insert(info.value(1).toString());
         }
+    }
 
-        const bool hasModeColumns = existing.contains("2cw") || existing.contains("2ph") || existing.contains("2dg");
-        if (hasModeColumns) {
-            if (!query.exec("BEGIN TRANSACTION")) {
-                qWarning() << "Failed to begin DXCC migration:" << query.lastError();
-                return -1;
-            }
-            QStringList cols;
-            cols << "prefix TEXT DEFAULT ''" << "entity TEXT DEFAULT ''"
-                 << "Mix TEXT DEFAULT ''" << "Ph TEXT DEFAULT ''"
-                 << "CW TEXT DEFAULT ''" << "RT TEXT DEFAULT ''"
-                 << "SAT TEXT DEFAULT ''";
-            for (const QString &band : bands) {
-                cols << QString("\"%1\" TEXT DEFAULT ''").arg(band);
-            }
-            const QString createNew = QString("CREATE TABLE IF NOT EXISTS dxcc_new (%1)").arg(cols.join(", "));
-            if (!query.exec(createNew)) {
-                qWarning() << "Failed to create dxcc_new:" << query.lastError();
-                return -1;
-            }
-
-            QStringList selects;
-            selects << "prefix"
-                    << (existing.contains("entity") ? "entity" : "dxcc")
-                    << "'' AS Mix" << "'' AS Ph" << "'' AS CW" << "'' AS RT" << "'' AS SAT";
-            for (const QString &band : bands) {
-                const QString cw = QString("\"%1cw\"").arg(band);
-                const QString ph = QString("\"%1ph\"").arg(band);
-                const QString dg = QString("\"%1dg\"").arg(band);
-                selects << QString("(CASE WHEN COALESCE(%1,'')!='' OR COALESCE(%2,'')!='' OR COALESCE(%3,'')!='' THEN 'V' ELSE '' END) AS \"%4\"")
-                              .arg(cw, ph, dg, band);
-            }
-            const QString insertSql = QString("INSERT INTO dxcc_new SELECT %1 FROM dxcc").arg(selects.join(", "));
-            if (!query.exec(insertSql)) {
-                qWarning() << "Failed to migrate DXCC data:" << query.lastError();
-                return -1;
-            }
-            if (!query.exec("DROP TABLE dxcc")) {
-                qWarning() << "Failed to drop old dxcc:" << query.lastError();
-                return -1;
-            }
-            if (!query.exec("ALTER TABLE dxcc_new RENAME TO dxcc")) {
-                qWarning() << "Failed to rename dxcc_new:" << query.lastError();
-                return -1;
-            }
-            if (!query.exec("COMMIT")) {
-                qWarning() << "Failed to commit DXCC migration:" << query.lastError();
-                return -1;
-            }
+    const bool hasModeColumns = existing.contains("2cw") || existing.contains("2ph") || existing.contains("2dg");
+    if (hasModeColumns) {
+        if (!query.exec("BEGIN TRANSACTION")) {
+            qWarning() << "Failed to begin DXCC migration:" << query.lastError();
+            return false;
         }
-
         QStringList cols;
         cols << "prefix TEXT DEFAULT ''" << "entity TEXT DEFAULT ''"
              << "Mix TEXT DEFAULT ''" << "Ph TEXT DEFAULT ''"
@@ -873,94 +866,159 @@ int main(int argc, char *argv[])
         for (const QString &band : bands) {
             cols << QString("\"%1\" TEXT DEFAULT ''").arg(band);
         }
-        const QString createSql = QString("CREATE TABLE IF NOT EXISTS dxcc (%1)").arg(cols.join(", "));
-        if (!query.exec(createSql)) {
-            qWarning() << "Failed to create DXCC table:" << query.lastError();
-            return -1;
+        const QString createNew = QString("CREATE TABLE IF NOT EXISTS dxcc_new (%1)").arg(cols.join(", "));
+        if (!query.exec(createNew)) {
+            qWarning() << "Failed to create dxcc_new:" << query.lastError();
+            return false;
         }
 
-        QSet<QString> existingAfter;
-        QSqlQuery infoAfter(db);
-        if (infoAfter.exec("PRAGMA table_info(dxcc)")) {
-            while (infoAfter.next()) {
-                existingAfter.insert(infoAfter.value(1).toString());
-            }
-        }
-        if (!existingAfter.contains("prefix")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN prefix TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add prefix column:" << query.lastError();
-                return -1;
-            }
-        }
-        if (!existingAfter.contains("entity")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN entity TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add entity column:" << query.lastError();
-                return -1;
-            }
-        }
-        if (!existingAfter.contains("Mix")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN Mix TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add Mix column:" << query.lastError();
-                return -1;
-            }
-        }
-        if (!existingAfter.contains("Ph")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN Ph TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add Ph column:" << query.lastError();
-                return -1;
-            }
-        }
-        if (!existingAfter.contains("CW")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN CW TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add CW column:" << query.lastError();
-                return -1;
-            }
-        }
-        if (!existingAfter.contains("RT")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN RT TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add RT column:" << query.lastError();
-                return -1;
-            }
-        }
-        if (!existingAfter.contains("SAT")) {
-            if (!query.exec("ALTER TABLE dxcc ADD COLUMN SAT TEXT DEFAULT ''")) {
-                qWarning() << "Failed to add SAT column:" << query.lastError();
-                return -1;
-            }
-        }
+        QStringList selects;
+        selects << "prefix"
+                << (existing.contains("entity") ? "entity" : "dxcc")
+                << "'' AS Mix" << "'' AS Ph" << "'' AS CW" << "'' AS RT" << "'' AS SAT";
         for (const QString &band : bands) {
-            if (!existingAfter.contains(band)) {
-                if (!query.exec(QString("ALTER TABLE dxcc ADD COLUMN \"%1\" TEXT DEFAULT ''").arg(band))) {
-                    qWarning() << "Failed to add band column:" << band << query.lastError();
-                    return -1;
-                }
-            }
+            const QString cw = QString("\"%1cw\"").arg(band);
+            const QString ph = QString("\"%1ph\"").arg(band);
+            const QString dg = QString("\"%1dg\"").arg(band);
+            selects << QString("(CASE WHEN COALESCE(%1,'')!='' OR COALESCE(%2,'')!='' OR COALESCE(%3,'')!='' THEN 'V' ELSE '' END) AS \"%4\"")
+                          .arg(cw, ph, dg, band);
         }
+        const QString insertSql = QString("INSERT INTO dxcc_new SELECT %1 FROM dxcc").arg(selects.join(", "));
+        if (!query.exec(insertSql)) {
+            qWarning() << "Failed to migrate DXCC data:" << query.lastError();
+            return false;
+        }
+        if (!query.exec("DROP TABLE dxcc")) {
+            qWarning() << "Failed to drop old dxcc:" << query.lastError();
+            return false;
+        }
+        if (!query.exec("ALTER TABLE dxcc_new RENAME TO dxcc")) {
+            qWarning() << "Failed to rename dxcc_new:" << query.lastError();
+            return false;
+        }
+        if (!query.exec("COMMIT")) {
+            qWarning() << "Failed to commit DXCC migration:" << query.lastError();
+            return false;
+        }
+    }
 
-        if (!query.exec("SELECT COUNT(*) FROM dxcc")) {
-            qWarning() << "Failed to count DXCC rows:" << query.lastError();
-            return -1;
+    QStringList cols;
+    cols << "prefix TEXT DEFAULT ''" << "entity TEXT DEFAULT ''"
+         << "Mix TEXT DEFAULT ''" << "Ph TEXT DEFAULT ''"
+         << "CW TEXT DEFAULT ''" << "RT TEXT DEFAULT ''"
+         << "SAT TEXT DEFAULT ''";
+    for (const QString &band : bands) {
+        cols << QString("\"%1\" TEXT DEFAULT ''").arg(band);
+    }
+    const QString createSql = QString("CREATE TABLE IF NOT EXISTS dxcc (%1)").arg(cols.join(", "));
+    if (!query.exec(createSql)) {
+        qWarning() << "Failed to create DXCC table:" << query.lastError();
+        return false;
+    }
+
+    QSet<QString> existingAfter;
+    QSqlQuery infoAfter(db);
+    if (infoAfter.exec("PRAGMA table_info(dxcc)")) {
+        while (infoAfter.next()) {
+            existingAfter.insert(infoAfter.value(1).toString());
         }
-        if (query.next() && query.value(0).toInt() == 0) {
-            QSqlQuery insert(db);
-            if (!insert.prepare("INSERT INTO dxcc (prefix, entity, Mix, Ph, CW, RT, SAT) VALUES (?, ?, '', '', '', '', '')")) {
-                qWarning() << "Failed to prepare DXCC insert:" << insert.lastError();
-                return -1;
-            }
-            const QStringList names = dxccNames();
-            const QMap<QString, QString> prefixMap = dxccPrefixMap();
-            for (const QString &name : names) {
-                const QString prefix = prefixMap.value(name.toUpper(), "");
-                insert.addBindValue(prefix);
-                insert.addBindValue(name);
-                if (!insert.exec()) {
-                    qWarning() << "DXCC insert failed:" << insert.lastError();
-                    return -1;
-                }
-                insert.finish();
+    }
+    if (!existingAfter.contains("prefix")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN prefix TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add prefix column:" << query.lastError();
+            return false;
+        }
+    }
+    if (!existingAfter.contains("entity")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN entity TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add entity column:" << query.lastError();
+            return false;
+        }
+    }
+    if (!existingAfter.contains("Mix")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN Mix TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add Mix column:" << query.lastError();
+            return false;
+        }
+    }
+    if (!existingAfter.contains("Ph")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN Ph TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add Ph column:" << query.lastError();
+            return false;
+        }
+    }
+    if (!existingAfter.contains("CW")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN CW TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add CW column:" << query.lastError();
+            return false;
+        }
+    }
+    if (!existingAfter.contains("RT")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN RT TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add RT column:" << query.lastError();
+            return false;
+        }
+    }
+    if (!existingAfter.contains("SAT")) {
+        if (!query.exec("ALTER TABLE dxcc ADD COLUMN SAT TEXT DEFAULT ''")) {
+            qWarning() << "Failed to add SAT column:" << query.lastError();
+            return false;
+        }
+    }
+    for (const QString &band : bands) {
+        if (!existingAfter.contains(band)) {
+            if (!query.exec(QString("ALTER TABLE dxcc ADD COLUMN \"%1\" TEXT DEFAULT ''").arg(band))) {
+                qWarning() << "Failed to add band column:" << band << query.lastError();
+                return false;
             }
         }
     }
+
+    if (!query.exec("SELECT COUNT(*) FROM dxcc")) {
+        qWarning() << "Failed to count DXCC rows:" << query.lastError();
+        return false;
+    }
+    if (query.next() && query.value(0).toInt() == 0) {
+        QSqlQuery insert(db);
+        if (!insert.prepare("INSERT INTO dxcc (prefix, entity, Mix, Ph, CW, RT, SAT) VALUES (?, ?, '', '', '', '', '')")) {
+            qWarning() << "Failed to prepare DXCC insert:" << insert.lastError();
+            return false;
+        }
+        const QStringList names = dxccNames();
+        const QMap<QString, QString> prefixMap = dxccPrefixMap();
+        for (const QString &name : names) {
+            const QString prefix = prefixMap.value(name.toUpper(), "");
+            insert.addBindValue(prefix);
+            insert.addBindValue(name);
+            if (!insert.exec()) {
+                qWarning() << "DXCC insert failed:" << insert.lastError();
+                return false;
+            }
+            insert.finish();
+        }
+    }
+
+    return true;
+}
+
+const QStringList calls = {
+    "3B8WWA","3Z6I","4M5A","4M5DX","4U1A","8A1A","9M2WWA","9M8WWA","A43WWA","AT2WWA","AT3WWA","AT4WWA","AT6WWA","AT7WWA","BA3RA","BA7CK","BG0DXC","BH9CA","BI4SSB","BY1RX",
+    "BY2WL","BY5HB","BY6SX","BY8MA","CQ7WWA","CR2WWA","CR5WWA","CR6WWA","D4W","DA0WWA","DL0WWA","DU0WWA","E2WWA","E7W","EG1WWA","EG2WWA","EG3WWA","EG4WWA","EG5WWA","EG6WWA",
+    "EG7WWA","EG9WWA","EM0WWA","GB0WWA","GB1WWA","GB2WWA","GB4WWA","GB5WWA","GB6WWA","GB8WWA","GB9WWA","HB9WWA","HI3WWA","HI6WWA","HI7WWA","HI8WWA","HZ1WWA","II0WWA","II1WWA",
+    "II2WWA","II3WWA","II4WWA","II5WWA","II6WWA","II7WWA","II8WWA","II9WWA","IR0WWA","IR1WWA","LR1WWA","N0W","N1W","N4W","N6W","N8W","N9W","OL6WWA","OP0WWA","PA26WWA","PC26WWA",
+    "PD26WWA","PE26WWA","PF26WWA","RW1F","S53WWA","SB9WWA","SC9WWA","SD9WWA","SN0WWA","SN1WWA","SN2WWA","SN3WWA","SN4WWA","SN6WWA","SO3WWA","SX0W","TK4TH","TM18WWA","TM1WWA",
+    "TM29WWA","TM7WWA","TM9WWA","UP7WWA","VB2WWA","VC1WWA","VE9WWA","W4I","YI1RN","YL73R","YO0WWA","YU45MJA","Z30WWA"
+};
+*/
+
+int main(int argc, char *argv[])
+{
+    QApplication app(argc, argv);
+    QCoreApplication::setOrganizationName("HamVibe");
+    QCoreApplication::setApplicationName("HamVibe");
+
+    if (!setupDatabase())
+        return -1;
 
     MainWindow window;
     window.show();

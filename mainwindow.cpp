@@ -153,9 +153,25 @@ MainWindow::MainWindow(QWidget *parent)
     m_dxccModel = new QSqlTableModel(this);
     m_dxccModel->setTable("dxcc");
     m_dxccModel->setEditStrategy(QSqlTableModel::OnFieldChange);
-    m_dxccModel->setHeaderData(0, Qt::Horizontal, "Prefix");
-    m_dxccModel->setHeaderData(1, Qt::Horizontal, "Entity");
     m_dxccModel->select();
+    int dxccIdCol = m_dxccModel->fieldIndex("id");
+    if (dxccIdCol < 0) {
+        dxccIdCol = m_dxccModel->fieldIndex("Id");
+    }
+    int dxccPrefixCol = m_dxccModel->fieldIndex("prefix");
+    if (dxccPrefixCol < 0) {
+        dxccPrefixCol = m_dxccModel->fieldIndex("Prefix");
+    }
+    int dxccEntityCol = m_dxccModel->fieldIndex("entity");
+    if (dxccEntityCol < 0) {
+        dxccEntityCol = m_dxccModel->fieldIndex("Entity");
+    }
+    if (dxccPrefixCol >= 0) {
+        m_dxccModel->setHeaderData(dxccPrefixCol, Qt::Horizontal, "Prefix");
+    }
+    if (dxccEntityCol >= 0) {
+        m_dxccModel->setHeaderData(dxccEntityCol, Qt::Horizontal, "Entity");
+    }
 
     auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {
         if (!view || !model) {
@@ -187,6 +203,9 @@ MainWindow::MainWindow(QWidget *parent)
     }
     setupModesView(ui->tableView, m_model, checkboxDelegate, true);
     setupModesView(ui->dxccTableView, m_dxccModel, nullptr, false);
+    if (dxccIdCol >= 0 && ui->dxccTableView) {
+        ui->dxccTableView->setColumnHidden(dxccIdCol, true);
+    }
     if (ui->dxccTableView && ui->dxccTableView->horizontalHeader()) {
         auto *header = ui->dxccTableView->horizontalHeader();
         header->setSectionResizeMode(QHeaderView::ResizeToContents);

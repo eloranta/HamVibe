@@ -185,6 +185,8 @@ void TcpReceiver::onReadyRead()
                     if (value.isEmpty()) {
                         qDebug().noquote() << time << call << freq << band << mode << country;
                     }
+                } else {
+                    qDebug().noquote() << "UNKNOWN COUNTRY" << call << country;
                 }
             }
         } else if (line.startsWith("DX de")) {

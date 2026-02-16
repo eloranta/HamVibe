@@ -116,16 +116,29 @@ QString Country::GetCountry(const QString &call) const
         return QString();
     };
 
+    auto normalizeName = [](QString name) -> QString {
+        const QString up = name.trimmed().toUpper();
+        if (up == "UNITED STATES") return "UNITED STATES OF AMERICA";
+        if (up == "FED. REP. OF GERMANY") return "FEDERAL REPUBLIC OF GERMANY";
+        if (up == "VIETNAM") return "VIET NAM";
+        if (up == "SOUTH AFRICA") return "REPUBLIC OF SOUTH AFRICA";
+        if (up == "ST. BARTHELEMY") return "SAINT BARTHELEMY";
+        if (up == "SEYCHELLES") return "SEYCHELLES ISLANDS";
+        if (up == "ST. VINCENT") return "SAINT VINCENT";
+        if (up == "MAURITIUS") return "MAURITIUS ISLAND";
+        return name;
+    };
+
     QString result = resolve(key);
     if (!result.isEmpty()) {
-        return result;
+        return normalizeName(result);
     }
 
     const QStringList parts = key.split('/', Qt::SkipEmptyParts);
     for (const QString &part : parts) {
         result = resolve(part);
         if (!result.isEmpty()) {
-            return result;
+            return normalizeName(result);
         }
     }
     return QString();
