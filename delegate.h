@@ -21,14 +21,6 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option,
                const QModelIndex &index) const override
     {
-        if (index.row() == 0) {
-            painter->save();
-            painter->setPen(Qt::black);
-            painter->drawText(option.rect, Qt::AlignCenter,
-                              index.data(Qt::DisplayRole).toString());
-            painter->restore();
-            return;
-        }
         if (option.state & QStyle::State_Selected) {
             painter->save();
             painter->setBrush(QColor("#dfefff"));
