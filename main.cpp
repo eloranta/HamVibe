@@ -799,7 +799,7 @@ bool setupDxccTable(QSqlDatabase db)
             "160" INTEGER,
             "80" INTEGER,
             "40" INTEGER,
-            "50" INTEGER,
+            "30" INTEGER,
             "20" INTEGER,
             "17" INTEGER,
             "15" INTEGER,
