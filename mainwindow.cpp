@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-#include "udpreceiver.h"
 #include "delegate.h"
 #include "tcpreceiver.h"
 
@@ -23,112 +22,11 @@
 #include <algorithm>
 #include <array>
 #include <utility>
-
 #include <QSqlTableModel>
-
 #include <QTcpSocket>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
-
-double MainWindow::interpolateSmeterDb(int value) const
-{
-    static constexpr std::array<std::pair<int, double>, 9> kSmeterMap = {{
-        {0, 0.0},
-        {3, 1.0},
-        {6, 3.0},
-        {9, 5.0},
-        {12, 7.0},
-        {15, 9.0},
-        {20, 20.0},
-        {25, 40.0},
-        {30, 60.0},
-    }};
-
-    if (value <= kSmeterMap.front().first) {
-        return kSmeterMap.front().second;
-    }
-    if (value >= kSmeterMap.back().first) {
-        return kSmeterMap.back().second;
-    }
-
-    for (size_t i = 1; i < kSmeterMap.size(); ++i) {
-        if (value <= kSmeterMap[i].first) {
-            const int x0 = kSmeterMap[i - 1].first;
-            const int x1 = kSmeterMap[i].first;
-            const double y0 = kSmeterMap[i - 1].second;
-            const double y1 = kSmeterMap[i].second;
-            const double t = (value - x0) / static_cast<double>(x1 - x0);
-            return y0 + t * (y1 - y0);
-        }
-    }
-
-    return kSmeterMap.back().second;
-}
-
-static QString modeToText(rmode_t mode)
-{
-    switch (mode) {
-    case RIG_MODE_LSB:
-        return "LSB";
-    case RIG_MODE_USB:
-        return "USB";
-    case RIG_MODE_CW:
-        return "CW";
-    case RIG_MODE_FM:
-        return "FM";
-    case RIG_MODE_AM:
-        return "AM";
-    case RIG_MODE_RTTY:
-        return "RTTY";
-    default:
-        return "UNK";
-    }
-}
-
-static QChar vfoToPrefix(vfo_t vfo)
-{
-    switch (vfo) {
-    case RIG_VFO_A:
-        return QChar('A');
-    case RIG_VFO_B:
-        return QChar('B');
-    case RIG_VFO_MAIN:
-        return QChar('M');
-    case RIG_VFO_SUB:
-        return QChar('S');
-    case RIG_VFO_TX:
-        return QChar('T');
-    case RIG_VFO_RX:
-        return QChar('R');
-    default:
-        return QChar('?');
-    }
-}
-
-static QString bandFromFrequencyText(const QString &freqText)
-{
-    bool ok = false;
-    const double value = freqText.toDouble(&ok);
-    if (!ok || value <= 0.0) {
-        return QString();
-    }
-
-    double mhz = value;
-    if (mhz > 1000.0) {
-        mhz /= 1000.0;
-    }
-
-    if (mhz >= 3.5 && mhz < 4.0) return "80";
-    if (mhz >= 7.0 && mhz < 7.3) return "40";
-    if (mhz >= 10.1 && mhz < 10.15) return "30";
-    if (mhz >= 14.0 && mhz < 14.35) return "20";
-    if (mhz >= 18.068 && mhz < 18.168) return "17";
-    if (mhz >= 21.0 && mhz < 21.45) return "15";
-    if (mhz >= 24.89 && mhz < 24.99) return "12";
-    if (mhz >= 28.0 && mhz < 29.7) return "10";
-    return QString();
-}
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -428,6 +326,105 @@ MainWindow::MainWindow(QWidget *parent)
     connect(pollTimer, &QTimer::timeout, this, [this]() { poll(); });
     pollTimer->start();
     poll();
+}
+
+double MainWindow::interpolateSmeterDb(int value) const
+{
+    static constexpr std::array<std::pair<int, double>, 9> kSmeterMap = {{
+                                                                          {0, 0.0},
+                                                                          {3, 1.0},
+                                                                          {6, 3.0},
+                                                                          {9, 5.0},
+                                                                          {12, 7.0},
+                                                                          {15, 9.0},
+                                                                          {20, 20.0},
+                                                                          {25, 40.0},
+                                                                          {30, 60.0},
+                                                                          }};
+
+    if (value <= kSmeterMap.front().first) {
+        return kSmeterMap.front().second;
+    }
+    if (value >= kSmeterMap.back().first) {
+        return kSmeterMap.back().second;
+    }
+
+    for (size_t i = 1; i < kSmeterMap.size(); ++i) {
+        if (value <= kSmeterMap[i].first) {
+            const int x0 = kSmeterMap[i - 1].first;
+            const int x1 = kSmeterMap[i].first;
+            const double y0 = kSmeterMap[i - 1].second;
+            const double y1 = kSmeterMap[i].second;
+            const double t = (value - x0) / static_cast<double>(x1 - x0);
+            return y0 + t * (y1 - y0);
+        }
+    }
+
+    return kSmeterMap.back().second;
+}
+
+static QString modeToText(rmode_t mode)
+{
+    switch (mode) {
+    case RIG_MODE_LSB:
+        return "LSB";
+    case RIG_MODE_USB:
+        return "USB";
+    case RIG_MODE_CW:
+        return "CW";
+    case RIG_MODE_FM:
+        return "FM";
+    case RIG_MODE_AM:
+        return "AM";
+    case RIG_MODE_RTTY:
+        return "RTTY";
+    default:
+        return "UNK";
+    }
+}
+
+static QChar vfoToPrefix(vfo_t vfo)
+{
+    switch (vfo) {
+    case RIG_VFO_A:
+        return QChar('A');
+    case RIG_VFO_B:
+        return QChar('B');
+    case RIG_VFO_MAIN:
+        return QChar('M');
+    case RIG_VFO_SUB:
+        return QChar('S');
+    case RIG_VFO_TX:
+        return QChar('T');
+    case RIG_VFO_RX:
+        return QChar('R');
+    default:
+        return QChar('?');
+    }
+}
+
+static QString bandFromFrequencyText(const QString &freqText)
+{
+    bool ok = false;
+    const double value = freqText.toDouble(&ok);
+    if (!ok || value <= 0.0) {
+        return QString();
+    }
+
+    double mhz = value;
+    if (mhz > 1000.0) {
+        mhz /= 1000.0;
+    }
+
+    if (mhz >= 3.5 && mhz < 4.0) return "80";
+    if (mhz >= 7.0 && mhz < 7.3) return "40";
+    if (mhz >= 10.1 && mhz < 10.15) return "30";
+    if (mhz >= 14.0 && mhz < 14.35) return "20";
+    if (mhz >= 18.068 && mhz < 18.168) return "17";
+    if (mhz >= 21.0 && mhz < 21.45) return "15";
+    if (mhz >= 24.89 && mhz < 24.99) return "12";
+    if (mhz >= 28.0 && mhz < 29.7) return "10";
+    return QString();
 }
 
 MainWindow::~MainWindow()

@@ -126,6 +126,7 @@ QString Country::GetCountry(const QString &call) const
         if (up == "SEYCHELLES") return "SEYCHELLES ISLANDS";
         if (up == "ST. VINCENT") return "SAINT VINCENT";
         if (up == "MAURITIUS") return "MAURITIUS ISLAND";
+        if (up == "FIJI") return "FIJI ISLANDS";
         return name;
     };
 
