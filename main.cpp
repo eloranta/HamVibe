@@ -518,6 +518,24 @@ bool setupDatabase()
         return false;
     }
 
+    {
+        QSqlQuery query(db);
+        const QString createSpots = R"(
+            CREATE TABLE IF NOT EXISTS spots (
+                time TEXT,
+                call TEXT,
+                freq TEXT,
+                mode TEXT,
+                country TEXT,
+                spotter TEXT
+            )
+        )";
+        if (!query.exec(createSpots)) {
+            qWarning() << "Failed to create spots table:" << query.lastError();
+            return false;
+        }
+    }
+
     return true;
 }
 

@@ -14,6 +14,14 @@ public:
     void start();
     void stop();
 
+signals:
+    void spotReceived(const QString &time,
+                      const QString &call,
+                      const QString &freq,
+                      const QString &mode,
+                      const QString &country,
+                      const QString &spotter);
+
 private slots:
     void connected();
     void onReadyRead();

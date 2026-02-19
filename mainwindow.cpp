@@ -71,6 +71,17 @@ MainWindow::MainWindow(QWidget *parent)
         m_dxccModel->setHeaderData(dxccEntityCol, Qt::Horizontal, "Entity");
     }
 
+    m_spotModel = new QSqlTableModel(this);
+    m_spotModel->setTable("spots");
+    m_spotModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    m_spotModel->setHeaderData(0, Qt::Horizontal, "Time");
+    m_spotModel->setHeaderData(1, Qt::Horizontal, "Call");
+    m_spotModel->setHeaderData(2, Qt::Horizontal, "Freq");
+    m_spotModel->setHeaderData(3, Qt::Horizontal, "Mode");
+    m_spotModel->setHeaderData(4, Qt::Horizontal, "Country");
+    m_spotModel->setHeaderData(5, Qt::Horizontal, "Spotter");
+    m_spotModel->select();
+
     auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {
         if (!view || !model) {
             return;
@@ -101,6 +112,16 @@ MainWindow::MainWindow(QWidget *parent)
     }
     setupModesView(ui->tableView, m_model, checkboxDelegate, true);
     setupModesView(ui->dxccTableView, m_dxccModel, nullptr, false);
+    if (ui->spotTableView) {
+        ui->spotTableView->setModel(m_spotModel);
+        ui->spotTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->spotTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+        ui->spotTableView->setStyleSheet(
+            "QTableView::item:selected { background: #dfefff; color: palette(text); }");
+        if (ui->spotTableView->horizontalHeader()) {
+            ui->spotTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        }
+    }
     if (dxccIdCol >= 0 && ui->dxccTableView) {
         ui->dxccTableView->setColumnHidden(dxccIdCol, true);
     }
@@ -274,6 +295,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     tcpReceiver = std::make_unique<TcpReceiver>("ham.connect.fi", 7300, this);
+    connect(tcpReceiver.get(), &TcpReceiver::spotReceived, this, &MainWindow::onSpotReceived);
     tcpReceiver->start();
 
     connect(ui->morseSpeed, QOverload<int>::of(&QComboBox::currentIndexChanged),
@@ -957,5 +979,30 @@ void MainWindow::onDxccReadAdiClicked()
     updateStatusCounts();
     if (statusInfoLabel) {
         statusInfoLabel->setText("ADI loaded");
+    }
+}
+
+void MainWindow::onSpotReceived(const QString &time,
+                                const QString &call,
+                                const QString &freq,
+                                const QString &mode,
+                                const QString &country,
+                                const QString &spotter)
+{
+    QSqlQuery q;
+    q.prepare(R"(
+        INSERT INTO spots (time, call, freq, mode, country, spotter)
+        VALUES (?, ?, ?, ?, ?, ?)
+    )");
+    q.addBindValue(time);
+    q.addBindValue(call);
+    q.addBindValue(freq);
+    q.addBindValue(mode);
+    q.addBindValue(country);
+    q.addBindValue(spotter);
+    if (!q.exec()) {
+        qWarning() << "Spot insert failed:" << q.lastError();
+    } else if (m_spotModel) {
+        m_spotModel->select();
     }
 }

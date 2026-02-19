@@ -26,11 +26,18 @@ public slots:
     void onClearClicked();
     void onLogClicked();
     void onDxccReadAdiClicked();
+    void onSpotReceived(const QString &time,
+                        const QString &call,
+                        const QString &freq,
+                        const QString &mode,
+                        const QString &country,
+                        const QString &spotter);
 
 private:
     Ui::MainWindow *ui;
     class QSqlTableModel *m_model = nullptr;
     class QSqlTableModel *m_dxccModel = nullptr;
+    class QSqlTableModel *m_spotModel = nullptr;
     class WwaDelegate *checkboxDelegate = nullptr;
 
     class QTcpSocket *rbnSocket = nullptr;
