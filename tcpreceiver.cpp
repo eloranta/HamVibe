@@ -51,7 +51,7 @@ void TcpReceiver::connected()
 
 std::tuple<const QString, const QString, const QString, const QString, const QString> parseLine(const QString &line) {
     const int colon = line.indexOf(':');
-    //if (colon == -1) return;
+    //if (colon == -1) return; // TODO:
 
     const QString sender = line.left(colon).mid(6);
     const QString freq = line.mid(colon+1, 24-colon).trimmed();

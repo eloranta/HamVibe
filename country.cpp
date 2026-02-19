@@ -41,6 +41,9 @@ void Country::ParseCty(const QString &content)
         const QString country = headerParts.at(0).trimmed();
         const QString continent = headerParts.at(3).trimmed();
         const QString headerPrefix = headerParts.at(7).trimmed();
+        if (headerPrefix.startsWith('*')) {
+            continue;
+        }
         QStringList prefixes;
         if (!headerPrefix.isEmpty()) {
             prefixes << headerPrefix;
@@ -125,8 +128,14 @@ QString Country::GetCountry(const QString &call) const
         if (up == "ST. BARTHELEMY") return "SAINT BARTHELEMY";
         if (up == "SEYCHELLES") return "SEYCHELLES ISLANDS";
         if (up == "ST. VINCENT") return "SAINT VINCENT";
+        if (up == "ST. MARTIN") return "SAINT MARTIN";
+        if (up == "ST. LUCIA") return "SAINT LUCIA";
+        if (up == "ST. HELENA") return "SAINT HELENA";
+        if (up == "ST. KITTS & NEVIS") return "SAINT KITTS & NEVIS";
         if (up == "MAURITIUS") return "MAURITIUS ISLAND";
         if (up == "FIJI") return "FIJI ISLANDS";
+        if (up == "ASIATIC TURKEY") return "TURKEY";
+        if (up == "SOV MIL ORDER OF MALTA") return "SOVEREIGN MILITARY ORDER OF MALTA";
         return name;
     };
 
