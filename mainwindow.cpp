@@ -118,6 +118,13 @@ MainWindow::MainWindow(QWidget *parent)
         ui->spotTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         ui->spotTableView->setStyleSheet(
             "QTableView::item:selected { background: #dfefff; color: palette(text); }");
+        if (ui->spotTableView->verticalHeader()) {
+            ui->spotTableView->verticalHeader()->setVisible(false);
+        }
+        const int spotIdCol = m_spotModel ? m_spotModel->fieldIndex("id") : -1;
+        if (spotIdCol >= 0) {
+            ui->spotTableView->setColumnHidden(spotIdCol, true);
+        }
         if (ui->spotTableView->horizontalHeader()) {
             ui->spotTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         }
@@ -292,6 +299,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->logButton, &QPushButton::clicked, this, &MainWindow::onLogClicked);
     if (ui->dxccReadAdiButton) {
         connect(ui->dxccReadAdiButton, &QPushButton::clicked, this, &MainWindow::onDxccReadAdiClicked);
+    }
+    if (ui->spotDeleteButton) {
+        connect(ui->spotDeleteButton, &QPushButton::clicked, this, &MainWindow::onSpotDeleteClicked);
     }
 
     tcpReceiver = std::make_unique<TcpReceiver>("ham.connect.fi", 7300, this);
@@ -980,6 +990,32 @@ void MainWindow::onDxccReadAdiClicked()
     if (statusInfoLabel) {
         statusInfoLabel->setText("ADI loaded");
     }
+}
+
+void MainWindow::onSpotDeleteClicked()
+{
+    if (!m_spotModel || !ui || !ui->spotTableView) {
+        return;
+    }
+    QItemSelectionModel *selection = ui->spotTableView->selectionModel();
+    if (!selection) {
+        return;
+    }
+    QModelIndexList rows = selection->selectedRows();
+    if (rows.isEmpty()) {
+        return;
+    }
+    std::sort(rows.begin(), rows.end(), [](const QModelIndex &a, const QModelIndex &b) {
+        return a.row() > b.row();
+    });
+    for (const QModelIndex &idx : rows) {
+        m_spotModel->removeRow(idx.row());
+    }
+    if (!m_spotModel->submitAll()) {
+        qWarning() << "Spot delete failed:" << m_spotModel->lastError();
+        m_spotModel->revertAll();
+    }
+    m_spotModel->select();
 }
 
 void MainWindow::onSpotReceived(const QString &time,

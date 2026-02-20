@@ -26,6 +26,7 @@ public slots:
     void onClearClicked();
     void onLogClicked();
     void onDxccReadAdiClicked();
+    void onSpotDeleteClicked();
     void onSpotReceived(const QString &time,
                         const QString &call,
                         const QString &freq,
