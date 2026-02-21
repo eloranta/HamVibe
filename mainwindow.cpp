@@ -27,6 +27,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QMessageBox>
+#include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -1039,6 +1040,55 @@ void MainWindow::onSpotReceived(const QString &time,
     if (!q.exec()) {
         qWarning() << "Spot insert failed:" << q.lastError();
     } else if (m_spotModel) {
+        const QDateTime nowUtc = QDateTime::currentDateTimeUtc();
+        const int nowMinutes = nowUtc.time().hour() * 60 + nowUtc.time().minute();
+        QSqlQuery select;
+        if (select.exec("SELECT rowid, time FROM spots")) {
+            QVector<qint64> toDelete;
+            while (select.next()) {
+                const qint64 rowid = select.value(0).toLongLong();
+                QString t = select.value(1).toString().trimmed().toUpper();
+                t.remove('Z');
+                t = t.trimmed();
+                if (t.size() < 4) {
+                    continue;
+                }
+                const QString hhmm = t.left(4);
+                bool ok = false;
+                const int hh = hhmm.left(2).toInt(&ok);
+                if (!ok) {
+                    continue;
+                }
+                const int mm = hhmm.mid(2, 2).toInt(&ok);
+                if (!ok) {
+                    continue;
+                }
+                if (hh < 0 || hh > 23 || mm < 0 || mm > 59) {
+                    continue;
+                }
+                const int spotMinutes = hh * 60 + mm;
+                int diff = nowMinutes - spotMinutes;
+                if (diff < 0) {
+                    diff += 24 * 60;
+                }
+                if (diff > 180) {
+                    toDelete.push_back(rowid);
+                }
+            }
+            if (!toDelete.isEmpty()) {
+                QSqlQuery del;
+                del.prepare("DELETE FROM spots WHERE rowid = ?");
+                for (const qint64 rowid : toDelete) {
+                    del.addBindValue(rowid);
+                    if (!del.exec()) {
+                        qWarning() << "Spot cleanup delete failed:" << del.lastError();
+                    }
+                    del.finish();
+                }
+            }
+        } else {
+            qWarning() << "Spot cleanup select failed:" << select.lastError();
+        }
         m_spotModel->select();
     }
 }
