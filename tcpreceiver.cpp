@@ -139,6 +139,9 @@ void TcpReceiver::onReadyRead()
         }
 
         const QString country = m_country.GetCountry(call).toUpper();
+        QString spotterContinent;
+        m_country.GetCountry(sender, &spotterContinent);
+        spotterContinent = spotterContinent.toUpper();
         if (!country.isEmpty() && !band.isEmpty()) {
             QSqlQuery q;
             const QString sql = QString("SELECT COALESCE(\"%1\", '') FROM dxcc WHERE entity = ? LIMIT 1").arg(band);
@@ -148,7 +151,7 @@ void TcpReceiver::onReadyRead()
                 const QString value = q.value(0).toString();
                 if (value.isEmpty()) {
                     qDebug().noquote() << time << call << freq << band << mode << country;
-                    emit spotReceived(time.trimmed(), call.trimmed(), freq.trimmed(), mode.trimmed(), country.trimmed(), sender.trimmed());
+                    emit spotReceived(time.trimmed(), call.trimmed(), freq.trimmed(), mode.trimmed(), country.trimmed(), spotterContinent.trimmed());
                 }
             } else {
                 qDebug().noquote() << "UNKNOWN COUNTRY" << call << country;

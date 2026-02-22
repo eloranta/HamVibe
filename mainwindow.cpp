@@ -80,7 +80,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_spotModel->setHeaderData(2, Qt::Horizontal, "Freq");
     m_spotModel->setHeaderData(3, Qt::Horizontal, "Mode");
     m_spotModel->setHeaderData(4, Qt::Horizontal, "Country");
-    m_spotModel->setHeaderData(5, Qt::Horizontal, "Spotter");
+    m_spotModel->setHeaderData(5, Qt::Horizontal, "Continent");
     m_spotModel->select();
 
     auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {

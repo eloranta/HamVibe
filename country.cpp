@@ -44,6 +44,9 @@ void Country::ParseCty(const QString &content)
         if (headerPrefix.startsWith('*')) {
             continue;
         }
+        if (!country.isEmpty() && !continent.isEmpty()) {
+            countryContinent.insert(country.toUpper(), continent.toUpper());
+        }
         QStringList prefixes;
         if (!headerPrefix.isEmpty()) {
             prefixes << headerPrefix;
@@ -95,7 +98,7 @@ void Country::ParseCty(const QString &content)
     }
 }
 
-QString Country::GetCountry(const QString &call) const
+QString Country::GetCountry(const QString &call, QString *continent) const
 {
     const QString key = call.toUpper();
 
@@ -143,14 +146,28 @@ QString Country::GetCountry(const QString &call) const
 
     QString result = resolve(key);
     if (!result.isEmpty()) {
-        return normalizeName(result);
+        const QString normalized = normalizeName(result);
+        if (continent) {
+            const QString cont = countryContinent.value(normalized.toUpper(), countryContinent.value(result.toUpper()));
+            if (!cont.isEmpty()) {
+                *continent = cont;
+            }
+        }
+        return normalized;
     }
 
     const QStringList parts = key.split('/', Qt::SkipEmptyParts);
     for (const QString &part : parts) {
         result = resolve(part);
         if (!result.isEmpty()) {
-            return normalizeName(result);
+            const QString normalized = normalizeName(result);
+            if (continent) {
+                const QString cont = countryContinent.value(normalized.toUpper(), countryContinent.value(result.toUpper()));
+                if (!cont.isEmpty()) {
+                    *continent = cont;
+                }
+            }
+            return normalized;
         }
     }
     return QString();
