@@ -75,12 +75,17 @@ MainWindow::MainWindow(QWidget *parent)
     m_spotModel = new QSqlTableModel(this);
     m_spotModel->setTable("spots");
     m_spotModel->setEditStrategy(QSqlTableModel::OnFieldChange);
+    const int timeCol = m_spotModel->fieldIndex("time");
+    if (timeCol >= 0) {
+        m_spotModel->setSort(timeCol, Qt::DescendingOrder);
+    }
     m_spotModel->setHeaderData(0, Qt::Horizontal, "Time");
     m_spotModel->setHeaderData(1, Qt::Horizontal, "Call");
     m_spotModel->setHeaderData(2, Qt::Horizontal, "Freq");
     m_spotModel->setHeaderData(3, Qt::Horizontal, "Mode");
     m_spotModel->setHeaderData(4, Qt::Horizontal, "Country");
-    m_spotModel->setHeaderData(5, Qt::Horizontal, "Continent");
+    m_spotModel->setHeaderData(5, Qt::Horizontal, "Spotter");
+    m_spotModel->setHeaderData(6, Qt::Horizontal, "Message");
     m_spotModel->select();
 
     auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {
@@ -1024,12 +1029,13 @@ void MainWindow::onSpotReceived(const QString &time,
                                 const QString &freq,
                                 const QString &mode,
                                 const QString &country,
-                                const QString &spotter)
+                                const QString &spotter,
+                                const QString &message)
 {
     QSqlQuery q;
     q.prepare(R"(
-        INSERT INTO spots (time, call, freq, mode, country, spotter)
-        VALUES (?, ?, ?, ?, ?, ?)
+        INSERT INTO spots (time, call, freq, mode, country, spotter, message)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     )");
     q.addBindValue(time);
     q.addBindValue(call);
@@ -1037,6 +1043,7 @@ void MainWindow::onSpotReceived(const QString &time,
     q.addBindValue(mode);
     q.addBindValue(country);
     q.addBindValue(spotter);
+    q.addBindValue(message);
     if (!q.exec()) {
         qWarning() << "Spot insert failed:" << q.lastError();
     } else if (m_spotModel) {

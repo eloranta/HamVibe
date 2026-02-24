@@ -32,7 +32,8 @@ public slots:
                         const QString &freq,
                         const QString &mode,
                         const QString &country,
-                        const QString &spotter);
+                        const QString &spotter,
+                        const QString &message);
 
 private:
     Ui::MainWindow *ui;

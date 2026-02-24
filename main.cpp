@@ -527,12 +527,26 @@ bool setupDatabase()
                 freq TEXT,
                 mode TEXT,
                 country TEXT,
-                spotter TEXT
+                spotter TEXT,
+                message TEXT
             )
         )";
         if (!query.exec(createSpots)) {
             qWarning() << "Failed to create spots table:" << query.lastError();
             return false;
+        }
+        QSet<QString> spotCols;
+        QSqlQuery info(db);
+        if (info.exec("PRAGMA table_info(spots)")) {
+            while (info.next()) {
+                spotCols.insert(info.value(1).toString().toLower());
+            }
+        }
+        if (!spotCols.contains("message")) {
+            if (!query.exec("ALTER TABLE spots ADD COLUMN message TEXT")) {
+                qWarning() << "Failed to add message column to spots:" << query.lastError();
+                return false;
+            }
         }
     }
 

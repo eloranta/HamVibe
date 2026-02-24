@@ -20,7 +20,8 @@ signals:
                       const QString &freq,
                       const QString &mode,
                       const QString &country,
-                      const QString &spotter);
+                      const QString &spotter,
+                      const QString &message);
 
 private slots:
     void connected();

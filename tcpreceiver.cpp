@@ -151,7 +151,7 @@ void TcpReceiver::onReadyRead()
                 const QString value = q.value(0).toString();
                 if (value.isEmpty()) {
                     qDebug().noquote() << time << call << freq << band << mode << country;
-                    emit spotReceived(time.trimmed(), call.trimmed(), freq.trimmed(), mode.trimmed(), country.trimmed(), spotterContinent.trimmed());
+                    emit spotReceived(time.trimmed(), call.trimmed(), freq.trimmed(), mode.trimmed(), country.trimmed(), spotterContinent.trimmed(), msg.trimmed());
                 }
             } else {
                 qDebug().noquote() << "UNKNOWN COUNTRY" << call << country;
