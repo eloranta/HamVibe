@@ -28,6 +28,8 @@
 #include <QSqlError>
 #include <QMessageBox>
 #include <QDateTime>
+#include <QCheckBox>
+#include <QStringList>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -135,6 +137,25 @@ MainWindow::MainWindow(QWidget *parent)
             ui->spotTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         }
     }
+    auto connectSpotBandCheckbox = [this](QCheckBox *checkBox) {
+        if (!checkBox) {
+            return;
+        }
+        connect(checkBox, &QCheckBox::toggled, this, [this](bool) {
+            updateSpotBandFilter();
+        });
+    };
+    connectSpotBandCheckbox(ui->spotBand80CheckBox);
+    connectSpotBandCheckbox(ui->spotBand40CheckBox);
+    connectSpotBandCheckbox(ui->spotBand30CheckBox);
+    connectSpotBandCheckbox(ui->spotBand20CheckBox);
+    connectSpotBandCheckbox(ui->spotBand17CheckBox);
+    connectSpotBandCheckbox(ui->spotBand15CheckBox);
+    connectSpotBandCheckbox(ui->spotBand12CheckBox);
+    connectSpotBandCheckbox(ui->spotBand10CheckBox);
+    connectSpotBandCheckbox(ui->spotBand160CheckBox);
+    connectSpotBandCheckbox(ui->spotBand2CheckBox);
+    updateSpotBandFilter();
     if (dxccIdCol >= 0 && ui->dxccTableView) {
         ui->dxccTableView->setColumnHidden(dxccIdCol, true);
     }
@@ -175,6 +196,7 @@ MainWindow::MainWindow(QWidget *parent)
                 mhz /= 1000.0;
             }
 
+            if (mhz >= 1.8 && mhz < 2.0) return "160";
             if (mhz >= 3.5 && mhz < 4.0) return "80";
             if (mhz >= 7.0 && mhz < 7.3) return "40";
             if (mhz >= 10.1 && mhz < 10.15) return "30";
@@ -183,6 +205,7 @@ MainWindow::MainWindow(QWidget *parent)
             if (mhz >= 21.0 && mhz < 21.45) return "15";
             if (mhz >= 24.89 && mhz < 24.99) return "12";
             if (mhz >= 28.0 && mhz < 29.7) return "10";
+            if (mhz >= 144.0 && mhz < 148.0) return "2";
             return QString();
         };
 
@@ -454,6 +477,7 @@ static QString bandFromFrequencyText(const QString &freqText)
         mhz /= 1000.0;
     }
 
+    if (mhz >= 1.8 && mhz < 2.0) return "160";
     if (mhz >= 3.5 && mhz < 4.0) return "80";
     if (mhz >= 7.0 && mhz < 7.3) return "40";
     if (mhz >= 10.1 && mhz < 10.15) return "30";
@@ -462,7 +486,47 @@ static QString bandFromFrequencyText(const QString &freqText)
     if (mhz >= 21.0 && mhz < 21.45) return "15";
     if (mhz >= 24.89 && mhz < 24.99) return "12";
     if (mhz >= 28.0 && mhz < 29.7) return "10";
+    if (mhz >= 144.0 && mhz < 148.0) return "2";
     return QString();
+}
+
+void MainWindow::updateSpotBandFilter()
+{
+    if (!m_spotModel || !ui) {
+        return;
+    }
+
+    const QString mhzExpr = "(CASE WHEN CAST(freq AS REAL) > 1000 THEN CAST(freq AS REAL) / 1000.0 ELSE CAST(freq AS REAL) END)";
+    QStringList clauses;
+    int checkedCount = 0;
+
+    auto addBandClause = [&](QCheckBox *checkBox, const char *low, const char *high) {
+        if (!checkBox || !checkBox->isChecked()) {
+            return;
+        }
+        ++checkedCount;
+        clauses << QString("(%1 >= %2 AND %1 < %3)").arg(mhzExpr, low, high);
+    };
+
+    addBandClause(ui->spotBand160CheckBox, "1.8", "2.0");
+    addBandClause(ui->spotBand80CheckBox, "3.5", "4.0");
+    addBandClause(ui->spotBand40CheckBox, "7.0", "7.3");
+    addBandClause(ui->spotBand30CheckBox, "10.1", "10.15");
+    addBandClause(ui->spotBand20CheckBox, "14.0", "14.35");
+    addBandClause(ui->spotBand17CheckBox, "18.068", "18.168");
+    addBandClause(ui->spotBand15CheckBox, "21.0", "21.45");
+    addBandClause(ui->spotBand12CheckBox, "24.89", "24.99");
+    addBandClause(ui->spotBand10CheckBox, "28.0", "29.7");
+    addBandClause(ui->spotBand2CheckBox, "144.0", "148.0");
+
+    if (checkedCount == 10) {
+        m_spotModel->setFilter(QString());
+    } else if (clauses.isEmpty()) {
+        m_spotModel->setFilter("1 = 0");
+    } else {
+        m_spotModel->setFilter(clauses.join(" OR "));
+    }
+    m_spotModel->select();
 }
 
 MainWindow::~MainWindow()

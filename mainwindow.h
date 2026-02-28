@@ -50,6 +50,7 @@ private:
     class QLabel *statusCountsLabel = nullptr;
     void updateStatusCounts();
     void updateModeVisibility();
+    void updateSpotBandFilter();
 
     std::unique_ptr<Rig> rig;
     std::unique_ptr<TcpReceiver> tcpReceiver;
