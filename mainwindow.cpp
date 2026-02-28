@@ -155,6 +155,11 @@ MainWindow::MainWindow(QWidget *parent)
     connectSpotBandCheckbox(ui->spotBand10CheckBox);
     connectSpotBandCheckbox(ui->spotBand160CheckBox);
     connectSpotBandCheckbox(ui->spotBand2CheckBox);
+    connectSpotBandCheckbox(ui->spotModeCwCheckBox);
+    connectSpotBandCheckbox(ui->spotModePhCheckBox);
+    connectSpotBandCheckbox(ui->spotModeRtCheckBox);
+    connectSpotBandCheckbox(ui->spotModeSatCheckBox);
+    connectSpotBandCheckbox(ui->spotModeOtherCheckBox);
     updateSpotBandFilter();
     if (dxccIdCol >= 0 && ui->dxccTableView) {
         ui->dxccTableView->setColumnHidden(dxccIdCol, true);
@@ -497,15 +502,15 @@ void MainWindow::updateSpotBandFilter()
     }
 
     const QString mhzExpr = "(CASE WHEN CAST(freq AS REAL) > 1000 THEN CAST(freq AS REAL) / 1000.0 ELSE CAST(freq AS REAL) END)";
-    QStringList clauses;
-    int checkedCount = 0;
+    QStringList bandClauses;
+    int checkedBandCount = 0;
 
     auto addBandClause = [&](QCheckBox *checkBox, const char *low, const char *high) {
         if (!checkBox || !checkBox->isChecked()) {
             return;
         }
-        ++checkedCount;
-        clauses << QString("(%1 >= %2 AND %1 < %3)").arg(mhzExpr, low, high);
+        ++checkedBandCount;
+        bandClauses << QString("(%1 >= %2 AND %1 < %3)").arg(mhzExpr, low, high);
     };
 
     addBandClause(ui->spotBand160CheckBox, "1.8", "2.0");
@@ -519,12 +524,47 @@ void MainWindow::updateSpotBandFilter()
     addBandClause(ui->spotBand10CheckBox, "28.0", "29.7");
     addBandClause(ui->spotBand2CheckBox, "144.0", "148.0");
 
-    if (checkedCount == 10) {
+    QStringList filterGroups;
+    if (checkedBandCount < 10) {
+        if (bandClauses.isEmpty()) {
+            m_spotModel->setFilter("1 = 0");
+            m_spotModel->select();
+            return;
+        }
+        filterGroups << QString("(%1)").arg(bandClauses.join(" OR "));
+    }
+
+    QStringList modeClauses;
+    int checkedModeCount = 0;
+    auto addSimpleModeClause = [&](QCheckBox *checkBox, const char *modeValue) {
+        if (!checkBox || !checkBox->isChecked()) {
+            return;
+        }
+        ++checkedModeCount;
+        modeClauses << QString("(UPPER(mode) = '%1')").arg(modeValue);
+    };
+    addSimpleModeClause(ui->spotModeCwCheckBox, "CW");
+    addSimpleModeClause(ui->spotModePhCheckBox, "PH");
+    addSimpleModeClause(ui->spotModeRtCheckBox, "RT");
+    addSimpleModeClause(ui->spotModeSatCheckBox, "SAT");
+    if (ui->spotModeOtherCheckBox && ui->spotModeOtherCheckBox->isChecked()) {
+        ++checkedModeCount;
+        modeClauses << "(mode IS NULL OR TRIM(mode) = '' OR UPPER(mode) NOT IN ('CW', 'PH', 'RT', 'SAT'))";
+    }
+
+    if (checkedModeCount < 5) {
+        if (modeClauses.isEmpty()) {
+            m_spotModel->setFilter("1 = 0");
+            m_spotModel->select();
+            return;
+        }
+        filterGroups << QString("(%1)").arg(modeClauses.join(" OR "));
+    }
+
+    if (filterGroups.isEmpty()) {
         m_spotModel->setFilter(QString());
-    } else if (clauses.isEmpty()) {
-        m_spotModel->setFilter("1 = 0");
     } else {
-        m_spotModel->setFilter(clauses.join(" OR "));
+        m_spotModel->setFilter(filterGroups.join(" AND "));
     }
     m_spotModel->select();
 }
