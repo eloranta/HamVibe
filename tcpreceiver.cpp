@@ -59,7 +59,14 @@ std::tuple<const QString, const QString, const QString, const QString, const QSt
     const QString msg = line.mid(39, 30).trimmed();
     const QString time = line.mid(70, 4).trimmed();
 
-    return {sender, freq, call, msg, time };
+    // fix parsing time TODO:
+    if (time[3] == 'Z') {
+        const QString time2 = line.mid(69, 4).trimmed();
+        return {sender, freq, call, msg, time2 };
+    }
+    else {
+        return {sender, freq, call, msg, time };
+    }
 }
 
 void TcpReceiver::onReadyRead()
@@ -67,6 +74,8 @@ void TcpReceiver::onReadyRead()
     const QString line = QString::fromUtf8(m_socket->readAll());
     if (line.isEmpty()) return;
     if (!line.startsWith("DX de")) return;
+
+    qDebug().noquote() << line;
 
     auto [sender, freq, call, msg, time] = parseLine(line);
 
