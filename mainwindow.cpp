@@ -160,6 +160,13 @@ MainWindow::MainWindow(QWidget *parent)
     connectSpotBandCheckbox(ui->spotModeRtCheckBox);
     connectSpotBandCheckbox(ui->spotModeSatCheckBox);
     connectSpotBandCheckbox(ui->spotModeOtherCheckBox);
+    connectSpotBandCheckbox(ui->spotterAfCheckBox);
+    connectSpotBandCheckbox(ui->spotterAnCheckBox);
+    connectSpotBandCheckbox(ui->spotterAsCheckBox);
+    connectSpotBandCheckbox(ui->spotterEuCheckBox);
+    connectSpotBandCheckbox(ui->spotterNaCheckBox);
+    connectSpotBandCheckbox(ui->spotterOcCheckBox);
+    connectSpotBandCheckbox(ui->spotterSaCheckBox);
     updateSpotBandFilter();
     if (dxccIdCol >= 0 && ui->dxccTableView) {
         ui->dxccTableView->setColumnHidden(dxccIdCol, true);
@@ -559,6 +566,32 @@ void MainWindow::updateSpotBandFilter()
             return;
         }
         filterGroups << QString("(%1)").arg(modeClauses.join(" OR "));
+    }
+
+    QStringList spotterContClauses;
+    int checkedSpotterContCount = 0;
+    auto addSpotterContClause = [&](QCheckBox *checkBox, const char *continent) {
+        if (!checkBox || !checkBox->isChecked()) {
+            return;
+        }
+        ++checkedSpotterContCount;
+        spotterContClauses << QString("(UPPER(TRIM(spotter)) = '%1')").arg(continent);
+    };
+    addSpotterContClause(ui->spotterAfCheckBox, "AF");
+    addSpotterContClause(ui->spotterAnCheckBox, "AN");
+    addSpotterContClause(ui->spotterAsCheckBox, "AS");
+    addSpotterContClause(ui->spotterEuCheckBox, "EU");
+    addSpotterContClause(ui->spotterNaCheckBox, "NA");
+    addSpotterContClause(ui->spotterOcCheckBox, "OC");
+    addSpotterContClause(ui->spotterSaCheckBox, "SA");
+
+    if (checkedSpotterContCount < 7) {
+        if (spotterContClauses.isEmpty()) {
+            m_spotModel->setFilter("1 = 0");
+            m_spotModel->select();
+            return;
+        }
+        filterGroups << QString("(%1)").arg(spotterContClauses.join(" OR "));
     }
 
     if (filterGroups.isEmpty()) {
