@@ -137,11 +137,71 @@ MainWindow::MainWindow(QWidget *parent)
             ui->spotTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         }
     }
+    QSettings filterSettings;
+    auto loadSpotFilterCheck = [&filterSettings](QCheckBox *checkBox, const QString &key) {
+        if (!checkBox) {
+            return;
+        }
+        const bool defaultValue = checkBox->isChecked();
+        checkBox->setChecked(filterSettings.value(key, defaultValue).toBool());
+    };
+    loadSpotFilterCheck(ui->spotBand160CheckBox, "spotFilters/band160");
+    loadSpotFilterCheck(ui->spotBand80CheckBox, "spotFilters/band80");
+    loadSpotFilterCheck(ui->spotBand40CheckBox, "spotFilters/band40");
+    loadSpotFilterCheck(ui->spotBand30CheckBox, "spotFilters/band30");
+    loadSpotFilterCheck(ui->spotBand20CheckBox, "spotFilters/band20");
+    loadSpotFilterCheck(ui->spotBand17CheckBox, "spotFilters/band17");
+    loadSpotFilterCheck(ui->spotBand15CheckBox, "spotFilters/band15");
+    loadSpotFilterCheck(ui->spotBand12CheckBox, "spotFilters/band12");
+    loadSpotFilterCheck(ui->spotBand10CheckBox, "spotFilters/band10");
+    loadSpotFilterCheck(ui->spotBand6CheckBox, "spotFilters/band6");
+    loadSpotFilterCheck(ui->spotBand2CheckBox, "spotFilters/band2");
+    loadSpotFilterCheck(ui->spotModeCwCheckBox, "spotFilters/modeCW");
+    loadSpotFilterCheck(ui->spotModePhCheckBox, "spotFilters/modePH");
+    loadSpotFilterCheck(ui->spotModeRtCheckBox, "spotFilters/modeRT");
+    loadSpotFilterCheck(ui->spotModeSatCheckBox, "spotFilters/modeSAT");
+    loadSpotFilterCheck(ui->spotterAfCheckBox, "spotFilters/spotterAF");
+    loadSpotFilterCheck(ui->spotterAnCheckBox, "spotFilters/spotterAN");
+    loadSpotFilterCheck(ui->spotterAsCheckBox, "spotFilters/spotterAS");
+    loadSpotFilterCheck(ui->spotterEuCheckBox, "spotFilters/spotterEU");
+    loadSpotFilterCheck(ui->spotterNaCheckBox, "spotFilters/spotterNA");
+    loadSpotFilterCheck(ui->spotterOcCheckBox, "spotFilters/spotterOC");
+    loadSpotFilterCheck(ui->spotterSaCheckBox, "spotFilters/spotterSA");
+
     auto connectSpotBandCheckbox = [this](QCheckBox *checkBox) {
         if (!checkBox) {
             return;
         }
         connect(checkBox, &QCheckBox::toggled, this, [this](bool) {
+            QSettings settings;
+            const auto saveSpotFilterCheck = [&settings](QCheckBox *box, const QString &key) {
+                if (!box) {
+                    return;
+                }
+                settings.setValue(key, box->isChecked());
+            };
+            saveSpotFilterCheck(ui->spotBand160CheckBox, "spotFilters/band160");
+            saveSpotFilterCheck(ui->spotBand80CheckBox, "spotFilters/band80");
+            saveSpotFilterCheck(ui->spotBand40CheckBox, "spotFilters/band40");
+            saveSpotFilterCheck(ui->spotBand30CheckBox, "spotFilters/band30");
+            saveSpotFilterCheck(ui->spotBand20CheckBox, "spotFilters/band20");
+            saveSpotFilterCheck(ui->spotBand17CheckBox, "spotFilters/band17");
+            saveSpotFilterCheck(ui->spotBand15CheckBox, "spotFilters/band15");
+            saveSpotFilterCheck(ui->spotBand12CheckBox, "spotFilters/band12");
+            saveSpotFilterCheck(ui->spotBand10CheckBox, "spotFilters/band10");
+            saveSpotFilterCheck(ui->spotBand6CheckBox, "spotFilters/band6");
+            saveSpotFilterCheck(ui->spotBand2CheckBox, "spotFilters/band2");
+            saveSpotFilterCheck(ui->spotModeCwCheckBox, "spotFilters/modeCW");
+            saveSpotFilterCheck(ui->spotModePhCheckBox, "spotFilters/modePH");
+            saveSpotFilterCheck(ui->spotModeRtCheckBox, "spotFilters/modeRT");
+            saveSpotFilterCheck(ui->spotModeSatCheckBox, "spotFilters/modeSAT");
+            saveSpotFilterCheck(ui->spotterAfCheckBox, "spotFilters/spotterAF");
+            saveSpotFilterCheck(ui->spotterAnCheckBox, "spotFilters/spotterAN");
+            saveSpotFilterCheck(ui->spotterAsCheckBox, "spotFilters/spotterAS");
+            saveSpotFilterCheck(ui->spotterEuCheckBox, "spotFilters/spotterEU");
+            saveSpotFilterCheck(ui->spotterNaCheckBox, "spotFilters/spotterNA");
+            saveSpotFilterCheck(ui->spotterOcCheckBox, "spotFilters/spotterOC");
+            saveSpotFilterCheck(ui->spotterSaCheckBox, "spotFilters/spotterSA");
             updateSpotBandFilter();
         });
     };
