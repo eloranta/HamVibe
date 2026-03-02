@@ -79,10 +79,13 @@ add_executable(HamVibeTests
     tests/frequencylabel_test.cpp
     tests/rig_test.cpp
     tests/country_test.cpp
+    tests/tcpreceiver_test.cpp
     frequencylabel.h
     frequencylabel.cpp
     rig.h
     rig.cpp
+    tcpreceiver.h
+    tcpreceiver.cpp
     country.h
     country.cpp
 )

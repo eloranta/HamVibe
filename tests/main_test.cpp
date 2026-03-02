@@ -3,6 +3,7 @@
 QObject *createFrequencyLabelTest();
 QObject *createRigTest();
 QObject *createCountryTest();
+QObject *createTcpReceiverTest();
 
 int main(int argc, char **argv)
 {
@@ -20,6 +21,10 @@ int main(int argc, char **argv)
     QObject *countryTest = createCountryTest();
     status |= QTest::qExec(countryTest, argc, argv);
     delete countryTest;
+
+    QObject *tcpReceiverTest = createTcpReceiverTest();
+    status |= QTest::qExec(tcpReceiverTest, argc, argv);
+    delete tcpReceiverTest;
 
     return status;
 }

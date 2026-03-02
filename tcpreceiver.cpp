@@ -51,22 +51,16 @@ void TcpReceiver::connected()
 
 std::tuple<const QString, const QString, const QString, const QString, const QString> parseLine(const QString &line) {
     const int colon = line.indexOf(':');
-    //if (colon == -1) return; // TODO:
+    if (colon == -1)
+        return {"", "", "", "", "" };
 
     const QString sender = line.left(colon).mid(6);
-    const QString freq = line.mid(colon+1, 24-colon).trimmed();
-    const QString call = line.mid(26, 13).trimmed();
-    const QString msg = line.mid(39, 30).trimmed();
-    const QString time = line.mid(70, 4).trimmed();
-
-    // fix parsing time TODO:
-    if (time[3] == 'Z') {
-        const QString time2 = line.mid(69, 4).trimmed();
-        return {sender, freq, call, msg, time2 };
-    }
-    else {
-        return {sender, freq, call, msg, time };
-    }
+    const QString freq = line.mid(colon+1, 23-(colon+1)+1).trimmed();
+    const QString call = line.mid(25, 38-25+1).trimmed();
+    const QString msg = line.mid(38, 69-38+1).trimmed();
+    const QString time = line.mid(70, 73-70+1).trimmed();
+    qDebug() << line << line.length();
+    return {sender, freq, call, msg, time };
 }
 
 void TcpReceiver::onReadyRead()
@@ -75,12 +69,7 @@ void TcpReceiver::onReadyRead()
     if (line.isEmpty()) return;
     if (!line.startsWith("DX de")) return;
 
-    qDebug().noquote() << line;
-
     auto [sender, freq, call, msg, time] = parseLine(line);
-
-    //qDebug() << line;
-    //qDebug() << sender << freq << call << msg << time;
 
     if (!sender.isEmpty() && !freq.isEmpty() && !call.isEmpty() && !time.isEmpty()) {
         QString band;
