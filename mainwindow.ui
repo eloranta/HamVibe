@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1166</width>
-    <height>701</height>
+    <height>817</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -1206,6 +1206,16 @@ background-color: rgb(170, 255, 255);</string>
               </widget>
              </item>
              <item>
+              <widget class="QCheckBox" name="spotBand6CheckBox">
+               <property name="text">
+                <string>6m</string>
+               </property>
+               <property name="checked">
+                <bool>true</bool>
+               </property>
+              </widget>
+             </item>
+             <item>
               <widget class="QCheckBox" name="spotBand2CheckBox">
                <property name="text">
                 <string>2m</string>
@@ -1264,23 +1274,13 @@ background-color: rgb(170, 255, 255);</string>
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QCheckBox" name="spotModeOtherCheckBox">
-               <property name="text">
-                <string>Other</string>
-               </property>
-               <property name="checked">
-                <bool>true</bool>
-               </property>
-              </widget>
-             </item>
             </layout>
            </widget>
           </item>
           <item>
            <widget class="QGroupBox" name="spotterContinentGroupBox">
             <property name="title">
-             <string>Spotter continent</string>
+             <string>Spotter</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_11">
              <item>

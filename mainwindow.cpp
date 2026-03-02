@@ -153,13 +153,13 @@ MainWindow::MainWindow(QWidget *parent)
     connectSpotBandCheckbox(ui->spotBand15CheckBox);
     connectSpotBandCheckbox(ui->spotBand12CheckBox);
     connectSpotBandCheckbox(ui->spotBand10CheckBox);
+    connectSpotBandCheckbox(ui->spotBand6CheckBox);
     connectSpotBandCheckbox(ui->spotBand160CheckBox);
     connectSpotBandCheckbox(ui->spotBand2CheckBox);
     connectSpotBandCheckbox(ui->spotModeCwCheckBox);
     connectSpotBandCheckbox(ui->spotModePhCheckBox);
     connectSpotBandCheckbox(ui->spotModeRtCheckBox);
     connectSpotBandCheckbox(ui->spotModeSatCheckBox);
-    connectSpotBandCheckbox(ui->spotModeOtherCheckBox);
     connectSpotBandCheckbox(ui->spotterAfCheckBox);
     connectSpotBandCheckbox(ui->spotterAnCheckBox);
     connectSpotBandCheckbox(ui->spotterAsCheckBox);
@@ -529,10 +529,11 @@ void MainWindow::updateSpotBandFilter()
     addBandClause(ui->spotBand15CheckBox, "21.0", "21.45");
     addBandClause(ui->spotBand12CheckBox, "24.89", "24.99");
     addBandClause(ui->spotBand10CheckBox, "28.0", "29.7");
+    addBandClause(ui->spotBand6CheckBox, "50.0", "54.0");
     addBandClause(ui->spotBand2CheckBox, "144.0", "148.0");
 
     QStringList filterGroups;
-    if (checkedBandCount < 10) {
+    if (checkedBandCount < 11) {
         if (bandClauses.isEmpty()) {
             m_spotModel->setFilter("1 = 0");
             m_spotModel->select();
@@ -554,12 +555,8 @@ void MainWindow::updateSpotBandFilter()
     addSimpleModeClause(ui->spotModePhCheckBox, "PH");
     addSimpleModeClause(ui->spotModeRtCheckBox, "RT");
     addSimpleModeClause(ui->spotModeSatCheckBox, "SAT");
-    if (ui->spotModeOtherCheckBox && ui->spotModeOtherCheckBox->isChecked()) {
-        ++checkedModeCount;
-        modeClauses << "(mode IS NULL OR TRIM(mode) = '' OR UPPER(mode) NOT IN ('CW', 'PH', 'RT', 'SAT'))";
-    }
 
-    if (checkedModeCount < 5) {
+    if (checkedModeCount < 4) {
         if (modeClauses.isEmpty()) {
             m_spotModel->setFilter("1 = 0");
             m_spotModel->select();
