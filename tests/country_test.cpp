@@ -37,13 +37,19 @@ void CountryTest::parseAndLookup()
     // country.ParseCty(data);
     // QCOMPARE(country.GetCountry("AC2FA"), QString("United States"));
 
+    // data =
+    //     "Slovak Republic:          15:  28:  EU:   49.00:   -20.00:    -1.0:  OM:\n"
+    //     "OM;";
+    // country.ParseCty(data);
+    // QCOMPARE(country.GetCountry("OM5AY"), QString("Slovak Republic"));
+
+    //qDebug() << country.prefixMap;
     data =
-        "Slovak Republic:          15:  28:  EU:   49.00:   -20.00:    -1.0:  OM:\n"
-        "OM;";
+        "Bouvet:                   38:  67:  AF:  -54.42:    -3.38:    -1.0:  3Y/b:\n"
+        "    =3Y0K,=3Y/ZS6GCM,=3Y0C,=3Y0E,=3Y0J,=3Y7GIA,=3Y7THA;";
     country.ParseCty(data);
-    QCOMPARE(country.GetCountry("OM5AY"), QString("Slovak Republic"));
-
-
+    QCOMPARE(country.GetCountry("3Y0K"), QString("Bouvet"));
+    qDebug() << country.callMap;
     qDebug() << country.prefixMap;
 }
 

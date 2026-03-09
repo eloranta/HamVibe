@@ -140,6 +140,7 @@ QString Country::GetCountry(const QString &call, QString *continent) const
         if (up == "ASIATIC TURKEY") return "TURKEY";
         if (up == "SOV MIL ORDER OF MALTA") return "SOVEREIGN MILITARY ORDER OF MALTA";
         if (up == "BRUNEI DARUSSALAM") return "BRUNEI";
+        if (up == "BOUVET") return "BOUVET ISLAND";
 
         return name;
     };
