@@ -683,8 +683,10 @@ void MainWindow::showSettingsDialog()
     form.addRow("Rig:", &rigCombo);
 
     QComboBox portCombo(&dialog);
-    portCombo.addItem("COM7", "COM7");
-    portCombo.addItem("COM4", "COM4");
+    for (int i = 1; i <= 9; ++i) {
+        const QString port = QString("COM%1").arg(i);
+        portCombo.addItem(port, port);
+    }
 
     const QString currentPort = settings.value("rig/port", "COM7").toString();
     const int portIndex = portCombo.findData(currentPort);
