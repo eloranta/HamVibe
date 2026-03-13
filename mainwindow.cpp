@@ -332,8 +332,13 @@ MainWindow::MainWindow(QWidget *parent)
                     //qDebug().noquote() << "RBN in DB:" << callUp;
                     if (!(mask & (1 << 0))) {
                         //qDebug().noquote() << callUp << mode << freq;
-                        if (statusInfoLabel && mode == "CW") {
-                            statusInfoLabel->setText(QString("%1 %2").arg(callUp, freq));
+                        if (mode == "CW") {
+                            if (ui->callLabel) {
+                                ui->callLabel->setText(callUp);
+                            }
+                            if (ui->freqLabel) {
+                                ui->freqLabel->setText(freq);
+                            }
                         } else {
                             //qDebug() << "RBN non-CW:" << callUp << freq << "mode" << (mode.isEmpty() ? "<none>" : mode);
                         }
@@ -935,35 +940,6 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         rbnOutputPaused = !rbnOutputPaused;
         if (statusInfoLabel) {
             statusInfoLabel->setStyleSheet(rbnOutputPaused ? "color: red;" : "");
-        }
-        const QString text = statusInfoLabel ? statusInfoLabel->text().trimmed() : QString();
-        static const QRegularExpression re(R"(^(\S+)\s+([0-9.]+))");
-        const QRegularExpressionMatch match = re.match(text);
-        if (match.hasMatch()) {
-            const QString call = match.captured(1);
-            const QString freq = match.captured(2);
-            if (ui->callLabel) {
-                ui->callLabel->setText(call);
-            }
-            if (ui->freqLabel) {
-                ui->freqLabel->setText(freq);
-            }
-            if (rig) {
-                bool ok = false;
-                const double freqValue = freq.toDouble(&ok);
-                if (ok) {
-                    int hz = 0;
-                    if (freqValue >= 1000.0) {
-                        hz = static_cast<int>(freqValue * 1000.0);
-                    } else {
-                        hz = static_cast<int>(freqValue * 1000000.0);
-                    }
-                    rig->setFrequency(hz);
-                    if (ui->leftFrequency) {
-                        ui->leftFrequency->setValue(hz);
-                    }
-                }
-            }
         }
         return true;
     }
