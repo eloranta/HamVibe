@@ -162,11 +162,11 @@ background-color: rgb(170, 255, 255);</string>
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="logButton">
-               <property name="text">
-                <string>WWA</string>
-               </property>
-              </widget>
+             <widget class="QPushButton" name="logButton">
+              <property name="text">
+                <string>Log</string>
+              </property>
+             </widget>
              </item>
              <item>
               <spacer name="horizontalSpacer_5">
