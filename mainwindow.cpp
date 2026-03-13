@@ -952,6 +952,22 @@ bool MainWindow::eventFilter(QObject *obj, QEvent *event)
         if (ui->freqLabel) {
             ui->freqLabel->setStyleSheet(rbnLabelsFrozen ? frozenStyle : normalStyle);
         }
+        if (rig && ui->freqLabel) {
+            bool ok = false;
+            const double freqValue = ui->freqLabel->text().trimmed().toDouble(&ok);
+            if (ok) {
+                int hz = 0;
+                if (freqValue >= 1000.0) {
+                    hz = static_cast<int>(freqValue * 1000.0);
+                } else {
+                    hz = static_cast<int>(freqValue * 1000000.0);
+                }
+                rig->setFrequency(hz);
+                if (ui->leftFrequency) {
+                    ui->leftFrequency->setValue(hz);
+                }
+            }
+        }
         return true;
     }
 
