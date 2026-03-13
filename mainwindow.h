@@ -46,6 +46,7 @@ private:
     QByteArray rbnBuffer;
     bool rbnLoginSent = false;
     bool rbnOutputPaused = false;
+    bool rbnLabelsFrozen = false;
     class QLabel *statusInfoLabel = nullptr;
     class QLabel *statusCountsLabel = nullptr;
     void updateStatusCounts();

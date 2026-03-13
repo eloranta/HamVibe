@@ -246,6 +246,12 @@ MainWindow::MainWindow(QWidget *parent)
     updateStatusCounts();
     updateModeVisibility();
     ui->statusbar->installEventFilter(this);
+    if (ui->callLabel) {
+        ui->callLabel->installEventFilter(this);
+    }
+    if (ui->freqLabel) {
+        ui->freqLabel->installEventFilter(this);
+    }
 
 
     rbnSocket = new QTcpSocket(this);
@@ -332,7 +338,7 @@ MainWindow::MainWindow(QWidget *parent)
                     //qDebug().noquote() << "RBN in DB:" << callUp;
                     if (!(mask & (1 << 0))) {
                         //qDebug().noquote() << callUp << mode << freq;
-                        if (mode == "CW") {
+                        if (mode == "CW" && !rbnLabelsFrozen) {
                             if (ui->callLabel) {
                                 ui->callLabel->setText(callUp);
                             }
@@ -936,6 +942,19 @@ void MainWindow::updateModeVisibility()
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {
+    if ((obj == ui->callLabel || obj == ui->freqLabel) && event->type() == QEvent::MouseButtonPress) {
+        rbnLabelsFrozen = !rbnLabelsFrozen;
+        const QString normalStyle = "background-color: rgb(170, 255, 255);";
+        const QString frozenStyle = normalStyle + " border: 2px solid red;";
+        if (ui->callLabel) {
+            ui->callLabel->setStyleSheet(rbnLabelsFrozen ? frozenStyle : normalStyle);
+        }
+        if (ui->freqLabel) {
+            ui->freqLabel->setStyleSheet(rbnLabelsFrozen ? frozenStyle : normalStyle);
+        }
+        return true;
+    }
+
     if (obj == ui->statusbar && event->type() == QEvent::MouseButtonPress) {
         rbnOutputPaused = !rbnOutputPaused;
         if (statusInfoLabel) {
