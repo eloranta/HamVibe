@@ -372,16 +372,29 @@ MainWindow::MainWindow(QWidget *parent)
     });
     rbnSocket->connectToHost("telnet.reversebeacon.net", 7000);
     connect(ui->clearButton, &QPushButton::clicked, this, &MainWindow::onClearClicked);
-    connect(m_model, &QAbstractItemModel::dataChanged,
-            this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
-                updateStatusCounts();
-            });
-    if (m_dxccModel) {
-        connect(m_dxccModel, &QAbstractItemModel::dataChanged,
+    auto connectStatusRefreshSignals = [this](QAbstractItemModel *model) {
+        if (!model) {
+            return;
+        }
+        connect(model, &QAbstractItemModel::dataChanged,
                 this, [this](const QModelIndex &, const QModelIndex &, const QVector<int> &) {
-                    updateStatusCounts();
+                    scheduleStatusCountsUpdate();
                 });
-    }
+        connect(model, &QAbstractItemModel::rowsInserted,
+                this, [this](const QModelIndex &, int, int) {
+                    scheduleStatusCountsUpdate();
+                });
+        connect(model, &QAbstractItemModel::rowsRemoved,
+                this, [this](const QModelIndex &, int, int) {
+                    scheduleStatusCountsUpdate();
+                });
+        connect(model, &QAbstractItemModel::modelReset,
+                this, [this]() {
+                    scheduleStatusCountsUpdate();
+                });
+    };
+    connectStatusRefreshSignals(m_model);
+    connectStatusRefreshSignals(m_dxccModel);
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
@@ -925,6 +938,19 @@ void MainWindow::updateStatusCounts()
         }
     }
     statusCountsLabel->setText(parts.join("  "));
+}
+
+void MainWindow::scheduleStatusCountsUpdate()
+{
+    if (statusCountsUpdatePending) {
+        return;
+    }
+
+    statusCountsUpdatePending = true;
+    QTimer::singleShot(0, this, [this]() {
+        statusCountsUpdatePending = false;
+        updateStatusCounts();
+    });
 }
 
 void MainWindow::updateModeVisibility()

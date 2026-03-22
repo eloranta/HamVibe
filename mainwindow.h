@@ -49,6 +49,8 @@ private:
     bool rbnLabelsFrozen = false;
     class QLabel *statusInfoLabel = nullptr;
     class QLabel *statusCountsLabel = nullptr;
+    bool statusCountsUpdatePending = false;
+    void scheduleStatusCountsUpdate();
     void updateStatusCounts();
     void updateModeVisibility();
     void updateSpotBandFilter();
