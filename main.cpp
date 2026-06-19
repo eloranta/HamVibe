@@ -495,6 +495,7 @@ bool setupDatabase()
 {
     QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
     const QString dbPath = QDir(QCoreApplication::applicationDirPath()).filePath("HamVibe.db");
+    qDebug() << dbPath;
     db.setDatabaseName(dbPath);
 
     if (!db.open()) {
