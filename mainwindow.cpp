@@ -31,6 +31,21 @@
 #include <QCheckBox>
 #include <QStringList>
 
+namespace {
+
+class DxccTableModel final : public QSqlTableModel
+{
+public:
+    using QSqlTableModel::QSqlTableModel;
+
+    bool insertRows(int, int, const QModelIndex & = QModelIndex()) override
+    {
+        return false;
+    }
+};
+
+}
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -51,7 +66,7 @@ MainWindow::MainWindow(QWidget *parent)
     }
     m_model->select();
 
-    m_dxccModel = new QSqlTableModel(this);
+    m_dxccModel = new DxccTableModel(this);
     m_dxccModel->setTable("dxcc");
     m_dxccModel->setEditStrategy(QSqlTableModel::OnFieldChange);
     m_dxccModel->select();

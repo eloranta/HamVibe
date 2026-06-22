@@ -8,6 +8,7 @@
 #include <QSqlError>
 #include <QSet>
 #include <QRegularExpression>
+#include <QVariantMap>
 
 const QStringList calls = {
 "AL1G","ZA1AK","ZA1EM","LU1ANG","LU1IYL","LU1WCU","LU1XJJ","LU2HYL","LU4DJB","LU4JVE","LU5OIJ","LU7DYL","LU8DMA","LU8GCJ","LW6ERY","RY9KYL","TA3TGC","VK4DI","VK5MAZ","OE3JLY","OE3LZA","OE3YSC","OE5BAE","OE7MPN","OE8VLK","OE8YXK","OE8YYY","CS8ACM","CU2YK","ON3ANN","ON3EBR","ON3NYL","ON4CHT","ON4EK","ON5RS","ON7SAS","V31YL","E71AJL","E71DK","E74BJJ","E79HI","VA3PZA","VA3WHU","VE9GLF","EA8DPX","HK3YL","OK1LYL","OK2APY","OK3FLY","2E0OHT","G0BIR","M6EDA","M7KNO","M7KVC","M9YLR","ES3YJ","ES3YW","ES8KRI","R1BIG","R2CC","R6DVC","R6DVG","RU3XY","UB1AUH","DL3HD","DA2KT","DA2NM","DA6BC","DC1YL","DC2CT","DD2VX","DD7MR","DF2REY","DF4RBM","DF4UM","DF6QP","DF8UY","DG7OY","DH8LAR","DJ0DE","DJ5YL","DJ9YL","DK1FE","DK1LJ","DK2OL","DK2YLL","DK5YL","DK8HUU","DL1FKB","DL1STN","DL1TM","DL2GRC","DL2LBK","DL3CR","DL3HD","DL4CR","DL4DXF","DL4VER","DL5FM","DL5PIA","DL5YL","DL6SAK","DL6TNT","DL7PIA","DL8DYL","DL8JC","DM3UX","DM4EAX","DM4STG","DN9CAT","DN9CY","DO3HTV","DO9JBP","OH5KIZ","OH5YL","F4GDI","F4JWK","F4LCM","F4LQS","F4LSM","F4MNO","F4MXJ","F5CDE","SV2TCC","SV2TSU","SV4TTE","SV8OVH","SY1EDC","HA1AS","HA4NI","HA4ZS","HA5BA","HA5BN","HA5VP","HA5YG","HA5YN","VU2RBI","VU2MGS","VU2RBI","VU3GGU","VU3GGU","VU3IVO","VU3ZOE","YB0BIP","YB1CAS","YB1CWO","YB1JYL","YB1KQV","YB1TIA","YB3ETY","YB5SLA","YC1EBM","YC1RJN","YD4LUM","YG1CAZ","EI5IXB","IN3FHE","IU1SCQ","IU1TKT","IU2SMJ","IU2VUD","IU2VZW","IU4QSV","IU5AWQ","IU5JZQ","IU5LVM","IZ5BRO","IZ7AUK","7K4TKB","JI1JRE","JP3AYQ","XE1ADY","XE1DEL","XE1FAV","XE1LIN","XE1YL","XE2IHA","PA2KM","PD0HI","PD0YL","PD3GVQ","PD4LYN","GI0AZA","LB5QK","HP3GNG","4F1CAK","4G1QLK","DU1YL","HF9SL","SP2FF","SP6WE","SP8SAN","SP9AJP","SP9ARX","SQ3TGY","SQ5CAT","SQ5EC","SQ6ALS","SQ6PLH","SQ8BWA","SQ8KJC","WP4MTS","WP4NWK","WP4SMO","YO3BEL","IS0JRL","HZ0YL","GM4YMM","GM5CAR","M0YRN","MM7TKP","YT3NR","IT9KAX","IT9KKB","OM1ADA","S54TIM","S55BA","EA1FRQ","EA1IQR","EB5AN","HB9EPE","HB9INY","E20NKB","E25KAE","HS0ZRR","UR1CED","UR3PHG","AC9XK","AG6V","K4SAF","K6YYL","K8ZI","K9JJR","K9UET","KA8MNV","KC1OHT","KC3VQP","KC3ZZO","KC5BOO","KD2GUT","KD5ZZU","KD9WAI","KD9YAY","KE0TL","KE0WPA","KE9APN","KE9CKA","KE9DDT","KF8CYL","KI5SSR","KI5WEP","KJ0WHOO","KJ4ULZ","KJ5LXP","KJ6GHN","KM4WSK","KN4DDC","KQ3Q","KQ4JNW","KQ4ZFX","KR4CXD","KR4FTE","KS4YT","KY2MMM","N0QQ","N2RJ","N3PBD","N5ALG","N6ECW","N8PTL","NX8Z","NZ5W","W1GRL","W4AA","W4CMG","W4KRN","W7TEE","WA4SHA","WB0ICT","WD4AGF","WI7NGS"};
@@ -428,6 +429,109 @@ static QMap<QString, QString> dxccPrefixMap()
     return map;
 }
 
+static bool normalizeDxccTable(QSqlDatabase db)
+{
+    const QMap<QString, QString> prefixMap = dxccPrefixMap();
+    const QStringList valueColumns = {
+        "Mix", "Ph", "CW", "RT", "SAT", "160", "80", "40", "30", "20", "17", "15", "12", "10", "6", "2"
+    };
+
+    QVariantMap mergedRows;
+    QSqlQuery select(db);
+    if (!select.exec(R"(
+        SELECT Prefix, Entity, Mix, Ph, CW, RT, SAT, "160", "80", "40", "30", "20", "17", "15", "12", "10", "6", "2"
+        FROM dxcc
+    )")) {
+        qWarning() << "Failed to read DXCC rows:" << select.lastError();
+        return false;
+    }
+
+    while (select.next()) {
+        const QString entityKey = select.value(1).toString().trimmed().toUpper();
+        if (!prefixMap.contains(entityKey)) {
+            continue;
+        }
+
+        QVariantMap row = mergedRows.value(entityKey).toMap();
+        row.insert("Prefix", prefixMap.value(entityKey));
+        row.insert("Entity", entityKey);
+        for (int i = 0; i < valueColumns.size(); ++i) {
+            const QString value = select.value(i + 2).toString().trimmed();
+            if (!value.isEmpty() && row.value(valueColumns.at(i)).toString().trimmed().isEmpty()) {
+                row.insert(valueColumns.at(i), value);
+            }
+        }
+        mergedRows.insert(entityKey, row);
+    }
+
+    for (auto it = prefixMap.cbegin(); it != prefixMap.cend(); ++it) {
+        if (mergedRows.contains(it.key())) {
+            continue;
+        }
+
+        QVariantMap row;
+        row.insert("Prefix", it.value());
+        row.insert("Entity", it.key());
+        for (const QString &column : valueColumns) {
+            row.insert(column, "");
+        }
+        mergedRows.insert(it.key(), row);
+    }
+
+    if (!db.transaction()) {
+        qWarning() << "Failed to start DXCC normalization transaction:" << db.lastError();
+        return false;
+    }
+
+    QSqlQuery query(db);
+    if (!query.exec("DELETE FROM dxcc")) {
+        qWarning() << "Failed to clear DXCC rows:" << query.lastError();
+        db.rollback();
+        return false;
+    }
+
+    QSqlQuery insert(db);
+    if (!insert.prepare(R"(
+        INSERT INTO dxcc (Prefix, Entity, Mix, Ph, CW, RT, SAT, "160", "80", "40", "30", "20", "17", "15", "12", "10", "6", "2")
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    )")) {
+        qWarning() << "Failed to prepare normalized DXCC insert:" << insert.lastError();
+        db.rollback();
+        return false;
+    }
+
+    QStringList entities = prefixMap.keys();
+    entities.sort();
+    for (const QString &entity : entities) {
+        const QVariantMap row = mergedRows.value(entity).toMap();
+        insert.addBindValue(row.value("Prefix").toString());
+        insert.addBindValue(row.value("Entity").toString());
+        for (const QString &column : valueColumns) {
+            insert.addBindValue(row.value(column).toString());
+        }
+        if (!insert.exec()) {
+            qWarning() << "Failed to reinsert normalized DXCC row:" << entity << insert.lastError();
+            db.rollback();
+            return false;
+        }
+        insert.finish();
+    }
+
+    if (!query.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_dxcc_entity_unique ON dxcc(Entity COLLATE NOCASE)")) {
+        qWarning() << "Failed to create DXCC unique index:" << query.lastError();
+        db.rollback();
+        return false;
+    }
+
+    if (!db.commit()) {
+        qWarning() << "Failed to commit DXCC normalization:" << db.lastError();
+        db.rollback();
+        return false;
+    }
+
+    return true;
+}
+
 bool setupDxccTable(QSqlDatabase db)
 {
     QSqlQuery query(db);
@@ -463,29 +567,8 @@ bool setupDxccTable(QSqlDatabase db)
         return false;
     }
 
-    if (!query.exec("SELECT COUNT(*) FROM dxcc")) {
-        qWarning() << "Failed to count DXCC rows:" << query.lastError();
+    if (!normalizeDxccTable(db)) {
         return false;
-    }
-    if (query.next() && query.value(0).toInt() == 0) {
-        QSqlQuery insert(db);
-        if (!insert.prepare("INSERT INTO dxcc (prefix, entity, Mix, Ph, CW, RT, SAT) VALUES (?, ?, '', '', '', '', '')")) {
-            qWarning() << "Failed to prepare DXCC insert:" << insert.lastError();
-            return false;
-        }
-        const QMap<QString, QString> prefixMap = dxccPrefixMap();
-        QStringList entities = prefixMap.keys();
-        entities.sort();
-        for (const QString &entity : entities) {
-            const QString prefix = prefixMap.value(entity.toUpper(), "");
-            insert.addBindValue(prefix);
-            insert.addBindValue(entity);
-            if (!insert.exec()) {
-                qWarning() << "DXCC insert failed:" << insert.lastError();
-                return false;
-            }
-            insert.finish();
-        }
     }
 
     return true;
