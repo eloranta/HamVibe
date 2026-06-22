@@ -137,7 +137,7 @@ MainWindow::MainWindow(QWidget *parent)
     setupModesView(ui->dxccTableView, m_dxccModel, nullptr, false);
     if (ui->spotTableView) {
         ui->spotTableView->setModel(m_spotModel);
-        ui->spotTableView->setSelectionMode(QAbstractItemView::SingleSelection);
+        ui->spotTableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
         ui->spotTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
         ui->spotTableView->setStyleSheet(
             "QTableView::item:selected { background: #dfefff; color: palette(text); }");
