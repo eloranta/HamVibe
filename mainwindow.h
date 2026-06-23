@@ -62,6 +62,7 @@ private:
     bool lsbSelected = true;
     bool fmSelected = true;
 protected:
+    void closeEvent(QCloseEvent *event) override;
     bool eventFilter(QObject *obj, QEvent *event) override;
 
 private slots:
@@ -74,6 +75,8 @@ private slots:
     void showAboutDialog();
 
 private:
+    void restoreWindowPlacement();
+    void saveWindowPlacement() const;
     double interpolateSmeterDb(int value) const;
 };
 #endif // MAINWINDOW_H

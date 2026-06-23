@@ -4,7 +4,9 @@
 #include "tcpreceiver.h"
 
 #include <QAction>
+#include <QApplication>
 #include <QComboBox>
+#include <QCloseEvent>
 #include <QDebug>
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -16,6 +18,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSettings>
+#include <QScreen>
 #include <QShortcut>
 #include <QSignalBlocker>
 #include <QStyle>
@@ -44,6 +47,35 @@ public:
         return false;
     }
 };
+
+QScreen *screenByName(const QString &name)
+{
+    if (name.isEmpty()) {
+        return nullptr;
+    }
+
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    auto it = std::find_if(screens.cbegin(), screens.cend(), [&name](QScreen *screen) {
+        return screen && screen->name() == name;
+    });
+    return it != screens.cend() ? *it : nullptr;
+}
+
+bool intersectsAnyScreen(const QRect &rect)
+{
+    const QList<QScreen *> screens = QGuiApplication::screens();
+    return std::any_of(screens.cbegin(), screens.cend(), [&rect](QScreen *screen) {
+        return screen && screen->availableGeometry().intersects(rect);
+    });
+}
+
+QPoint boundedTopLeft(const QPoint &preferredTopLeft, const QSize &windowSize, const QRect &bounds)
+{
+    const int maxX = std::max(bounds.left(), bounds.right() - windowSize.width() + 1);
+    const int maxY = std::max(bounds.top(), bounds.bottom() - windowSize.height() + 1);
+    return QPoint(std::clamp(preferredTopLeft.x(), bounds.left(), maxX),
+                  std::clamp(preferredTopLeft.y(), bounds.top(), maxY));
+}
 
 }
 
@@ -488,6 +520,8 @@ MainWindow::MainWindow(QWidget *parent)
         rig->setFrequency(rightVfo, value);
     });
 
+    restoreWindowPlacement();
+
     QSettings settings;
     const int model = settings.value("rig/model", RIG_MODEL_TS590S).toInt();
     const QString port = settings.value("rig/port", "COM7").toString();
@@ -707,6 +741,61 @@ void MainWindow::updateSpotBandFilter()
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    saveWindowPlacement();
+    QMainWindow::closeEvent(event);
+}
+
+void MainWindow::restoreWindowPlacement()
+{
+    QSettings settings;
+    const QByteArray geometry = settings.value("mainWindow/geometry").toByteArray();
+    if (!geometry.isEmpty()) {
+        restoreGeometry(geometry);
+    }
+
+    const QByteArray state = settings.value("mainWindow/state").toByteArray();
+    if (!state.isEmpty()) {
+        restoreState(state);
+    }
+
+    const QRect savedFrame = settings.value("mainWindow/frameGeometry").toRect();
+    const QRect savedScreenBounds = settings.value("mainWindow/screenAvailableGeometry").toRect();
+    QScreen *targetScreen = screenByName(settings.value("mainWindow/screen").toString());
+    if (targetScreen && savedFrame.isValid() && !targetScreen->availableGeometry().intersects(frameGeometry())) {
+        const QRect available = targetScreen->availableGeometry();
+        QPoint preferredTopLeft = savedFrame.topLeft();
+        if (savedScreenBounds.isValid()) {
+            preferredTopLeft = available.topLeft() + (savedFrame.topLeft() - savedScreenBounds.topLeft());
+        }
+        move(boundedTopLeft(preferredTopLeft, size(), available));
+        return;
+    }
+
+    if (intersectsAnyScreen(frameGeometry())) {
+        return;
+    }
+
+    if (QScreen *primaryScreen = QGuiApplication::primaryScreen()) {
+        const QRect available = primaryScreen->availableGeometry();
+        move(boundedTopLeft(savedFrame.isValid() ? savedFrame.topLeft() : available.topLeft(), size(), available));
+    }
+}
+
+void MainWindow::saveWindowPlacement() const
+{
+    QSettings settings;
+    settings.setValue("mainWindow/geometry", saveGeometry());
+    settings.setValue("mainWindow/state", saveState());
+    settings.setValue("mainWindow/frameGeometry", frameGeometry());
+
+    if (const QScreen *currentScreen = screen()) {
+        settings.setValue("mainWindow/screen", currentScreen->name());
+        settings.setValue("mainWindow/screenAvailableGeometry", currentScreen->availableGeometry());
+    }
 }
 
 void MainWindow::showSettingsDialog()
