@@ -16,6 +16,7 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QSettings>
+#include <QShortcut>
 #include <QSignalBlocker>
 #include <QStyle>
 #include <QVBoxLayout>
@@ -150,6 +151,11 @@ MainWindow::MainWindow(QWidget *parent)
         }
         if (ui->spotTableView->horizontalHeader()) {
             ui->spotTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+        }
+        if (ui->spotTab) {
+            auto *selectAllSpotShortcut = new QShortcut(QKeySequence::SelectAll, ui->spotTab);
+            selectAllSpotShortcut->setContext(Qt::WidgetWithChildrenShortcut);
+            connect(selectAllSpotShortcut, &QShortcut::activated, ui->spotTableView, &QTableView::selectAll);
         }
     }
     QSettings filterSettings;
