@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QRegularExpression>
 #include <QSqlQuery>
+#include <QTimer>
 
 TcpReceiver::TcpReceiver(const QString &host, quint16 port, QObject *parent)
     : QObject(parent)
@@ -14,12 +15,16 @@ TcpReceiver::TcpReceiver(const QString &host, quint16 port, QObject *parent)
     connect(m_socket, &QTcpSocket::connected, this, &TcpReceiver::connected);
     connect(m_socket, &QTcpSocket::disconnected, this, [this]() {
         qDebug() << "TCP disconnected:" << m_host << m_port;
+        scheduleReconnect();
     });
     connect(m_socket, &QTcpSocket::readyRead, this, &TcpReceiver::onReadyRead);
     connect(m_socket,
             QOverload<QAbstractSocket::SocketError>::of(&QTcpSocket::errorOccurred),
-            this, [this](QAbstractSocket::SocketError) {
+            this, [this](QAbstractSocket::SocketError error) {
                 qWarning() << "TCP error:" << m_socket->errorString();
+                if (error == QAbstractSocket::RemoteHostClosedError) {
+                    scheduleReconnect();
+                }
             });
 }
 
@@ -28,7 +33,8 @@ void TcpReceiver::start()
     if (!m_socket) {
         return;
     }
-    if (m_socket->state() != QAbstractSocket::ConnectedState) {
+    m_shouldReconnect = true;
+    if (m_socket->state() == QAbstractSocket::UnconnectedState) {
         m_socket->connectToHost(m_host, m_port);
     }
 }
@@ -38,6 +44,8 @@ void TcpReceiver::stop()
     if (!m_socket) {
         return;
     }
+    m_shouldReconnect = false;
+    m_reconnectPending = false;
     m_socket->disconnectFromHost();
 }
 
@@ -45,8 +53,26 @@ void TcpReceiver::connected()
 {
     qDebug() << "connected...";
     if (m_socket) {
+        m_reconnectPending = false;
         m_socket->write("og3z\r\n");
     }
+}
+
+void TcpReceiver::scheduleReconnect()
+{
+    if (!m_socket || !m_shouldReconnect || m_reconnectPending) {
+        return;
+    }
+
+    m_reconnectPending = true;
+    QTimer::singleShot(5000, this, [this]() {
+        m_reconnectPending = false;
+        if (!m_socket || !m_shouldReconnect || m_socket->state() != QAbstractSocket::UnconnectedState) {
+            return;
+        }
+        qDebug() << "TCP reconnecting:" << m_host << m_port;
+        m_socket->connectToHost(m_host, m_port);
+    });
 }
 
 std::tuple<const QString, const QString, const QString, const QString, const QString> parseLine(const QString &line) {

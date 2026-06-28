@@ -27,11 +27,15 @@ private slots:
     void connected();
     void onReadyRead();
 private:
+    void scheduleReconnect();
+
     QString m_host;
     quint16 m_port = 0;
     QTcpSocket *m_socket = nullptr;
     QString m_buffer;
     Country m_country;
+    bool m_shouldReconnect = false;
+    bool m_reconnectPending = false;
 };
 
 #endif // TCPRECEIVER_H
