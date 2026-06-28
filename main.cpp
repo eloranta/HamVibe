@@ -11,7 +11,72 @@
 #include <QVariantMap>
 
 const QStringList calls = {
-"AL1G","ZA1AK","ZA1EM","LU1ANG","LU1IYL","LU1WCU","LU1XJJ","LU2HYL","LU4DJB","LU4JVE","LU5OIJ","LU7DYL","LU8DMA","LU8GCJ","LW6ERY","RY9KYL","TA3TGC","VK4DI","VK5MAZ","OE3JLY","OE3LZA","OE3YSC","OE5BAE","OE7MPN","OE8VLK","OE8YXK","OE8YYY","CS8ACM","CU2YK","ON3ANN","ON3EBR","ON3NYL","ON4CHT","ON4EK","ON5RS","ON7SAS","V31YL","E71AJL","E71DK","E74BJJ","E79HI","VA3PZA","VA3WHU","VE9GLF","EA8DPX","HK3YL","OK1LYL","OK2APY","OK3FLY","2E0OHT","G0BIR","M6EDA","M7KNO","M7KVC","M9YLR","ES3YJ","ES3YW","ES8KRI","R1BIG","R2CC","R6DVC","R6DVG","RU3XY","UB1AUH","DL3HD","DA2KT","DA2NM","DA6BC","DC1YL","DC2CT","DD2VX","DD7MR","DF2REY","DF4RBM","DF4UM","DF6QP","DF8UY","DG7OY","DH8LAR","DJ0DE","DJ5YL","DJ9YL","DK1FE","DK1LJ","DK2OL","DK2YLL","DK5YL","DK8HUU","DL1FKB","DL1STN","DL1TM","DL2GRC","DL2LBK","DL3CR","DL3HD","DL4CR","DL4DXF","DL4VER","DL5FM","DL5PIA","DL5YL","DL6SAK","DL6TNT","DL7PIA","DL8DYL","DL8JC","DM3UX","DM4EAX","DM4STG","DN9CAT","DN9CY","DO3HTV","DO9JBP","OH5KIZ","OH5YL","F4GDI","F4JWK","F4LCM","F4LQS","F4LSM","F4MNO","F4MXJ","F5CDE","SV2TCC","SV2TSU","SV4TTE","SV8OVH","SY1EDC","HA1AS","HA4NI","HA4ZS","HA5BA","HA5BN","HA5VP","HA5YG","HA5YN","VU2RBI","VU2MGS","VU2RBI","VU3GGU","VU3GGU","VU3IVO","VU3ZOE","YB0BIP","YB1CAS","YB1CWO","YB1JYL","YB1KQV","YB1TIA","YB3ETY","YB5SLA","YC1EBM","YC1RJN","YD4LUM","YG1CAZ","EI5IXB","IN3FHE","IU1SCQ","IU1TKT","IU2SMJ","IU2VUD","IU2VZW","IU4QSV","IU5AWQ","IU5JZQ","IU5LVM","IZ5BRO","IZ7AUK","7K4TKB","JI1JRE","JP3AYQ","XE1ADY","XE1DEL","XE1FAV","XE1LIN","XE1YL","XE2IHA","PA2KM","PD0HI","PD0YL","PD3GVQ","PD4LYN","GI0AZA","LB5QK","HP3GNG","4F1CAK","4G1QLK","DU1YL","HF9SL","SP2FF","SP6WE","SP8SAN","SP9AJP","SP9ARX","SQ3TGY","SQ5CAT","SQ5EC","SQ6ALS","SQ6PLH","SQ8BWA","SQ8KJC","WP4MTS","WP4NWK","WP4SMO","YO3BEL","IS0JRL","HZ0YL","GM4YMM","GM5CAR","M0YRN","MM7TKP","YT3NR","IT9KAX","IT9KKB","OM1ADA","S54TIM","S55BA","EA1FRQ","EA1IQR","EB5AN","HB9EPE","HB9INY","E20NKB","E25KAE","HS0ZRR","UR1CED","UR3PHG","AC9XK","AG6V","K4SAF","K6YYL","K8ZI","K9JJR","K9UET","KA8MNV","KC1OHT","KC3VQP","KC3ZZO","KC5BOO","KD2GUT","KD5ZZU","KD9WAI","KD9YAY","KE0TL","KE0WPA","KE9APN","KE9CKA","KE9DDT","KF8CYL","KI5SSR","KI5WEP","KJ0WHOO","KJ4ULZ","KJ5LXP","KJ6GHN","KM4WSK","KN4DDC","KQ3Q","KQ4JNW","KQ4ZFX","KR4CXD","KR4FTE","KS4YT","KY2MMM","N0QQ","N2RJ","N3PBD","N5ALG","N6ECW","N8PTL","NX8Z","NZ5W","W1GRL","W4AA","W4CMG","W4KRN","W7TEE","WA4SHA","WB0ICT","WD4AGF","WI7NGS"};
+    "3B8WWA",
+    "6D2WWA",
+    "8A1WWA",
+    "9M8WWA",
+    "AT2WWA",
+    "CR2WWA",
+    "CS2WWA",
+    "DA0WWA",
+    "DL0WWA",
+    "DU0WWA",
+    "E2WWA",
+    "EE6WWA",
+    "EG4WWA",
+    "EH1WWA",
+    "EH2WWA",
+    "EH3WWA",
+    "EH5WWA",
+    "EH7WWA",
+    "EH9WWA",
+    "EM0WWA",
+    "GB2WWA",
+    "GB6WWA",
+    "GB8WWA",
+    "HB9WWA",
+    "HI3WWA",
+    "HI4WWA",
+    "HI5WWA",
+    "HI6WWA",
+    "HI7WWA",
+    "HI8WWA",
+    "II0WWA",
+    "II1WWA",
+    "II2WWA",
+    "II3WWA",
+    "II4WWA",
+    "II5WWA",
+    "II6WWA",
+    "II7WWA",
+    "II8WWA",
+    "II9WWA",
+    "IR0WWA",
+    "IR1WWA",
+    "KP4WWA",
+    "LA1WWA",
+    "OH5WWA",
+    "OL6WWA",
+    "OP0WWA",
+    "S53WWA",
+    "SB9WWA",
+    "SC9WWA",
+    "SD9WWA",
+    "SK3WWA",
+    "SN0WWA",
+    "SN1WWA",
+    "SN2WWA",
+    "SN3WWA",
+    "SN4WWA",
+    "SN6WWA",
+    "TM2WWA",
+    "TM8WWA",
+    "UP7WWA",
+    "VE6WWA",
+    "VE9WWA",
+    "VK5WWA",
+    "YO0WWA",
+    "Z30WWA"};
 
 bool setupWwaTable(QSqlDatabase db)
 {
@@ -47,21 +112,21 @@ bool setupWwaTable(QSqlDatabase db)
 
     if (query.next() && query.value(0).toInt() == 0) {
         const QString insertSql = QString(R"(
-            INSERT INTO %1 (callsign, "10", "12", "15", "17", "20", "30", "40", "80")
-            VALUES (?, 0, 0, 0, 0, 0, 0, 0, 0)
+            INSERT INTO %1 (callsign)
+            VALUES (?)
         )").arg(tableName);
 
         for (const QString &call : calls) {
             query.prepare(insertSql);
             query.addBindValue(call);
             if (!query.exec()) {
-                qWarning() << "Insert failed for call:" << call;
+                qWarning() << "Insert failed for call:" << call << query.lastError();
             }
         }
 
-        qDebug() << "Inserted" << calls.size() << "calls";
+        qDebug() << "Inserted" << calls.size() << "empty WWA rows";
     } else {
-        qDebug() << "Data already exists, skipping insert.";
+        qDebug() << "WWA data already exists, skipping insert.";
     }
 
     return true;
