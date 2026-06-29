@@ -22,6 +22,7 @@
 #include <QShortcut>
 #include <QSignalBlocker>
 #include <QStyle>
+#include <QTabWidget>
 #include <QVBoxLayout>
 #include <algorithm>
 #include <array>
@@ -448,6 +449,9 @@ MainWindow::MainWindow(QWidget *parent)
     };
     connectStatusRefreshSignals(m_model);
     connectStatusRefreshSignals(m_dxccModel);
+    connect(ui->tabWidget, &QTabWidget::currentChanged, this, [this](int) {
+        updateStatusCounts();
+    });
 
     connect(ui->actionSettings, &QAction::triggered, this, &MainWindow::showSettingsDialog);
     connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::showAboutDialog);
@@ -1028,6 +1032,55 @@ void MainWindow::poll()
 void MainWindow::updateStatusCounts()
 {
     if (!statusCountsLabel) {
+        return;
+    }
+
+    if (ui && ui->tabWidget && ui->logTab && ui->tabWidget->currentWidget() == ui->logTab) {
+        static const QStringList bandColumns = {
+            "10", "12", "15", "17", "20", "30", "40", "80"
+        };
+
+        QStringList selectColumns;
+        selectColumns.reserve(bandColumns.size());
+        for (const QString &col : bandColumns) {
+            selectColumns << QString(R"(COALESCE("%1", 0))").arg(col);
+        }
+
+        QSqlQuery q;
+        const QString sql = QString("SELECT %1 FROM modes").arg(selectColumns.join(", "));
+        if (!q.exec(sql)) {
+            qWarning() << "WWA point count failed:" << q.lastError();
+            statusCountsLabel->clear();
+            return;
+        }
+
+        int cwCount = 0;
+        int phCount = 0;
+        int otherCount = 0;
+        while (q.next()) {
+            for (int i = 0; i < bandColumns.size(); ++i) {
+                const int bits = q.value(i).toInt();
+                if (bits & (1 << 0)) {
+                    ++cwCount;
+                }
+                if (bits & (1 << 1)) {
+                    ++phCount;
+                }
+                if (bits & (1 << 2)) {
+                    ++otherCount;
+                }
+                if (bits & (1 << 3)) {
+                    ++otherCount;
+                }
+            }
+        }
+
+        const int totalPoints = cwCount * 10 + phCount * 5 + otherCount * 2;
+        statusCountsLabel->setText(QString("WWA points:%1  CW:%2  PH:%3  Other:%4")
+                                       .arg(totalPoints)
+                                       .arg(cwCount)
+                                       .arg(phCount)
+                                       .arg(otherCount));
         return;
     }
 
