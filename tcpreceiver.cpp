@@ -54,7 +54,7 @@ void TcpReceiver::connected()
     qDebug() << "connected...";
     if (m_socket) {
         m_reconnectPending = false;
-        m_socket->write("og3z\r\n");
+        m_socket->write("oh2lhe\r\n");
     }
 }
 
