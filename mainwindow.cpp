@@ -288,6 +288,15 @@ MainWindow::MainWindow(QWidget *parent)
     if (ui->dxccTableView && ui->dxccTableView->horizontalHeader()) {
         auto *header = ui->dxccTableView->horizontalHeader();
         header->setSectionResizeMode(QHeaderView::ResizeToContents);
+        header->setSortIndicator(dxccPrefixCol >= 0 ? dxccPrefixCol : dxccEntityCol,
+                                 Qt::AscendingOrder);
+        ui->dxccTableView->setSortingEnabled(true);
+        if (dxccPrefixCol >= 0) {
+            header->setSectionResizeMode(dxccPrefixCol, QHeaderView::Interactive);
+            ui->dxccTableView->resizeColumnToContents(dxccPrefixCol);
+            ui->dxccTableView->setColumnWidth(dxccPrefixCol,
+                                            ui->dxccTableView->columnWidth(dxccPrefixCol) + 16);
+        }
     }
 
     statusInfoLabel = new QLabel(this);
