@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
 #include "delegate.h"
+#include "dxcctablemodel.h"
 #include "tcpreceiver.h"
 
 #include <QAction>
@@ -38,14 +39,15 @@
 
 namespace {
 
-class DxccTableModel final : public QSqlTableModel
+class SpotTableModel final : public QSqlTableModel
 {
 public:
     using QSqlTableModel::QSqlTableModel;
 
-    bool insertRows(int, int, const QModelIndex & = QModelIndex()) override
+protected:
+    QString orderByClause() const override
     {
-        return false;
+        return QStringLiteral("ORDER BY \"date\" DESC, \"time\" DESC");
     }
 };
 
@@ -123,13 +125,9 @@ MainWindow::MainWindow(QWidget *parent)
         m_dxccModel->setHeaderData(dxccEntityCol, Qt::Horizontal, "Entity");
     }
 
-    m_spotModel = new QSqlTableModel(this);
+    m_spotModel = new SpotTableModel(this);
     m_spotModel->setTable("spots");
     m_spotModel->setEditStrategy(QSqlTableModel::OnFieldChange);
-    const int timeCol = m_spotModel->fieldIndex("time");
-    if (timeCol >= 0) {
-        m_spotModel->setSort(timeCol, Qt::DescendingOrder);
-    }
     m_spotModel->setHeaderData(0, Qt::Horizontal, "Time");
     m_spotModel->setHeaderData(1, Qt::Horizontal, "Call");
     m_spotModel->setHeaderData(2, Qt::Horizontal, "Freq");
@@ -137,6 +135,10 @@ MainWindow::MainWindow(QWidget *parent)
     m_spotModel->setHeaderData(4, Qt::Horizontal, "Country");
     m_spotModel->setHeaderData(5, Qt::Horizontal, "Spotter");
     m_spotModel->setHeaderData(6, Qt::Horizontal, "Message");
+    const int spotDateCol = m_spotModel->fieldIndex("date");
+    if (spotDateCol >= 0) {
+        m_spotModel->setHeaderData(spotDateCol, Qt::Horizontal, "Date");
+    }
     m_spotModel->select();
 
     auto setupModesView = [this](QTableView *view, QAbstractItemModel *model, QStyledItemDelegate *delegate, bool hideFirstColumn) {
@@ -169,6 +171,10 @@ MainWindow::MainWindow(QWidget *parent)
     }
     setupModesView(ui->tableView, m_model, checkboxDelegate, true);
     setupModesView(ui->dxccTableView, m_dxccModel, nullptr, false);
+    const int oldDxccDateCol = m_dxccModel->fieldIndex("Date");
+    if (oldDxccDateCol >= 0) {
+        ui->dxccTableView->setColumnHidden(oldDxccDateCol, true);
+    }
     if (ui->spotTableView) {
         ui->spotTableView->setModel(m_spotModel);
         ui->spotTableView->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -185,6 +191,19 @@ MainWindow::MainWindow(QWidget *parent)
         if (ui->spotTableView->horizontalHeader()) {
             ui->spotTableView->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         }
+        auto showSpotDateFirst = [this, spotDateCol] {
+            if (spotDateCol >= 0) {
+                auto *view = ui->spotTableView;
+                auto *header = view->horizontalHeader();
+                view->setColumnHidden(spotDateCol, false);
+                header->moveSection(header->visualIndex(spotDateCol), 0);
+                header->setSectionResizeMode(spotDateCol, QHeaderView::Interactive);
+                view->setColumnWidth(spotDateCol,
+                    view->fontMetrics().horizontalAdvance("yyyy-mm-dd") + 32);
+            }
+        };
+        connect(m_spotModel, &QAbstractItemModel::modelReset, this, showSpotDateFirst);
+        showSpotDateFirst();
         if (ui->spotTab) {
             auto *selectAllSpotShortcut = new QShortcut(QKeySequence::SelectAll, ui->spotTab);
             selectAllSpotShortcut->setContext(Qt::WidgetWithChildrenShortcut);
@@ -1439,8 +1458,8 @@ void MainWindow::onSpotReceived(const QString &time,
 {
     QSqlQuery q;
     q.prepare(R"(
-        INSERT INTO spots (time, call, freq, mode, country, spotter, message)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO spots (time, call, freq, mode, country, spotter, message, date)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     )");
     q.addBindValue(time);
     q.addBindValue(call);
@@ -1449,6 +1468,7 @@ void MainWindow::onSpotReceived(const QString &time,
     q.addBindValue(country);
     q.addBindValue(spotter);
     q.addBindValue(message);
+    q.addBindValue(QDateTime::currentDateTimeUtc().date().toString("yyyy-MM-dd"));
     if (!q.exec()) {
         qWarning() << "Spot insert failed:" << q.lastError();
     } else if (m_spotModel) {

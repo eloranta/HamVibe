@@ -4,6 +4,7 @@ QObject *createFrequencyLabelTest();
 QObject *createRigTest();
 QObject *createCountryTest();
 QObject *createTcpReceiverTest();
+QObject *createDxccTableModelTest();
 
 int main(int argc, char **argv)
 {
@@ -25,6 +26,10 @@ int main(int argc, char **argv)
     QObject *tcpReceiverTest = createTcpReceiverTest();
     status |= QTest::qExec(tcpReceiverTest, argc, argv);
     delete tcpReceiverTest;
+
+    QObject *dxccTest = createDxccTableModelTest();
+    status |= QTest::qExec(dxccTest, argc, argv);
+    delete dxccTest;
 
     return status;
 }

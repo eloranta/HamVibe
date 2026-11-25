@@ -80,6 +80,8 @@ add_executable(HamVibeTests
     tests/rig_test.cpp
     tests/country_test.cpp
     tests/tcpreceiver_test.cpp
+    tests/dxcctablemodel_test.cpp
+    dxcctablemodel.h
     frequencylabel.h
     frequencylabel.cpp
     rig.h

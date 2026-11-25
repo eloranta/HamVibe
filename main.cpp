@@ -9,6 +9,7 @@
 #include <QSet>
 #include <QRegularExpression>
 #include <QVariantMap>
+#include <utility>
 
 const QStringList calls = {
     "3B8WWA",
@@ -502,9 +503,10 @@ static bool normalizeDxccTable(QSqlDatabase db)
     };
 
     QVariantMap mergedRows;
+    QList<qint64> obsoleteIds;
     QSqlQuery select(db);
     if (!select.exec(R"(
-        SELECT Prefix, Entity, Mix, Ph, CW, RT, SAT, "160", "80", "40", "30", "20", "17", "15", "12", "10", "6", "2"
+        SELECT Prefix, Entity, Mix, Ph, CW, RT, SAT, "160", "80", "40", "30", "20", "17", "15", "12", "10", "6", "2", id
         FROM dxcc
     )")) {
         qWarning() << "Failed to read DXCC rows:" << select.lastError();
@@ -512,12 +514,19 @@ static bool normalizeDxccTable(QSqlDatabase db)
     }
 
     while (select.next()) {
+        const qint64 id = select.value(18).toLongLong();
         const QString entityKey = select.value(1).toString().trimmed().toUpper();
         if (!prefixMap.contains(entityKey)) {
+            obsoleteIds.append(id);
             continue;
         }
 
         QVariantMap row = mergedRows.value(entityKey).toMap();
+        if (row.contains("id")) {
+            obsoleteIds.append(id);
+        } else {
+            row.insert("id", id);
+        }
         row.insert("Prefix", prefixMap.value(entityKey));
         row.insert("Entity", entityKey);
         for (int i = 0; i < valueColumns.size(); ++i) {
@@ -528,6 +537,7 @@ static bool normalizeDxccTable(QSqlDatabase db)
         }
         mergedRows.insert(entityKey, row);
     }
+    select.finish();
 
     for (auto it = prefixMap.cbegin(); it != prefixMap.cend(); ++it) {
         if (mergedRows.contains(it.key())) {
@@ -549,10 +559,14 @@ static bool normalizeDxccTable(QSqlDatabase db)
     }
 
     QSqlQuery query(db);
-    if (!query.exec("DELETE FROM dxcc")) {
-        qWarning() << "Failed to clear DXCC rows:" << query.lastError();
-        db.rollback();
-        return false;
+    query.prepare("DELETE FROM dxcc WHERE id = ?");
+    for (qint64 id : std::as_const(obsoleteIds)) {
+        query.bindValue(0, id);
+        if (!query.exec()) {
+            qWarning() << "Failed to remove obsolete DXCC row:" << query.lastError();
+            db.rollback();
+            return false;
+        }
     }
 
     QSqlQuery insert(db);
@@ -565,21 +579,36 @@ static bool normalizeDxccTable(QSqlDatabase db)
         return false;
     }
 
+    QSqlQuery update(db);
+    if (!update.prepare(R"(
+        UPDATE dxcc SET Prefix = ?, Entity = ?, Mix = ?, Ph = ?, CW = ?, RT = ?, SAT = ?,
+            "160" = ?, "80" = ?, "40" = ?, "30" = ?, "20" = ?, "17" = ?, "15" = ?,
+            "12" = ?, "10" = ?, "6" = ?, "2" = ? WHERE id = ?
+    )")) {
+        qWarning() << "Failed to prepare normalized DXCC update:" << update.lastError();
+        db.rollback();
+        return false;
+    }
+
     QStringList entities = prefixMap.keys();
     entities.sort();
     for (const QString &entity : entities) {
         const QVariantMap row = mergedRows.value(entity).toMap();
-        insert.addBindValue(row.value("Prefix").toString());
-        insert.addBindValue(row.value("Entity").toString());
+        QSqlQuery &write = row.contains("id") ? update : insert;
+        write.addBindValue(row.value("Prefix").toString());
+        write.addBindValue(row.value("Entity").toString());
         for (const QString &column : valueColumns) {
-            insert.addBindValue(row.value(column).toString());
+            write.addBindValue(row.value(column).toString());
         }
-        if (!insert.exec()) {
-            qWarning() << "Failed to reinsert normalized DXCC row:" << entity << insert.lastError();
+        if (row.contains("id")) {
+            write.addBindValue(row.value("id"));
+        }
+        if (!write.exec()) {
+            qWarning() << "Failed to save normalized DXCC row:" << entity << write.lastError();
             db.rollback();
             return false;
         }
-        insert.finish();
+        write.finish();
     }
 
     if (!query.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_dxcc_entity_unique ON dxcc(Entity COLLATE NOCASE)")) {
@@ -671,7 +700,8 @@ bool setupDatabase()
                 mode TEXT,
                 country TEXT,
                 spotter TEXT,
-                message TEXT
+                message TEXT,
+                date TEXT
             )
         )";
         if (!query.exec(createSpots)) {
@@ -683,6 +713,12 @@ bool setupDatabase()
         if (info.exec("PRAGMA table_info(spots)")) {
             while (info.next()) {
                 spotCols.insert(info.value(1).toString().toLower());
+            }
+        }
+        if (!spotCols.contains("date")) {
+            if (!query.exec("ALTER TABLE spots ADD COLUMN date TEXT")) {
+                qWarning() << "Failed to add date column to spots:" << query.lastError();
+                return false;
             }
         }
         if (!spotCols.contains("message")) {
